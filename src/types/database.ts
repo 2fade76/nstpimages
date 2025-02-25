@@ -2,6 +2,9 @@
 export interface Photographer {
   id: string;
   name: string;
+  email: string | null;
+  phone: string | null;
+  status: 'active' | 'onleave';
   created_at: string;
 }
 
@@ -14,3 +17,4 @@ export interface Assignment {
   status: 'open' | 'progress' | 'hold' | 'complete';
   created_at: string;
 }
+

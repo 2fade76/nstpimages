@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Assignment, Photographer } from "@/types/database";
 
 export const AssignmentsList = () => {
-  const [selectedPhotographer, setSelectedPhotographer] = useState<string | null>(null);
+  const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
 
   const { data: assignments } = useQuery({
     queryKey: ['assignments'],
@@ -23,31 +23,16 @@ export const AssignmentsList = () => {
         .select(`
           *,
           photographers (
+            id,
             name
           )
         `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Assignment & { photographers: Pick<Photographer, 'name'> })[];
+      return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
     }
   });
-
-  const getPhotographerAssignments = async (photographerName: string) => {
-    const { data, error } = await supabase
-      .from('assignments')
-      .select('*')
-      .eq('photographers.name', photographerName)
-      .select(`
-        *,
-        photographers!inner (
-          name
-        )
-      `);
-    
-    if (error) throw error;
-    return data?.length || 0;
-  };
 
   const statusColors = {
     open: "bg-status-open",
@@ -82,7 +67,7 @@ export const AssignmentsList = () => {
               </div>
               <div 
                 className="flex items-center text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors"
-                onClick={() => setSelectedPhotographer(assignment.photographers.name)}
+                onClick={() => setSelectedPhotographerId(assignment.photographers.id)}
               >
                 <User className="mr-2 h-4 w-4" />
                 {assignment.photographers.name}
@@ -92,12 +77,12 @@ export const AssignmentsList = () => {
         ))}
       </div>
 
-      {selectedPhotographer && (
+      {selectedPhotographerId && (
         <PhotographerInfoDialog
           isOpen={true}
-          onClose={() => setSelectedPhotographer(null)}
-          photographer={selectedPhotographer}
-          assignments={assignments?.filter(a => a.photographers.name === selectedPhotographer).length || 0}
+          onClose={() => setSelectedPhotographerId(null)}
+          photographerId={selectedPhotographerId}
+          assignments={assignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
         />
       )}
     </>

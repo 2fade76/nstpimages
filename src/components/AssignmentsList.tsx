@@ -8,62 +8,52 @@ import {
 import { Calendar, MapPin, User } from "lucide-react";
 import { useState } from "react";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
-
-const mockAssignments = [
-  {
-    id: 1,
-    title: "Product Launch Photos",
-    location: "Studio A, New York",
-    date: "2024-03-15",
-    photographer: "John Smith",
-    status: "open",
-  },
-  {
-    id: 2,
-    title: "Corporate Event Coverage",
-    location: "Convention Center",
-    date: "2024-03-16",
-    photographer: "Emily Johnson",
-    status: "progress",
-  },
-  {
-    id: 3,
-    title: "Architecture Series",
-    location: "Downtown District",
-    date: "2024-03-17",
-    photographer: "Michael Brown",
-    status: "hold",
-  },
-  {
-    id: 4,
-    title: "Fashion Editorial",
-    location: "Beach Location",
-    date: "2024-03-18",
-    photographer: "Sarah Wilson",
-    status: "complete",
-  },
-];
-
-const statusColors = {
-  open: "bg-status-open",
-  progress: "bg-status-progress",
-  hold: "bg-status-hold",
-  complete: "bg-status-complete",
-};
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Assignment, Photographer } from "@/types/database";
 
 export const AssignmentsList = () => {
   const [selectedPhotographer, setSelectedPhotographer] = useState<string | null>(null);
 
-  const getPhotographerAssignments = (photographerName: string) => {
-    return mockAssignments.filter(
-      (assignment) => assignment.photographer === photographerName
-    ).length;
+  const { data: assignments } = useQuery({
+    queryKey: ['assignments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select(`
+          *,
+          photographers (
+            name
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as (Assignment & { photographers: Pick<Photographer, 'name'> })[];
+    }
+  });
+
+  const getPhotographerAssignments = async (photographerName: string) => {
+    const { count } = await supabase
+      .from('assignments')
+      .select('*', { count: 'exact' })
+      .eq('photographers.name', photographerName)
+      .innerJoin('photographers', { 'photographers.id': 'assignments.photographer_id' });
+    
+    return count || 0;
+  };
+
+  const statusColors = {
+    open: "bg-status-open",
+    progress: "bg-status-progress",
+    hold: "bg-status-hold",
+    complete: "bg-status-complete",
   };
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockAssignments.map((assignment) => (
+        {assignments?.map((assignment) => (
           <Card key={assignment.id} className="animate-fadeIn">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-semibold">
@@ -71,7 +61,7 @@ export const AssignmentsList = () => {
               </CardTitle>
               <span
                 className={`h-3 w-3 rounded-full ${
-                  statusColors[assignment.status as keyof typeof statusColors]
+                  statusColors[assignment.status]
                 }`}
               />
             </CardHeader>
@@ -86,10 +76,10 @@ export const AssignmentsList = () => {
               </div>
               <div 
                 className="flex items-center text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors"
-                onClick={() => setSelectedPhotographer(assignment.photographer)}
+                onClick={() => setSelectedPhotographer(assignment.photographers.name)}
               >
                 <User className="mr-2 h-4 w-4" />
-                {assignment.photographer}
+                {assignment.photographers.name}
               </div>
             </CardContent>
           </Card>
@@ -101,7 +91,7 @@ export const AssignmentsList = () => {
           isOpen={true}
           onClose={() => setSelectedPhotographer(null)}
           photographer={selectedPhotographer}
-          assignments={getPhotographerAssignments(selectedPhotographer)}
+          assignments={assignments?.filter(a => a.photographers.name === selectedPhotographer).length || 0}
         />
       )}
     </>

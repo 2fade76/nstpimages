@@ -34,13 +34,19 @@ export const AssignmentsList = () => {
   });
 
   const getPhotographerAssignments = async (photographerName: string) => {
-    const { count } = await supabase
+    const { data, error } = await supabase
       .from('assignments')
-      .select('*', { count: 'exact' })
+      .select('*')
       .eq('photographers.name', photographerName)
-      .innerJoin('photographers', { 'photographers.id': 'assignments.photographer_id' });
+      .select(`
+        *,
+        photographers!inner (
+          name
+        )
+      `);
     
-    return count || 0;
+    if (error) throw error;
+    return data?.length || 0;
   };
 
   const statusColors = {

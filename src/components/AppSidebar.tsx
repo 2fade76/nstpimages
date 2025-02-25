@@ -5,7 +5,7 @@ import {
   Plus,
   BarChart,
   Settings,
-  Menu,
+  Users,
 } from "lucide-react";
 import {
   Sidebar,
@@ -16,15 +16,15 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 
 const menuItems = [
   { title: "Overview", icon: Home, path: "/" },
-  { title: "New Assignment", icon: Plus, path: "/new" },
+  { title: "Photographers", icon: Users, path: "/?tab=photographers" },
+  { title: "New Assignment", icon: Plus, path: "/?tab=new" },
   { title: "Calendar", icon: Calendar, path: "/calendar" },
-  { title: "Analytics", icon: BarChart, path: "/analytics" },
+  { title: "Analytics", icon: BarChart, path: "/?tab=analytics" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
 
@@ -56,4 +56,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-

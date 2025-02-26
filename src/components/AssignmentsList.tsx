@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, MapPin, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,8 +39,9 @@ export const AssignmentsList = () => {
     refetchOnWindowFocus: true,
   });
 
-  // Subscribe to changes in the assignments table
-  useState(() => {
+  // Subscribe to changes in the assignments table using useEffect instead of useState
+  useEffect(() => {
+    // Set up real-time subscription to the assignments table
     const channel = supabase
       .channel('assignments-changes')
       .on('postgres_changes', 
@@ -56,7 +57,7 @@ export const AssignmentsList = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  });
+  }, [queryClient]); // Add queryClient as a dependency
 
   const statusColors = {
     open: "bg-status-open",

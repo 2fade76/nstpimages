@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,17 +19,92 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export const AssignmentForm = () => {
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState("");
   const [date, setDate] = useState<Date>();
+  const [photographer, setPhotographer] = useState("");
+  const [status, setStatus] = useState<string>("open");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { data: photographers, isLoading } = useQuery({
+    queryKey: ['photographers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('photographers')
+        .select('*')
+        .eq('status', 'active')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Assignment Created",
-      description: "The photo assignment has been successfully created.",
-    });
+    
+    if (!title || !location || !date || !photographer || !status) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Format the date as ISO string but just the date part
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('assignments')
+        .insert({
+          title,
+          location,
+          date: formattedDate,
+          photographer_id: photographer,
+          status
+        })
+        .select();
+
+      if (error) {
+        console.error("Error creating assignment:", error);
+        toast({
+          title: "Error",
+          description: `Failed to create assignment: ${error.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Assignment Created",
+        description: "The photo assignment has been successfully created.",
+      });
+
+      // Reset the form
+      setTitle("");
+      setLocation("");
+      setDate(undefined);
+      setPhotographer("");
+      setStatus("open");
+    } catch (error) {
+      console.error("Exception creating assignment:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,6 +115,8 @@ export const AssignmentForm = () => {
           placeholder="Enter assignment title"
           className="w-full"
           required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
       </div>
 
@@ -49,11 +126,13 @@ export const AssignmentForm = () => {
           placeholder="Enter location"
           className="w-full"
           required
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Date and Time</label>
+        <label className="text-sm font-medium">Date</label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -80,16 +159,39 @@ export const AssignmentForm = () => {
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Photographer</label>
-        <Input
-          placeholder="Enter photographer name"
-          className="w-full"
-          required
-        />
+        <Select
+          value={photographer}
+          onValueChange={setPhotographer}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a photographer" />
+          </SelectTrigger>
+          <SelectContent>
+            {isLoading ? (
+              <SelectItem value="loading" disabled>
+                Loading photographers...
+              </SelectItem>
+            ) : photographers && photographers.length > 0 ? (
+              photographers.map((photog) => (
+                <SelectItem key={photog.id} value={photog.id}>
+                  {photog.name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="none" disabled>
+                No active photographers found
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Status</label>
-        <Select>
+        <Select 
+          value={status}
+          onValueChange={setStatus}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
@@ -122,8 +224,8 @@ export const AssignmentForm = () => {
         </Select>
       </div>
 
-      <Button type="submit" className="w-full">
-        Create Assignment
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Creating..." : "Create Assignment"}
       </Button>
     </form>
   );

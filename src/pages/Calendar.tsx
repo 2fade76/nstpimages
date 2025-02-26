@@ -3,13 +3,15 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Assignment } from "@/types/database";
 import { format } from "date-fns";
+import { useEffect } from "react";
 
 const Calendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const queryClient = useQueryClient();
 
   const { data: assignments, isLoading } = useQuery({
     queryKey: ['assignments'],
@@ -30,12 +32,30 @@ const Calendar = () => {
     },
   });
 
+  // Setup real-time subscription to assignments
+  useEffect(() => {
+    const subscription = supabase
+      .channel('assignments-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'assignments',
+      }, () => {
+        // Invalidate and refetch assignments when changes occur
+        queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [queryClient]);
+
   // Format assignments for the selected date
   const selectedDateAssignments = assignments?.filter((assignment) => {
     if (!date) return false;
     
     // Convert assignment.date string to Date object for comparison
-    // Format could be MM/DD/YYYY or similar, adjust accordingly
     const assignmentDate = new Date(assignment.date);
     return (
       assignmentDate.getDate() === date.getDate() &&

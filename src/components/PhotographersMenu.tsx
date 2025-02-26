@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PhotographerCard } from "./PhotographerCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Photographer } from "@/types/database";
 import { Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { PhotographerFormDialog } from "./PhotographerFormDialog";
 
 export function PhotographersMenu() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPhotographer, setEditingPhotographer] = useState<Photographer | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: photographers, isLoading } = useQuery({
     queryKey: ['photographers'],
@@ -32,18 +35,36 @@ export function PhotographersMenu() {
   });
 
   const handleAddNew = () => {
-    // TODO: Implement add new photographer functionality
-    toast("Add photographer functionality coming soon!");
+    setEditingPhotographer(null);
+    setIsFormOpen(true);
   };
 
   const handleEdit = (photographer: Photographer) => {
     setEditingPhotographer(photographer);
-    // TODO: Implement edit photographer functionality
-    toast("Edit photographer functionality coming soon!");
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    // Invalidate the query to refresh the photographers list after adding/editing
+    queryClient.invalidateQueries({ queryKey: ['photographers'] });
   };
 
   const handleDelete = async (id: string) => {
     try {
+      // Check if photographer is assigned to any assignment
+      const { data: assignments, error: fetchError } = await supabase
+        .from('assignments')
+        .select('id')
+        .eq('photographer_id', id);
+      
+      if (fetchError) throw fetchError;
+      
+      if (assignments && assignments.length > 0) {
+        toast.error("Cannot delete photographer with assigned assignments");
+        return;
+      }
+      
       const { error } = await supabase
         .from('photographers')
         .delete()
@@ -52,6 +73,8 @@ export function PhotographersMenu() {
       if (error) throw error;
       
       toast.success("Photographer deleted successfully");
+      // Invalidate the query to refresh the photographers list after deleting
+      queryClient.invalidateQueries({ queryKey: ['photographers'] });
     } catch (error) {
       toast.error("Failed to delete photographer");
       console.error(error);
@@ -86,6 +109,12 @@ export function PhotographersMenu() {
           />
         ))}
       </div>
+
+      <PhotographerFormDialog 
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        photographer={editingPhotographer}
+      />
     </div>
   );
 }

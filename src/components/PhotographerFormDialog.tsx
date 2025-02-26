@@ -1,0 +1,178 @@
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Photographer } from "@/types/database";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
+interface PhotographerFormDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  photographer?: Photographer | null;
+}
+
+export function PhotographerFormDialog({
+  isOpen,
+  onClose,
+  photographer,
+}: PhotographerFormDialogProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState<"active" | "onleave">("active");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isEditing = !!photographer;
+
+  // Populate form when editing an existing photographer
+  useEffect(() => {
+    if (photographer) {
+      setName(photographer.name);
+      setEmail(photographer.email || "");
+      setPhone(photographer.phone || "");
+      setStatus(photographer.status);
+    } else {
+      // Reset form when adding new photographer
+      setName("");
+      setEmail("");
+      setPhone("");
+      setStatus("active");
+    }
+  }, [photographer]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      if (isEditing && photographer) {
+        // Update existing photographer
+        const { error } = await supabase
+          .from("photographers")
+          .update({
+            name,
+            email: email || null,
+            phone: phone || null,
+            status,
+          })
+          .eq("id", photographer.id);
+
+        if (error) throw error;
+        toast.success("Photographer updated successfully");
+      } else {
+        // Add new photographer
+        const { error } = await supabase.from("photographers").insert({
+          name,
+          email: email || null,
+          phone: phone || null,
+          status,
+        });
+
+        if (error) throw error;
+        toast.success("Photographer added successfully");
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Error saving photographer:", error);
+      toast.error(
+        isEditing
+          ? "Failed to update photographer"
+          : "Failed to add photographer"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing ? "Edit Photographer" : "Add New Photographer"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name *</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="Enter full name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@example.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(123) 456-7890"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(value: "active" | "onleave") => setStatus(value)}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="onleave">On Leave</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="pt-4">
+            <Button variant="outline" type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isEditing ? "Update" : "Add"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

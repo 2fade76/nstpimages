@@ -20,7 +20,14 @@ export function PhotographersMenu() {
         .order('name');
       
       if (error) throw error;
-      return data;
+      
+      // Ensure the status property is of the correct type
+      return data.map(photographer => ({
+        ...photographer,
+        status: photographer.status === 'active' || photographer.status === 'onleave' 
+          ? (photographer.status as 'active' | 'onleave')
+          : 'active' // Default to 'active' if status is neither 'active' nor 'onleave'
+      })) as Photographer[];
     },
   });
 

@@ -29,7 +29,7 @@ export const AssignmentsList = () => {
     location: "",
     date: "",
     photographer_id: "",
-    status: "",
+    status: "" as Assignment['status'], // Fixed: properly type the status field
   });
   
   const queryClient = useQueryClient();
@@ -315,7 +315,7 @@ export const AssignmentsList = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={editForm.status}
-                  onValueChange={(value) => setEditForm({ ...editForm, status: value })}
+                  onValueChange={(value: Assignment['status']) => setEditForm({ ...editForm, status: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a status" />

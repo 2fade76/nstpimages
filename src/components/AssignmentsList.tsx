@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Calendar, MapPin, User, Edit, Trash2 } from "lucide-react";
+import { Calendar, MapPin, User, Edit, Trash2, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Assignment, Photographer } from "@/types/database";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./ui/dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -146,13 +146,21 @@ export const AssignmentsList = () => {
 
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
     setCurrentAssignment(assignment);
+    
+    // Format the date for the edit form
+    let dateValue = assignment.date;
+    if (assignment.date.includes('T')) {
+      dateValue = assignment.date.split('T')[0]; // Keep only the date part
+    }
+    
     setEditForm({
       title: assignment.title,
       location: assignment.location,
-      date: assignment.date.substring(0, 10), // Just get the date part
+      date: dateValue,
       photographer_id: assignment.photographer_id,
-      status: assignment.status as Assignment['status'],
+      status: assignment.status,
     });
+    
     setIsEditDialogOpen(true);
   };
 
@@ -165,10 +173,18 @@ export const AssignmentsList = () => {
     e.preventDefault();
     console.log("Submitting form with data:", editForm);
     
+    // Make sure to preserve time part if it exists in the original assignment
+    let updatedDate = editForm.date;
+    if (currentAssignment?.date.includes('T')) {
+      const timePart = currentAssignment.date.split('T')[1];
+      updatedDate = `${editForm.date}T${timePart}`;
+    }
+    
     // Make sure status has correct type
     const updatedAssignment: Partial<Assignment> = {
       ...editForm,
-      status: editForm.status as Assignment['status']
+      date: updatedDate,
+      status: editForm.status
     };
     
     updateAssignmentMutation.mutate(updatedAssignment);
@@ -185,6 +201,13 @@ export const AssignmentsList = () => {
     progress: "bg-status-progress",
     hold: "bg-status-hold",
     complete: "bg-status-complete",
+  };
+
+  const statusTextColors = {
+    open: "text-status-open",
+    progress: "text-status-progress",
+    hold: "text-status-hold",
+    complete: "text-status-complete",
   };
 
   const statusLabels = {
@@ -212,7 +235,9 @@ export const AssignmentsList = () => {
                 <div className="p-4 flex items-start justify-between">
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">{assignment.title}</h3>
+                      <h3 className={`text-lg font-semibold ${statusTextColors[assignment.status]}`}>
+                        {assignment.title}
+                      </h3>
                       <div className="flex items-center space-x-2">
                         <div className="flex items-center">
                           <span
@@ -276,6 +301,9 @@ export const AssignmentsList = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Assignment</DialogTitle>
+            <DialogDescription>
+              Update the assignment information below.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateAssignment}>
             <div className="grid gap-4 py-4">

@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Assignment } from "@/types/database";
 
 export const AssignmentForm = () => {
   const [title, setTitle] = useState("");
@@ -28,7 +29,7 @@ export const AssignmentForm = () => {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("12:00");
   const [photographer, setPhotographer] = useState("");
-  const [status, setStatus] = useState<string>("open");
+  const [status, setStatus] = useState<Assignment['status']>("open");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -68,6 +69,8 @@ export const AssignmentForm = () => {
       
       // Format the date and time for storage
       const formattedDateTime = format(dateTime, "yyyy-MM-dd'T'HH:mm:ss");
+      
+      console.log("Creating assignment with status:", status);
       
       const { data, error } = await supabase
         .from('assignments')
@@ -212,7 +215,10 @@ export const AssignmentForm = () => {
         <label className="text-sm font-medium">Status</label>
         <Select 
           value={status}
-          onValueChange={setStatus}
+          onValueChange={(value) => {
+            console.log("Form status changing to:", value);
+            setStatus(value as Assignment['status']);
+          }}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select status" />

@@ -90,13 +90,22 @@ export const AssignmentsList = () => {
   const updateAssignmentMutation = useMutation({
     mutationFn: async (assignmentData: Partial<Assignment>) => {
       console.log("Updating assignment with data:", assignmentData);
+      
+      // Make sure status is one of the allowed values
+      if (assignmentData.status && !['open', 'progress', 'hold', 'complete'].includes(assignmentData.status)) {
+        throw new Error(`Invalid status: ${assignmentData.status}`);
+      }
+      
       const { data, error } = await supabase
         .from('assignments')
         .update(assignmentData)
         .eq('id', currentAssignment?.id)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Update error from Supabase:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -180,13 +189,16 @@ export const AssignmentsList = () => {
       updatedDate = `${editForm.date}T${timePart}`;
     }
     
-    // Make sure status has correct type
+    // Explicitly cast status to ensure type safety
     const updatedAssignment: Partial<Assignment> = {
-      ...editForm,
+      title: editForm.title,
+      location: editForm.location,
       date: updatedDate,
-      status: editForm.status
+      photographer_id: editForm.photographer_id,
+      status: editForm.status as Assignment['status']
     };
     
+    console.log("Sending updated assignment to mutation:", updatedAssignment);
     updateAssignmentMutation.mutate(updatedAssignment);
   };
 
@@ -357,9 +369,9 @@ export const AssignmentsList = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={editForm.status}
-                  onValueChange={(value: Assignment['status']) => {
+                  onValueChange={(value) => {
                     console.log("Status changed to:", value);
-                    setEditForm({ ...editForm, status: value });
+                    setEditForm({ ...editForm, status: value as Assignment['status'] });
                   }}
                 >
                   <SelectTrigger>

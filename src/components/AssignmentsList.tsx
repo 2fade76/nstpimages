@@ -29,7 +29,7 @@ export const AssignmentsList = () => {
     location: "",
     date: "",
     photographer_id: "",
-    status: "" as Assignment['status'], // Fixed: properly type the status field
+    status: "" as Assignment['status'], // Correctly typed
   });
   
   const queryClient = useQueryClient();
@@ -89,6 +89,7 @@ export const AssignmentsList = () => {
   // Mutation for updating an assignment
   const updateAssignmentMutation = useMutation({
     mutationFn: async (assignmentData: Partial<Assignment>) => {
+      console.log("Updating assignment with data:", assignmentData);
       const { data, error } = await supabase
         .from('assignments')
         .update(assignmentData)
@@ -107,6 +108,7 @@ export const AssignmentsList = () => {
       });
     },
     onError: (error) => {
+      console.error("Update error:", error);
       toast({
         title: "Error",
         description: `Failed to update assignment: ${error.message}`,
@@ -147,9 +149,9 @@ export const AssignmentsList = () => {
     setEditForm({
       title: assignment.title,
       location: assignment.location,
-      date: assignment.date,
+      date: assignment.date.substring(0, 10), // Just get the date part
       photographer_id: assignment.photographer_id,
-      status: assignment.status,
+      status: assignment.status as Assignment['status'],
     });
     setIsEditDialogOpen(true);
   };
@@ -161,7 +163,15 @@ export const AssignmentsList = () => {
 
   const handleUpdateAssignment = (e: React.FormEvent) => {
     e.preventDefault();
-    updateAssignmentMutation.mutate(editForm);
+    console.log("Submitting form with data:", editForm);
+    
+    // Make sure status has correct type
+    const updatedAssignment: Partial<Assignment> = {
+      ...editForm,
+      status: editForm.status as Assignment['status']
+    };
+    
+    updateAssignmentMutation.mutate(updatedAssignment);
   };
 
   const handleDeleteAssignment = () => {
@@ -223,7 +233,11 @@ export const AssignmentsList = () => {
                       </div>
                       <div className="flex items-center">
                         <Calendar className="mr-2 h-4 w-4" />
-                        {assignment.date}
+                        {/* Display formatted date and time if available */}
+                        {assignment.date.includes('T') 
+                          ? new Date(assignment.date).toLocaleString()
+                          : assignment.date
+                        }
                       </div>
                       <div 
                         className="flex items-center cursor-pointer hover:text-primary transition-colors"
@@ -315,16 +329,39 @@ export const AssignmentsList = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={editForm.status}
-                  onValueChange={(value: Assignment['status']) => setEditForm({ ...editForm, status: value })}
+                  onValueChange={(value: Assignment['status']) => {
+                    console.log("Status changed to:", value);
+                    setEditForm({ ...editForm, status: value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="progress">In Progress</SelectItem>
-                    <SelectItem value="hold">On Hold</SelectItem>
-                    <SelectItem value="complete">Complete</SelectItem>
+                    <SelectItem value="open">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-status-open" />
+                        Open
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="progress">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-status-progress" />
+                        In Progress
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="hold">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-status-hold" />
+                        On Hold
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="complete">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-status-complete" />
+                        Complete
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

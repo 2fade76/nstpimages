@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ export const AssignmentForm = () => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState<Date>();
+  const [time, setTime] = useState("12:00");
   const [photographer, setPhotographer] = useState("");
   const [status, setStatus] = useState<string>("open");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,15 +61,20 @@ export const AssignmentForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Format the date as ISO string but just the date part
-      const formattedDate = format(date, 'yyyy-MM-dd');
+      // Combine date and time
+      const dateTime = new Date(date);
+      const [hours, minutes] = time.split(':').map(Number);
+      dateTime.setHours(hours, minutes);
+      
+      // Format the date and time for storage
+      const formattedDateTime = format(dateTime, "yyyy-MM-dd'T'HH:mm:ss");
       
       const { data, error } = await supabase
         .from('assignments')
         .insert({
           title,
           location,
-          date: formattedDate,
+          date: formattedDateTime,
           photographer_id: photographer,
           status
         })
@@ -93,6 +99,7 @@ export const AssignmentForm = () => {
       setTitle("");
       setLocation("");
       setDate(undefined);
+      setTime("12:00");
       setPhotographer("");
       setStatus("open");
     } catch (error) {
@@ -131,30 +138,45 @@ export const AssignmentForm = () => {
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Date</label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              initialFocus
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Time</label>
+          <div className="flex items-center">
+            <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="w-full"
             />
-          </PopoverContent>
-        </Popover>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2">

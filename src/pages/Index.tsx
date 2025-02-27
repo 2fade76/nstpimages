@@ -4,6 +4,7 @@ import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { AnalyticsSection } from "@/components/AnalyticsSection";
 import { PhotographersMenu } from "@/components/PhotographersMenu";
+import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
@@ -15,6 +16,8 @@ const Index = () => {
             Photo Assignments Dashboard
           </h1>
         </div>
+        
+        <AnalyticsSummaryCard />
 
         <Tabs defaultValue="assignments" className="space-y-6">
           <TabsList>

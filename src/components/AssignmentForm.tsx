@@ -71,6 +71,7 @@ export const AssignmentForm = () => {
       const formattedDateTime = format(dateTime, "yyyy-MM-dd'T'HH:mm:ss");
       
       console.log("Creating assignment with status:", status);
+      console.log("Date and time:", formattedDateTime);
       
       const { data, error } = await supabase
         .from('assignments')
@@ -236,10 +237,10 @@ export const AssignmentForm = () => {
                 In Progress
               </span>
             </SelectItem>
-            <SelectItem value="hold">
+            <SelectItem value="cancel">
               <span className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-status-hold" />
-                On Hold
+                Cancelled
               </span>
             </SelectItem>
             <SelectItem value="complete">

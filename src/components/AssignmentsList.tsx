@@ -94,7 +94,7 @@ export const AssignmentsList = () => {
       console.log("Updating assignment with data:", assignmentData);
       
       // Make sure status is one of the allowed values
-      if (assignmentData.status && !['open', 'progress', 'hold', 'complete'].includes(assignmentData.status)) {
+      if (assignmentData.status && !['open', 'progress', 'cancel', 'complete'].includes(assignmentData.status)) {
         throw new Error(`Invalid status: ${assignmentData.status}`);
       }
       
@@ -135,14 +135,20 @@ export const AssignmentsList = () => {
   // Mutation for deleting an assignment
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (id: string) => {
+      console.log("Deleting assignment with ID:", id);
       const { error } = await supabase
         .from('assignments')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Delete error from Supabase:", error);
+        throw error;
+      }
+      return id;
     },
     onSuccess: () => {
+      console.log("Assignment deleted successfully, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       setIsDeleteDialogOpen(false);
       toast({
@@ -151,6 +157,7 @@ export const AssignmentsList = () => {
       });
     },
     onError: (error) => {
+      console.error("Delete error:", error);
       toast({
         title: "Error",
         description: `Failed to delete assignment: ${error.message}`,
@@ -180,6 +187,7 @@ export const AssignmentsList = () => {
   };
 
   const handleDeleteClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
+    console.log("Opening delete dialog for assignment:", assignment.id);
     setCurrentAssignment(assignment);
     setIsDeleteDialogOpen(true);
   };
@@ -210,6 +218,7 @@ export const AssignmentsList = () => {
 
   const handleDeleteAssignment = () => {
     if (currentAssignment) {
+      console.log("Confirming delete for assignment ID:", currentAssignment.id);
       deleteAssignmentMutation.mutate(currentAssignment.id);
     }
   };
@@ -217,21 +226,21 @@ export const AssignmentsList = () => {
   const statusColors = {
     open: "bg-status-open",
     progress: "bg-status-progress",
-    hold: "bg-status-hold",
+    cancel: "bg-status-hold", // Using same color as 'hold' for now
     complete: "bg-status-complete",
   };
 
   const statusTextColors = {
     open: "text-status-open",
     progress: "text-status-progress",
-    hold: "text-status-hold",
+    cancel: "text-status-hold", // Using same color as 'hold' for now
     complete: "text-status-complete",
   };
 
   const statusLabels = {
     open: "Open",
     progress: "In Progress",
-    hold: "On Hold",
+    cancel: "Cancelled",
     complete: "Complete",
   };
 
@@ -396,10 +405,10 @@ export const AssignmentsList = () => {
                         In Progress
                       </span>
                     </SelectItem>
-                    <SelectItem value="hold">
+                    <SelectItem value="cancel">
                       <span className="flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-status-hold" />
-                        On Hold
+                        Cancelled
                       </span>
                     </SelectItem>
                     <SelectItem value="complete">

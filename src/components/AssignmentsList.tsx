@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Calendar, MapPin, User, Edit, Trash2, Search } from "lucide-react";
+import { Calendar, MapPin, User, Edit, Trash2, Search, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { format, parseISO } from "date-fns";
 
 export const AssignmentsList = () => {
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
@@ -223,6 +224,25 @@ export const AssignmentsList = () => {
     }
   };
 
+  // Format the date and time for display
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return '';
+    
+    try {
+      if (dateString.includes('T')) {
+        // If it has time component, format with time
+        const date = parseISO(dateString);
+        return format(date, 'MMM d, yyyy h:mm a');
+      } else {
+        // If it's just a date, format date only
+        return dateString;
+      }
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateString;
+    }
+  };
+
   const statusColors = {
     open: "bg-status-open",
     progress: "bg-status-progress",
@@ -285,12 +305,14 @@ export const AssignmentsList = () => {
                       </div>
                       <div className="flex items-center">
                         <Calendar className="mr-2 h-4 w-4" />
-                        {/* Display formatted date and time if available */}
-                        {assignment.date.includes('T') 
-                          ? new Date(assignment.date).toLocaleString()
-                          : assignment.date
-                        }
+                        {formatDateTime(assignment.date)}
                       </div>
+                      {assignment.date.includes('T') && (
+                        <div className="flex items-center">
+                          <Clock className="mr-2 h-4 w-4" />
+                          {format(parseISO(assignment.date), 'h:mm a')}
+                        </div>
+                      )}
                       <div 
                         className="flex items-center cursor-pointer hover:text-primary transition-colors"
                         onClick={() => setSelectedPhotographerId(assignment.photographers.id)}

@@ -170,7 +170,7 @@ export const AssignmentForm = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Time</label>
+          <label className="text-sm font-medium">Time (24hr)</label>
           <div className="flex items-center">
             <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
             <Input

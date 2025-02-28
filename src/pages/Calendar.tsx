@@ -2,12 +2,11 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Assignment } from "@/types/database";
 import { format } from "date-fns";
-import { useEffect } from "react";
 
 const Calendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -16,6 +15,7 @@ const Calendar = () => {
   const { data: assignments, isLoading } = useQuery({
     queryKey: ['assignments'],
     queryFn: async () => {
+      console.log('Fetching assignments for calendar view');
       const { data, error } = await supabase
         .from('assignments')
         .select(`
@@ -27,27 +27,37 @@ const Calendar = () => {
         `)
         .order('date', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching assignments:', error);
+        throw error;
+      }
+      console.log('Fetched assignments:', data);
       return data as (Assignment & { photographers: { id: string; name: string } })[];
     },
   });
 
   // Setup real-time subscription to assignments
   useEffect(() => {
-    const subscription = supabase
-      .channel('assignments-changes')
+    console.log('Setting up real-time subscription for calendar');
+    const channel = supabase
+      .channel('calendar-assignments-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'assignments',
-      }, () => {
-        // Invalidate and refetch assignments when changes occur
+      }, (payload) => {
+        console.log('Calendar received real-time update:', payload);
+        // Force immediate refetch
         queryClient.invalidateQueries({ queryKey: ['assignments'] });
+        queryClient.refetchQueries({ queryKey: ['assignments'] });
       })
       .subscribe();
 
+    console.log('Calendar subscription activated');
+
     return () => {
-      subscription.unsubscribe();
+      console.log('Cleaning up calendar subscription');
+      supabase.removeChannel(channel);
     };
   }, [queryClient]);
 

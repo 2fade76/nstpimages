@@ -29,12 +29,11 @@ const App = () => {
         <div className="fixed top-4 right-4 z-50">
           <Button 
             variant="outline" 
-            size="icon" 
             onClick={() => setIsSearchOpen(true)}
-            className="rounded-full bg-white shadow-md dark:bg-gray-800"
+            className="rounded-full bg-white shadow-md dark:bg-gray-800 flex items-center gap-2 px-3"
           >
             <Search className="h-[1.2rem] w-[1.2rem]" />
-            <span className="sr-only">Search</span>
+            <span>Search</span>
           </Button>
         </div>
         

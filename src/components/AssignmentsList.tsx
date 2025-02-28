@@ -52,8 +52,6 @@ export const AssignmentsList = () => {
       if (error) throw error;
       return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
     },
-    refetchInterval: 5000,
-    refetchOnWindowFocus: true,
   });
 
   const { data: photographers } = useQuery({
@@ -76,12 +74,16 @@ export const AssignmentsList = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'assignments' }, 
         () => {
+          console.log("Received real-time update, invalidating assignments query");
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
         }
       )
       .subscribe();
 
+    console.log("Subscribed to real-time updates for assignments");
+
     return () => {
+      console.log("Unsubscribing from assignments-changes channel");
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
@@ -109,7 +111,11 @@ export const AssignmentsList = () => {
       return data;
     },
     onSuccess: () => {
+      console.log("Assignment updated successfully, invalidating queries");
+      // Force immediate refetch
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.refetchQueries({ queryKey: ['assignments'] });
+      
       setIsEditDialogOpen(false);
       toast({
         title: "Assignment updated",

@@ -119,7 +119,7 @@ const Calendar = () => {
                                 ? "bg-status-open"
                                 : assignment.status === "progress"
                                 ? "bg-status-progress"
-                                : assignment.status === "hold"
+                                : assignment.status === "cancel"
                                 ? "bg-status-hold"
                                 : "bg-status-complete"
                             }`}

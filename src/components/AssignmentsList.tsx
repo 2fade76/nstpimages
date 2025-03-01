@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -20,7 +19,11 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { format, parseISO } from "date-fns";
 
-export const AssignmentsList = () => {
+interface AssignmentsListProps {
+  onStatusUpdate?: () => void;
+}
+
+export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -37,9 +40,10 @@ export const AssignmentsList = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: assignments, isLoading } = useQuery({
+  const { data: assignments, isLoading, refetch } = useQuery({
     queryKey: ['assignments'],
     queryFn: async () => {
+      console.log("Fetching assignments data");
       const { data, error } = await supabase
         .from('assignments')
         .select(`
@@ -51,7 +55,11 @@ export const AssignmentsList = () => {
         `)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching assignments:", error);
+        throw error;
+      }
+      console.log("Assignments data fetched:", data?.length || 0, "records");
       return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
     },
   });
@@ -71,14 +79,21 @@ export const AssignmentsList = () => {
 
   // Subscribe to changes in the assignments table
   useEffect(() => {
+    console.log("Setting up real-time subscription in AssignmentsList");
     const channel = supabase
-      .channel('assignments-changes')
+      .channel('assignments-list-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'assignments' }, 
-        () => {
-          console.log("Received real-time update, invalidating assignments query");
+        (payload) => {
+          console.log("Received real-time update in AssignmentsList:", payload);
+          console.log("Invalidating and refetching assignments query");
+          
+          // Force immediate refetch
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
           queryClient.refetchQueries({ queryKey: ['assignments'] });
+          
+          // Also directly refetch to ensure we have the latest data
+          refetch();
         }
       )
       .subscribe();
@@ -86,10 +101,10 @@ export const AssignmentsList = () => {
     console.log("Subscribed to real-time updates for assignments");
 
     return () => {
-      console.log("Unsubscribing from assignments-changes channel");
+      console.log("Unsubscribing from assignments-list-changes channel");
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, refetch]);
 
   // Mutation for updating an assignment
   const updateAssignmentMutation = useMutation({
@@ -111,13 +126,24 @@ export const AssignmentsList = () => {
         console.error("Update error from Supabase:", error);
         throw error;
       }
+      console.log("Assignment updated successfully in database:", data);
       return data;
     },
     onSuccess: () => {
       console.log("Assignment updated successfully, invalidating queries");
+      
       // Force immediate refetch
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.refetchQueries({ queryKey: ['assignments'] });
+      
+      // Also directly refetch to ensure we have the latest data
+      refetch();
+      
+      // Call the onStatusUpdate callback if provided
+      if (onStatusUpdate) {
+        console.log("Calling onStatusUpdate callback");
+        onStatusUpdate();
+      }
       
       setIsEditDialogOpen(false);
       toast({
@@ -232,7 +258,6 @@ export const AssignmentsList = () => {
     }
   };
 
-  // Format the date and time for display
   const formatDateTime = (dateString: string) => {
     if (!dateString) return '';
     
@@ -254,14 +279,14 @@ export const AssignmentsList = () => {
   const statusColors = {
     open: "bg-status-open",
     progress: "bg-status-progress",
-    cancel: "bg-status-hold", // Using same color as 'hold' for now
+    cancel: "bg-status-hold",
     complete: "bg-status-complete",
   };
 
   const statusTextColors = {
     open: "text-status-open",
     progress: "text-status-progress",
-    cancel: "text-status-hold", // Using same color as 'hold' for now
+    cancel: "text-status-hold",
     complete: "text-status-complete",
   };
 

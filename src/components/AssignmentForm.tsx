@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Assignment } from "@/types/database";
 
-export const AssignmentForm = () => {
+interface AssignmentFormProps {
+  onAssignmentCreated?: () => void;
+}
+
+export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState<Date>();

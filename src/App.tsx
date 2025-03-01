@@ -3,21 +3,179 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Assignment, Photographer } from '@/types/database';
 
 const queryClient = new QueryClient();
 
+// Search result component to be used inside the dialog
+const SearchResults = ({ 
+  results, 
+  onClose 
+}: { 
+  results: Array<{ type: 'assignment' | 'photographer', data: any }>,
+  onClose: () => void 
+}) => {
+  const navigate = useNavigate();
+
+  if (results.length === 0) {
+    return <p className="text-center text-muted-foreground py-4">No results found</p>;
+  }
+
+  const handleSelect = (item: any, type: 'assignment' | 'photographer') => {
+    onClose();
+    if (type === 'assignment') {
+      // Just close for now and highlight in the main list
+      // Future enhancement: Navigate to specific assignment view
+    } else if (type === 'photographer') {
+      // Future enhancement: Navigate to photographer profile
+    }
+  };
+
+  return (
+    <div className="max-h-[60vh] overflow-y-auto space-y-2">
+      {results.map((item, index) => (
+        <Card 
+          key={index} 
+          className="cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => handleSelect(item.data, item.type)}
+        >
+          <CardContent className="p-4">
+            {item.type === 'assignment' && (
+              <div>
+                <div className="flex justify-between">
+                  <h3 className="font-medium">{item.data.title}</h3>
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Assignment</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">{item.data.location}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Date: {new Date(item.data.date).toLocaleDateString()}
+                  {item.data.photographers && (
+                    <span className="ml-2">
+                      Photographer: {item.data.photographers.name}
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+            
+            {item.type === 'photographer' && (
+              <div>
+                <div className="flex justify-between">
+                  <h3 className="font-medium">{item.data.name}</h3>
+                  <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">Photographer</span>
+                </div>
+                {item.data.email && (
+                  <p className="text-sm text-muted-foreground mt-1">{item.data.email}</p>
+                )}
+                {item.data.status && (
+                  <p className="text-xs text-muted-foreground mt-1">Status: {item.data.status}</p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+// App Router wrapper without search functionality
+const AppRouter = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/calendar" element={<Calendar />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+// Main App component with search functionality
 const App = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Array<{ type: 'assignment' | 'photographer', data: any }>>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Clear search results when dialog closes
+  useEffect(() => {
+    if (!isSearchOpen) {
+      setSearchResults([]);
+      setSearchQuery("");
+    }
+  }, [isSearchOpen]);
+
+  // Perform search when query changes
+  useEffect(() => {
+    const searchTimeout = setTimeout(async () => {
+      if (searchQuery.trim().length > 0 && isSearchOpen) {
+        setIsSearching(true);
+        
+        try {
+          // Search assignments
+          const { data: assignmentsData, error: assignmentsError } = await supabase
+            .from('assignments')
+            .select(`
+              *,
+              photographers:photographer_id(id, name)
+            `)
+            .or(`
+              title.ilike.%${searchQuery}%,
+              location.ilike.%${searchQuery}%
+            `);
+            
+          if (assignmentsError) {
+            console.error("Error searching assignments:", assignmentsError);
+          }
+          
+          // Search photographers
+          const { data: photographersData, error: photographersError } = await supabase
+            .from('photographers')
+            .select('*')
+            .or(`
+              name.ilike.%${searchQuery}%,
+              email.ilike.%${searchQuery}%
+            `);
+            
+          if (photographersError) {
+            console.error("Error searching photographers:", photographersError);
+          }
+          
+          // Combine results
+          const combinedResults = [
+            ...(assignmentsData || []).map((item) => ({ type: 'assignment' as const, data: item })),
+            ...(photographersData || []).map((item) => ({ type: 'photographer' as const, data: item }))
+          ];
+          
+          setSearchResults(combinedResults);
+        } catch (error) {
+          console.error("Search error:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500); // Debounce search for better performance
+    
+    return () => clearTimeout(searchTimeout);
+  }, [searchQuery, isSearchOpen]);
+
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -39,33 +197,41 @@ const App = () => {
         
         {/* Search Dialog */}
         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Search Assignments</DialogTitle>
+              <DialogTitle>Search Assignments and Photographers</DialogTitle>
             </DialogHeader>
-            <div className="flex items-center space-x-2 pt-4">
-              <div className="grid flex-1 gap-2">
-                <Input
-                  type="text"
-                  placeholder="Search for assignments or photographers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Enter keywords to search for assignments or photographers
-                </p>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="grid flex-1 gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Search for assignments, photographers, locations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Enter keywords to search for assignments, locations, or photographers
+                  </p>
+                </div>
               </div>
+              
+              {/* Search Results */}
+              {isSearching ? (
+                <div className="py-8 text-center">
+                  <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                  <p className="mt-2 text-sm text-muted-foreground">Searching...</p>
+                </div>
+              ) : (
+                <SearchResults results={searchResults} onClose={handleCloseSearch} />
+              )}
             </div>
           </DialogContent>
         </Dialog>
         
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/calendar" element={<Calendar />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRouter />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

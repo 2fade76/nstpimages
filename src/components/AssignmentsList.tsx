@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -263,9 +264,9 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     
     try {
       if (dateString.includes('T')) {
-        // If it has time component, format with time
+        // Format date and time separately for display
         const date = parseISO(dateString);
-        return format(date, 'MMM d, yyyy h:mm a');
+        return format(date, 'MMM d, yyyy');
       } else {
         // If it's just a date, format date only
         return dateString;
@@ -273,6 +274,18 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     } catch (error) {
       console.error("Error formatting date:", error);
       return dateString;
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    if (!dateString || !dateString.includes('T')) return '';
+    
+    try {
+      const date = parseISO(dateString);
+      return format(date, 'h:mm a');
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return '';
     }
   };
 
@@ -343,7 +356,7 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
                       {assignment.date.includes('T') && (
                         <div className="flex items-center">
                           <Clock className="mr-2 h-4 w-4" />
-                          {format(parseISO(assignment.date), 'HH:mm')}
+                          {formatTime(assignment.date)}
                         </div>
                       )}
                       <div 

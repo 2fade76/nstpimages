@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -61,7 +60,14 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         throw error;
       }
       console.log("Assignments data fetched:", data?.length || 0, "records");
-      return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
+      
+      // Sort assignments by date (newest first)
+      const sortedData = [...(data || [])].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      
+      console.log("Assignments sorted by date (newest first)");
+      return sortedData as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
     },
   });
 
@@ -78,7 +84,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     },
   });
 
-  // Subscribe to changes in the assignments table
   useEffect(() => {
     console.log("Setting up real-time subscription in AssignmentsList");
     const channel = supabase
@@ -107,7 +112,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     };
   }, [queryClient, refetch]);
 
-  // Mutation for updating an assignment
   const updateAssignmentMutation = useMutation({
     mutationFn: async (assignmentData: Partial<Assignment>) => {
       console.log("Updating assignment with data:", assignmentData);
@@ -162,7 +166,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     },
   });
 
-  // Mutation for deleting an assignment
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (id: string) => {
       console.log("Deleting assignment with ID:", id);
@@ -391,7 +394,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         )}
       </div>
 
-      {/* Edit Assignment Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -511,7 +513,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

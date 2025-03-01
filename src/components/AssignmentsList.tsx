@@ -29,6 +29,7 @@ export const AssignmentsList = () => {
     title: "",
     location: "",
     date: "",
+    time: "",
     photographer_id: "",
     status: "" as Assignment['status'], // Correctly typed
   });
@@ -77,6 +78,7 @@ export const AssignmentsList = () => {
         () => {
           console.log("Received real-time update, invalidating assignments query");
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
+          queryClient.refetchQueries({ queryKey: ['assignments'] });
         }
       )
       .subscribe();
@@ -151,6 +153,7 @@ export const AssignmentsList = () => {
     onSuccess: () => {
       console.log("Assignment deleted successfully, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.refetchQueries({ queryKey: ['assignments'] });
       setIsDeleteDialogOpen(false);
       toast({
         title: "Assignment deleted",
@@ -170,16 +173,24 @@ export const AssignmentsList = () => {
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
     setCurrentAssignment(assignment);
     
-    // Format the date for the edit form
+    // Extract date and time components from the ISO date string
     let dateValue = assignment.date;
+    let timeValue = "12:00"; // Default time
+    
     if (assignment.date.includes('T')) {
-      dateValue = assignment.date.split('T')[0]; // Keep only the date part
+      const [datePart, timePart] = assignment.date.split('T');
+      dateValue = datePart;
+      if (timePart) {
+        // Convert to HH:MM format for time input
+        timeValue = timePart.substring(0, 5); // Take HH:MM part only
+      }
     }
     
     setEditForm({
       title: assignment.title,
       location: assignment.location,
       date: dateValue,
+      time: timeValue,
       photographer_id: assignment.photographer_id,
       status: assignment.status,
     });
@@ -197,18 +208,15 @@ export const AssignmentsList = () => {
     e.preventDefault();
     console.log("Submitting form with data:", editForm);
     
-    // Make sure to preserve time part if it exists in the original assignment
-    let updatedDate = editForm.date;
-    if (currentAssignment?.date.includes('T')) {
-      const timePart = currentAssignment.date.split('T')[1];
-      updatedDate = `${editForm.date}T${timePart}`;
-    }
+    // Combine date and time
+    const combinedDate = `${editForm.date}T${editForm.time}:00`;
+    console.log("Combined date and time:", combinedDate);
     
     // Explicitly cast status to ensure type safety
     const updatedAssignment: Partial<Assignment> = {
       title: editForm.title,
       location: editForm.location,
-      date: updatedDate,
+      date: combinedDate,
       photographer_id: editForm.photographer_id,
       status: editForm.status as Assignment['status']
     };
@@ -310,7 +318,7 @@ export const AssignmentsList = () => {
                       {assignment.date.includes('T') && (
                         <div className="flex items-center">
                           <Clock className="mr-2 h-4 w-4" />
-                          {format(parseISO(assignment.date), 'h:mm a')}
+                          {format(parseISO(assignment.date), 'HH:mm')}
                         </div>
                       )}
                       <div 
@@ -381,6 +389,16 @@ export const AssignmentsList = () => {
                   type="date"
                   value={editForm.date}
                   onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="time">Time (24hr format)</Label>
+                <Input
+                  id="time"
+                  type="time"
+                  value={editForm.time}
+                  onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
                   required
                 />
               </div>

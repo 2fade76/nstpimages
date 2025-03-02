@@ -10,13 +10,17 @@ import {
   Tooltip, 
   Legend,
   BarChart,
-  Bar
+  Bar,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 
 export const AnalyticsSection = () => {
+  // Weekly assignments query - existing functionality
   const { data: weeklyData, isLoading } = useQuery({
     queryKey: ['assignments-last-7-days'],
     queryFn: async () => {
@@ -61,46 +65,44 @@ export const AnalyticsSection = () => {
     refetchInterval: 5000, // Refresh every 5 seconds
   });
 
-  // Query for completed assignments count by month
-  const { data: completedAssignments, isLoading: isLoadingCompleted } = useQuery({
-    queryKey: ['completed-assignments'],
+  // Query for photographer performance (completed assignments per photographer)
+  const { data: photographerData, isLoading: isLoadingPhotographers } = useQuery({
+    queryKey: ['photographer-completed-assignments'],
     queryFn: async () => {
-      // Get all completed assignments
+      // Get all completed assignments with photographer info
       const { data, error } = await supabase
         .from('assignments')
-        .select('*')
+        .select(`
+          photographer_id,
+          photographers (name)
+        `)
         .eq('status', 'complete');
       
       if (error) throw error;
       
-      // Group assignments by month
-      const monthlyData: Record<string, number> = {};
+      // Group by photographer and count
+      const photographerStats: Record<string, { name: string, count: number }> = {};
       
       if (data) {
         data.forEach(assignment => {
-          const date = new Date(assignment.date);
-          const monthKey = format(date, 'MMM yyyy');
+          const photographerId = assignment.photographer_id;
+          const photographerName = assignment.photographers?.name || 'Unknown';
           
-          if (!monthlyData[monthKey]) {
-            monthlyData[monthKey] = 0;
+          if (!photographerStats[photographerId]) {
+            photographerStats[photographerId] = {
+              name: photographerName,
+              count: 0
+            };
           }
           
-          monthlyData[monthKey]++;
+          photographerStats[photographerId].count++;
         });
       }
       
-      // Convert to array format for recharts
-      const chartData = Object.entries(monthlyData).map(([month, count]) => ({
-        month,
-        count
-      }));
-      
-      // Sort by month chronologically
-      chartData.sort((a, b) => {
-        const dateA = new Date(a.month);
-        const dateB = new Date(b.month);
-        return dateA.getTime() - dateB.getTime();
-      });
+      // Convert to array for recharts
+      const chartData = Object.values(photographerStats)
+        .sort((a, b) => b.count - a.count) // Sort by count (highest first)
+        .slice(0, 5); // Only show top 5 photographers
       
       return chartData;
     },
@@ -108,12 +110,21 @@ export const AnalyticsSection = () => {
   });
 
   // Get total completed assignments
-  const totalCompleted = completedAssignments?.reduce((total, item) => total + item.count, 0) || 0;
+  const totalCompleted = photographerData?.reduce((total, item) => total + item.count, 0) || 0;
+
+  // Color constants to match the status colors used in the app
+  const COLORS = {
+    total: '#9b87f5', // Purple for total
+    open: '#f97316', // Orange for open
+    progress: '#3b82f6', // Blue for in progress
+    complete: '#4ade80', // Green for completed
+    cancel: '#ef4444' // Red for cancelled
+  };
 
   return (
     <div className="grid gap-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Assignments - Last 7 Days</CardTitle>
         </CardHeader>
         <CardContent className="h-[400px]">
@@ -127,7 +138,7 @@ export const AnalyticsSection = () => {
                 data={weeklyData}
                 margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#8E9196" strokeOpacity={0.2} />
                 <XAxis 
                   dataKey="formattedDate" 
                   label={{ 
@@ -153,7 +164,7 @@ export const AnalyticsSection = () => {
                   type="monotone" 
                   dataKey="count" 
                   name="Assignments" 
-                  stroke="#6366F1" 
+                  stroke={COLORS.total} 
                   strokeWidth={2}
                   activeDot={{ r: 8 }}
                 />
@@ -165,47 +176,37 @@ export const AnalyticsSection = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Completed Assignments</CardTitle>
-          <div className="text-2xl font-bold">{totalCompleted}</div>
+          <CardTitle>Top Photographers by Completed Assignments</CardTitle>
         </CardHeader>
         <CardContent className="h-[400px]">
-          {isLoadingCompleted ? (
+          {isLoadingPhotographers ? (
             <div className="flex items-center justify-center h-full">
               <p>Loading data...</p>
             </div>
-          ) : completedAssignments && completedAssignments.length > 0 ? (
+          ) : photographerData && photographerData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={completedAssignments}
-                margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                data={photographerData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
+                layout="vertical"
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
-                  label={{ 
-                    value: 'Month', 
-                    position: 'insideBottom', 
-                    offset: -20 
-                  }}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#8E9196" strokeOpacity={0.2} />
+                <XAxis type="number" />
                 <YAxis 
-                  label={{ 
-                    value: 'Completed Assignments', 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    offset: -5
-                  }}
+                  type="category" 
+                  dataKey="name" 
+                  width={100}
+                  tick={{ fontSize: 12 }}
                 />
                 <Tooltip 
-                  formatter={(value) => [`${value} completed`, 'Count']}
-                  labelFormatter={(label) => `Month: ${label}`}
+                  formatter={(value) => [`${value} completed assignments`, 'Count']}
                 />
                 <Legend />
                 <Bar 
                   dataKey="count" 
                   name="Completed Assignments" 
-                  fill="#4ade80" // Green color for completed
-                  radius={[4, 4, 0, 0]} // Rounded top corners
+                  fill={COLORS.complete}
+                  radius={[0, 4, 4, 0]} // Rounded right corners
                 />
               </BarChart>
             </ResponsiveContainer>

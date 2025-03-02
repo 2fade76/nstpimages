@@ -40,7 +40,7 @@ export const AnalyticsSummaryCard = () => {
   const isLoading = loadingTotal || loadingOpen || loadingCompleted;
 
   return (
-    <Card className="mb-6 bg-gradient-to-br from-card to-secondary/80">
+    <Card className="mb-6 bg-gradient-to-br from-card to-secondary/10">
       <CardContent className="p-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
@@ -51,31 +51,31 @@ export const AnalyticsSummaryCard = () => {
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
-              <p className="text-3xl font-bold text-purple-700">{totalAssignments}</p>
+              <p className="text-3xl font-bold text-[#9b87f5]">{totalAssignments}</p>
             )}
           </div>
 
           <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
-            <div className="flex items-center justify-center mb-2 text-orange-500">
+            <div className="flex items-center justify-center mb-2 text-status-open">
               <Clock className="h-6 w-6" />
             </div>
             <p className="text-sm text-muted-foreground mb-1">Open Assignments</p>
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
-              <p className="text-3xl font-bold text-orange-500">{openAssignments}</p>
+              <p className="text-3xl font-bold text-status-open">{openAssignments}</p>
             )}
           </div>
 
           <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
-            <div className="flex items-center justify-center mb-2 text-green-500">
+            <div className="flex items-center justify-center mb-2 text-status-complete">
               <CheckCircle className="h-6 w-6" />
             </div>
             <p className="text-sm text-muted-foreground mb-1">Completed</p>
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
-              <p className="text-3xl font-bold text-green-600">{completedAssignments}</p>
+              <p className="text-3xl font-bold text-status-complete">{completedAssignments}</p>
             )}
           </div>
         </div>

@@ -9,26 +9,54 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("assignments");
   const queryClient = useQueryClient();
 
-  // Subscribe to changes in the assignments table
+  // Subscribe to changes in the assignments table with improved error handling
   useEffect(() => {
     console.log("Setting up real-time subscription on Index component");
+    
+    // Create a more reliable channel with status callback
     const channel = supabase
       .channel('assignments-index-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'assignments' }, 
-        () => {
-          console.log("Index component received real-time update, refreshing data");
-          // Force immediate refetch
+        (payload) => {
+          console.log("Index component received real-time update:", payload);
+          
+          // Use a notification so the user knows data was updated
+          toast.info("Assignment data updated", {
+            position: "bottom-right"
+          });
+          
+          // Force immediate refetch with logging
+          console.log("Invalidating assignments queries");
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
-          queryClient.refetchQueries({ queryKey: ['assignments'] });
+          
+          console.log("Refetching assignments queries");
+          queryClient.refetchQueries({ 
+            queryKey: ['assignments'],
+            type: 'active'
+          });
+          
+          // Also refresh the analytics data
+          console.log("Refreshing analytics data");
+          queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
+          queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Real-time subscription status:", status);
+        if (status === 'SUBSCRIBED') {
+          console.log("Successfully subscribed to assignment changes");
+        }
+      });
 
     return () => {
       console.log("Cleaning up real-time subscription on Index component");
@@ -73,7 +101,15 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="new">
-            <AssignmentForm onAssignmentCreated={() => setActiveTab("assignments")} />
+            <AssignmentForm onAssignmentCreated={() => {
+              // Show feedback and switch to assignments tab
+              toast.success("Assignment created successfully");
+              setActiveTab("assignments");
+              
+              // Force data refresh
+              queryClient.invalidateQueries({ queryKey: ['assignments'] });
+              queryClient.refetchQueries({ queryKey: ['assignments'] });
+            }} />
           </TabsContent>
 
           <TabsContent value="analytics">

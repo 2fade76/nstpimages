@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,10 +14,10 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Assignment, Photographer } from '@/types/database';
+import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
-// Search result component to be used inside the dialog
 const SearchResults = ({ 
   results, 
   onClose 
@@ -90,7 +89,6 @@ const SearchResults = ({
   );
 };
 
-// App Router wrapper without search functionality
 const AppRouter = () => {
   return (
     <Routes>
@@ -102,14 +100,12 @@ const AppRouter = () => {
   );
 };
 
-// Main App component with search functionality
 const App = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Array<{ type: 'assignment' | 'photographer', data: any }>>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Clear search results when dialog closes
   useEffect(() => {
     if (!isSearchOpen) {
       setSearchResults([]);
@@ -117,7 +113,44 @@ const App = () => {
     }
   }, [isSearchOpen]);
 
-  // Perform search when query changes
+  useEffect(() => {
+    console.log("Setting up global real-time subscription for all tables");
+    
+    const channel = supabase
+      .channel('global-db-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'assignments' }, 
+        (payload) => {
+          console.log("Global subscription - Assignment change detected:", payload);
+          toast.success("Assignment data updated", { 
+            description: "The assignments list will refresh automatically", 
+            position: "bottom-right"
+          });
+        }
+      )
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'photographers' }, 
+        (payload) => {
+          console.log("Global subscription - Photographer change detected:", payload);
+          toast.success("Photographer data updated", { 
+            description: "The photographers list will refresh automatically", 
+            position: "bottom-right"
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log("Global realtime subscription status:", status);
+        if (status === 'SUBSCRIBED') {
+          console.log("Successfully subscribed to all database changes");
+        }
+      });
+
+    return () => {
+      console.log("Cleaning up global real-time subscription");
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     const searchTimeout = setTimeout(async () => {
       if (searchQuery.trim().length > 0 && isSearchOpen) {
@@ -183,7 +216,6 @@ const App = () => {
         <Toaster />
         <Sonner />
         
-        {/* Global Search Button */}
         <div className="fixed top-4 right-4 z-50">
           <Button 
             variant="outline" 
@@ -195,7 +227,6 @@ const App = () => {
           </Button>
         </div>
         
-        {/* Search Dialog */}
         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
@@ -217,7 +248,6 @@ const App = () => {
                 </div>
               </div>
               
-              {/* Search Results */}
               {isSearching ? (
                 <div className="py-8 text-center">
                   <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>

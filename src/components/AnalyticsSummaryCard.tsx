@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList, CheckCircle, Clock } from "lucide-react";
+import { format } from "date-fns";
 
 export const AnalyticsSummaryCard = () => {
   const { data: totalAssignments, isLoading: loadingTotal } = useQuery({
@@ -38,20 +39,24 @@ export const AnalyticsSummaryCard = () => {
   });
 
   const isLoading = loadingTotal || loadingOpen || loadingCompleted;
+  const currentDate = format(new Date(), 'MMMM d, yyyy');
 
   return (
     <Card className="mb-6 bg-gradient-to-br from-card to-secondary/10">
       <CardContent className="p-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
-            <div className="flex items-center justify-center mb-2 text-purple-500">
+            <div className="flex items-center justify-center mb-2 text-red-500">
               <ClipboardList className="h-6 w-6" />
             </div>
             <p className="text-sm text-muted-foreground mb-1">Total Assignments</p>
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
-              <p className="text-3xl font-bold text-[#9b87f5]">{totalAssignments}</p>
+              <>
+                <p className="text-3xl font-bold text-[#ea384c]">{totalAssignments}</p>
+                <p className="text-xs text-muted-foreground mt-1">{currentDate}</p>
+              </>
             )}
           </div>
 

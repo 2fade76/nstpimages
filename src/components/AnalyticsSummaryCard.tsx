@@ -68,7 +68,10 @@ export const AnalyticsSummaryCard = () => {
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
-              <p className="text-3xl font-bold text-status-open">{openAssignments}</p>
+              <>
+                <p className="text-3xl font-bold text-status-open">{openAssignments}</p>
+                <p className="text-xs text-muted-foreground mt-1">{currentDate}</p>
+              </>
             )}
           </div>
 
@@ -80,7 +83,10 @@ export const AnalyticsSummaryCard = () => {
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
-              <p className="text-3xl font-bold text-status-complete">{completedAssignments}</p>
+              <>
+                <p className="text-3xl font-bold text-status-complete">{completedAssignments}</p>
+                <p className="text-xs text-muted-foreground mt-1">{currentDate}</p>
+              </>
             )}
           </div>
         </div>

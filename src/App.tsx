@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -53,12 +54,12 @@ const SearchResults = ({
             {item.type === 'assignment' && (
               <div>
                 <div className="flex justify-between">
-                  <h3 className="font-medium">{item.data.title}</h3>
+                  <h3 className="font-medium">{item.data.title || 'Untitled Assignment'}</h3>
                   <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Assignment</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{item.data.location}</p>
+                <p className="text-sm text-muted-foreground mt-1">{item.data.location || 'No location'}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Date: {new Date(item.data.date).toLocaleDateString()}
+                  Date: {item.data.date ? new Date(item.data.date).toLocaleDateString() : 'No date'}
                   {item.data.photographers && (
                     <span className="ml-2">
                       Photographer: {item.data.photographers.name}
@@ -71,7 +72,7 @@ const SearchResults = ({
             {item.type === 'photographer' && (
               <div>
                 <div className="flex justify-between">
-                  <h3 className="font-medium">{item.data.name}</h3>
+                  <h3 className="font-medium">{item.data.name || 'Unnamed Photographer'}</h3>
                   <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">Photographer</span>
                 </div>
                 {item.data.email && (
@@ -155,6 +156,7 @@ const App = () => {
     const searchTimeout = setTimeout(async () => {
       if (searchQuery.trim().length > 0 && isSearchOpen) {
         setIsSearching(true);
+        setSearchResults([]);
         
         try {
           // Search assignments
@@ -186,7 +188,7 @@ const App = () => {
             console.error("Error searching photographers:", photographersError);
           }
           
-          // Combine results
+          // Combine results with null checks
           const combinedResults = [
             ...(assignmentsData || []).map((item) => ({ type: 'assignment' as const, data: item })),
             ...(photographersData || []).map((item) => ({ type: 'photographer' as const, data: item }))
@@ -195,6 +197,7 @@ const App = () => {
           setSearchResults(combinedResults);
         } catch (error) {
           console.error("Search error:", error);
+          setSearchResults([]);
         } finally {
           setIsSearching(false);
         }

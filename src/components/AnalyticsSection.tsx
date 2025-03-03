@@ -16,6 +16,37 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO } from "date-fns";
+import { Assignment, Photographer } from "@/types/database";
+
+// Define proper types for our data structures
+interface DailyAssignmentData {
+  date: Date;
+  formattedDate: string;
+  count: number;
+}
+
+interface PhotographerAssignmentData {
+  [photographerName: string]: number;
+}
+
+interface DateGroupedData {
+  date: string;
+  photographers: PhotographerAssignmentData;
+}
+
+interface ChartDataPoint {
+  date: string;
+  [photographerName: string]: string | number;
+}
+
+interface CompletedAssignmentsData {
+  chartData: ChartDataPoint[];
+  photographers: string[];
+}
+
+type AssignmentWithPhotographer = Assignment & {
+  photographers?: Photographer;
+};
 
 export const AnalyticsSection = () => {
   // Weekly assignments query - existing functionality
@@ -64,7 +95,7 @@ export const AnalyticsSection = () => {
   });
 
   // Query for completed assignments over time by photographer
-  const { data: completedAssignmentsData, isLoading: isLoadingCompletedData } = useQuery({
+  const { data: completedAssignmentsData, isLoading: isLoadingCompletedData } = useQuery<CompletedAssignmentsData>({
     queryKey: ['completed-assignments-by-date'],
     queryFn: async () => {
       // Get all completed assignments with date and photographer info
@@ -82,38 +113,42 @@ export const AnalyticsSection = () => {
       if (error) throw error;
       
       if (!data || data.length === 0) {
-        return [];
+        return {
+          chartData: [],
+          photographers: []
+        };
       }
       
       // Group by date and then by photographer
-      const groupedByDate = data.reduce((acc, assignment) => {
+      const groupedByDate: Record<string, DateGroupedData> = {};
+      
+      (data as AssignmentWithPhotographer[]).forEach(assignment => {
         const dateString = format(parseISO(assignment.date), 'MMM dd');
         const photographerName = assignment.photographers?.name || 'Unknown';
         
-        if (!acc[dateString]) {
-          acc[dateString] = {
+        if (!groupedByDate[dateString]) {
+          groupedByDate[dateString] = {
             date: dateString,
             photographers: {}
           };
         }
         
-        if (!acc[dateString].photographers[photographerName]) {
-          acc[dateString].photographers[photographerName] = 0;
+        if (!groupedByDate[dateString].photographers[photographerName]) {
+          groupedByDate[dateString].photographers[photographerName] = 0;
         }
         
-        acc[dateString].photographers[photographerName] += 1;
-        return acc;
-      }, {});
+        groupedByDate[dateString].photographers[photographerName] += 1;
+      });
       
       // Convert to array and flatten photographer data
-      const uniquePhotographers = new Set();
-      data.forEach(assignment => {
+      const uniquePhotographers = new Set<string>();
+      (data as AssignmentWithPhotographer[]).forEach(assignment => {
         uniquePhotographers.add(assignment.photographers?.name || 'Unknown');
       });
       
       // Convert to array format for recharts
-      const chartData = Object.values(groupedByDate).map(item => {
-        const dateData = { date: item.date };
+      const chartData: ChartDataPoint[] = Object.values(groupedByDate).map(item => {
+        const dateData: ChartDataPoint = { date: item.date };
         
         // Add count for each photographer
         Array.from(uniquePhotographers).forEach(photographer => {
@@ -127,7 +162,7 @@ export const AnalyticsSection = () => {
       chartData.sort((a, b) => {
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
-        return dateA - dateB;
+        return dateA.getTime() - dateB.getTime();
       });
       
       return {
@@ -148,7 +183,7 @@ export const AnalyticsSection = () => {
   };
 
   // Generate random colors for photographers
-  const getColor = (index) => {
+  const getColor = (index: number) => {
     const colorPalette = [
       '#4ade80', // Green
       '#3b82f6', // Blue

@@ -36,6 +36,7 @@ export function PhotographerFormDialog({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [equipment, setEquipment] = useState("");
   const [status, setStatus] = useState<"active" | "onleave">("active");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,12 +48,14 @@ export function PhotographerFormDialog({
       setName(photographer.name);
       setEmail(photographer.email || "");
       setPhone(photographer.phone || "");
+      setEquipment(photographer.equipment || "");
       setStatus(photographer.status);
     } else {
       // Reset form when adding new photographer
       setName("");
       setEmail("");
       setPhone("");
+      setEquipment("");
       setStatus("active");
     }
   }, [photographer]);
@@ -70,6 +73,7 @@ export function PhotographerFormDialog({
             name,
             email: email || null,
             phone: phone || null,
+            equipment: equipment || null,
             status,
           })
           .eq("id", photographer.id);
@@ -82,6 +86,7 @@ export function PhotographerFormDialog({
           name,
           email: email || null,
           phone: phone || null,
+          equipment: equipment || null,
           status,
         });
 
@@ -141,6 +146,16 @@ export function PhotographerFormDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(123) 456-7890"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="equipment">Equipment</Label>
+            <Input
+              id="equipment"
+              value={equipment}
+              onChange={(e) => setEquipment(e.target.value)}
+              placeholder="Canon EOS R5, 24-70mm f/2.8, etc."
             />
           </div>
 

@@ -24,12 +24,13 @@ export function PhotographersMenu() {
       
       if (error) throw error;
       
-      // Ensure the status property is of the correct type
+      // Ensure the status property is of the correct type and process other fields
       return data.map(photographer => ({
         ...photographer,
         status: photographer.status === 'active' || photographer.status === 'onleave' 
           ? (photographer.status as 'active' | 'onleave')
-          : 'active' // Default to 'active' if status is neither 'active' nor 'onleave'
+          : 'active', // Default to 'active' if status is neither 'active' nor 'onleave'
+        equipment: photographer.equipment || null
       })) as Photographer[];
     },
   });

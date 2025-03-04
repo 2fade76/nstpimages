@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -6,8 +5,8 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Calendar, MapPin, User, Edit, Trash2, Search, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Calendar, MapPin, User, Edit, Trash2, Search, Clock, ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,11 +23,16 @@ interface AssignmentsListProps {
   onStatusUpdate?: () => void;
 }
 
+type SortField = 'date' | 'status' | 'title';
+type SortDirection = 'asc' | 'desc';
+
 export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState<(Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) | null>(null);
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [editForm, setEditForm] = useState({
     title: "",
     location: "",
@@ -62,15 +66,46 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       }
       console.log("Assignments data fetched:", data?.length || 0, "records");
       
-      // Sort assignments by date (newest first)
-      const sortedData = [...(data || [])].sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      });
-      
-      console.log("Assignments sorted by date (newest first)");
-      return sortedData as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
+      return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
     },
   });
+
+  const sortedAssignments = useMemo(() => {
+    if (!assignments) return [];
+    
+    console.log(`Sorting assignments by ${sortField} in ${sortDirection} order`);
+    
+    return [...assignments].sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortField === 'date') {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        comparison = dateA - dateB;
+      } 
+      else if (sortField === 'status') {
+        const statusOrder = { 'open': 0, 'progress': 1, 'complete': 2, 'cancel': 3 };
+        comparison = (statusOrder[a.status as keyof typeof statusOrder] || 0) - 
+                    (statusOrder[b.status as keyof typeof statusOrder] || 0);
+      }
+      else if (sortField === 'title') {
+        comparison = a.title.localeCompare(b.title);
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [assignments, sortField, sortDirection]);
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+    
+    console.log(`Sorting changed to ${field} in ${sortDirection === 'asc' ? 'desc' : 'asc'} order`);
+  };
 
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],
@@ -95,11 +130,9 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
           console.log("Received real-time update in AssignmentsList:", payload);
           console.log("Invalidating and refetching assignments query");
           
-          // Force immediate refetch
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
           queryClient.refetchQueries({ queryKey: ['assignments'] });
           
-          // Also directly refetch to ensure we have the latest data
           refetch();
         }
       )
@@ -117,17 +150,14 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     mutationFn: async (assignmentData: Partial<Assignment>) => {
       console.log("Updating assignment with data:", assignmentData);
       
-      // Make sure status is one of the allowed values
       if (assignmentData.status && !['open', 'progress', 'cancel', 'complete'].includes(assignmentData.status)) {
         throw new Error(`Invalid status: ${assignmentData.status}`);
       }
       
-      // Check if we have a valid ID before updating
       if (!currentAssignment?.id) {
         throw new Error("No valid assignment ID for update");
       }
       
-      // Log the exact update operation we're about to perform
       console.log(`Updating assignment ID: ${currentAssignment.id} with status: ${assignmentData.status}`);
       
       const { data, error } = await supabase
@@ -141,7 +171,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         throw error;
       }
       
-      // Log the response to verify the update was successful
       console.log("Assignment updated successfully in database:", data);
       
       return data;
@@ -150,7 +179,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       console.log("Assignment updated successfully, invalidating queries");
       console.log("Updated data returned from server:", data);
       
-      // Force immediate refetch of all assignment-related queries
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.refetchQueries({ 
         queryKey: ['assignments'],
@@ -158,7 +186,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         exact: false
       });
       
-      // Also invalidate analytics data
       queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
       queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
@@ -166,7 +193,6 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
       
-      // Call the onStatusUpdate callback if provided
       if (onStatusUpdate) {
         console.log("Calling onStatusUpdate callback");
         onStatusUpdate();
@@ -225,16 +251,14 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
     setCurrentAssignment(assignment);
     
-    // Extract date and time components from the ISO date string
     let dateValue = assignment.date;
-    let timeValue = "12:00"; // Default time
+    let timeValue = "12:00";
     
     if (assignment.date.includes('T')) {
       const [datePart, timePart] = assignment.date.split('T');
       dateValue = datePart;
       if (timePart) {
-        // Convert to HH:MM format for time input
-        timeValue = timePart.substring(0, 5); // Take HH:MM part only
+        timeValue = timePart.substring(0, 5);
       }
     }
     
@@ -260,11 +284,9 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     e.preventDefault();
     console.log("Submitting form with data:", editForm);
     
-    // Combine date and time
     const combinedDate = `${editForm.date}T${editForm.time}:00`;
     console.log("Combined date and time:", combinedDate);
     
-    // Explicitly cast status to ensure type safety
     const updatedAssignment: Partial<Assignment> = {
       title: editForm.title,
       location: editForm.location,
@@ -289,11 +311,9 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     
     try {
       if (dateString.includes('T')) {
-        // Format date and time separately for display
         const date = parseISO(dateString);
         return format(date, 'MMM d, yyyy');
       } else {
-        // If it's just a date, format date only
         return dateString;
       }
     } catch (error) {
@@ -342,13 +362,57 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   return (
     <>
       <div className="space-y-4">
-        {assignments?.length === 0 ? (
+        <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
+          <div className="text-sm text-muted-foreground">
+            {sortedAssignments.length} total assignments
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSort('title')}
+              className="flex items-center gap-1"
+            >
+              Title
+              {sortField === 'title' && (
+                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+              )}
+              {sortField !== 'title' && <ArrowUpDown className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSort('status')}
+              className="flex items-center gap-1"
+            >
+              Status
+              {sortField === 'status' && (
+                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+              )}
+              {sortField !== 'status' && <ArrowUpDown className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSort('date')}
+              className="flex items-center gap-1"
+            >
+              Date
+              {sortField === 'date' && (
+                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+              )}
+              {sortField !== 'date' && <ArrowUpDown className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {sortedAssignments?.length === 0 ? (
           <div className="text-center p-8 border rounded-lg bg-muted/10">
             No assignments found. Create a new assignment to get started.
           </div>
         ) : (
           <div className="space-y-2">
-            {assignments?.map((assignment) => (
+            {sortedAssignments?.map((assignment) => (
               <Card key={assignment.id} className="animate-fadeIn">
                 <div className="p-4 flex items-start justify-between">
                   <div className="space-y-2 flex-1">
@@ -567,7 +631,7 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
           isOpen={true}
           onClose={() => setSelectedPhotographerId(null)}
           photographerId={selectedPhotographerId}
-          assignments={assignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
+          assignments={sortedAssignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
         />
       )}
     </>

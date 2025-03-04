@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
   { title: "Overview", icon: Home, path: "/" },
@@ -29,6 +29,28 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
+  const location = useLocation();
+  
+  // Function to determine if a menu item is active
+  const isActive = (path: string) => {
+    // For the home page with no tab param
+    if (path === "/" && location.pathname === "/" && !location.search) {
+      return true;
+    }
+    
+    // For tab-based navigation
+    if (path.includes("?tab=") && location.search.includes(path.split("?")[1])) {
+      return true;
+    }
+    
+    // For direct routes like /calendar
+    if (path !== "/" && location.pathname === path) {
+      return true;
+    }
+    
+    return false;
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -38,7 +60,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={isActive(item.path)}
+                  >
                     <Link
                       to={item.path}
                       className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-accent transition-colors"

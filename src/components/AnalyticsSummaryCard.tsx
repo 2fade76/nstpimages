@@ -68,7 +68,8 @@ export const AnalyticsSummaryCard = () => {
     <Card className="mb-6 bg-gradient-to-br from-card to-secondary/10">
       <CardContent className="p-4">
         <div className="grid grid-cols-4 gap-4">
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
+          {/* Total Assignments Card */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-red-50 to-red-100 border border-red-200 shadow-sm">
             <div className="flex items-center justify-center mb-2 text-red-500">
               <ClipboardList className="h-6 w-6" />
             </div>
@@ -83,7 +84,8 @@ export const AnalyticsSummaryCard = () => {
             )}
           </div>
 
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
+          {/* Open Assignments Card */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-green-50 to-green-100 border border-green-200 shadow-sm">
             <div className="flex items-center justify-center mb-2 text-status-open">
               <Clock className="h-6 w-6" />
             </div>
@@ -98,7 +100,8 @@ export const AnalyticsSummaryCard = () => {
             )}
           </div>
 
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
+          {/* Completed Assignments Card */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-indigo-50 to-indigo-100 border border-indigo-200 shadow-sm">
             <div className="flex items-center justify-center mb-2 text-status-complete">
               <CheckCircle className="h-6 w-6" />
             </div>
@@ -113,7 +116,8 @@ export const AnalyticsSummaryCard = () => {
             )}
           </div>
 
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/50 backdrop-blur-sm border border-white/20">
+          {/* Today's Average Card */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 shadow-sm">
             <div className="flex items-center justify-center mb-2 text-blue-500">
               <BarChart2 className="h-6 w-6" />
             </div>

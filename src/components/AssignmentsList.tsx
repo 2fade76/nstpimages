@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -121,28 +122,49 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         throw new Error(`Invalid status: ${assignmentData.status}`);
       }
       
+      // Check if we have a valid ID before updating
+      if (!currentAssignment?.id) {
+        throw new Error("No valid assignment ID for update");
+      }
+      
+      // Log the exact update operation we're about to perform
+      console.log(`Updating assignment ID: ${currentAssignment.id} with status: ${assignmentData.status}`);
+      
       const { data, error } = await supabase
         .from('assignments')
         .update(assignmentData)
-        .eq('id', currentAssignment?.id)
+        .eq('id', currentAssignment.id)
         .select();
       
       if (error) {
         console.error("Update error from Supabase:", error);
         throw error;
       }
+      
+      // Log the response to verify the update was successful
       console.log("Assignment updated successfully in database:", data);
+      
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       console.log("Assignment updated successfully, invalidating queries");
+      console.log("Updated data returned from server:", data);
       
-      // Force immediate refetch
+      // Force immediate refetch of all assignment-related queries
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      queryClient.refetchQueries({ queryKey: ['assignments'] });
+      queryClient.refetchQueries({ 
+        queryKey: ['assignments'],
+        type: 'active',
+        exact: false
+      });
       
-      // Also directly refetch to ensure we have the latest data
-      refetch();
+      // Also invalidate analytics data
+      queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
+      queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
       
       // Call the onStatusUpdate callback if provided
       if (onStatusUpdate) {

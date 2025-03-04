@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
@@ -15,11 +14,9 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("assignments");
   const queryClient = useQueryClient();
 
-  // Subscribe to changes in the assignments table with improved error handling
   useEffect(() => {
     console.log("Setting up real-time subscription on Index component");
     
-    // Create a more reliable channel with status callback
     const channel = supabase
       .channel('assignments-index-changes')
       .on('postgres_changes', 
@@ -27,12 +24,10 @@ const Index = () => {
         (payload) => {
           console.log("Index component received real-time update:", payload);
           
-          // Use a notification so the user knows data was updated
           toast.info("Assignment data updated", {
             position: "bottom-right"
           });
           
-          // Force immediate refetch with logging
           console.log("Invalidating assignments queries");
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
           
@@ -42,7 +37,6 @@ const Index = () => {
             type: 'active'
           });
           
-          // Also refresh the analytics data
           console.log("Refreshing analytics data");
           queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
           queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
@@ -63,6 +57,29 @@ const Index = () => {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
+
+  const handleAssignmentStatusUpdate = () => {
+    console.log("Assignment status updated in Index component, forcing refresh of all relevant queries");
+    
+    queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    
+    queryClient.refetchQueries({ 
+      queryKey: ['assignments'],
+      type: 'active'
+    });
+    
+    queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
+    queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
+    queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
+    queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
+    queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
+    queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
+    
+    toast.success("Assignment status updated", {
+      position: "bottom-right",
+      description: "All data has been refreshed"
+    });
+  };
 
   return (
     <DashboardLayout>
@@ -89,11 +106,7 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="assignments" className="space-y-6">
-            <AssignmentsList onStatusUpdate={() => {
-              console.log("Assignment status updated, forcing refresh");
-              queryClient.invalidateQueries({ queryKey: ['assignments'] });
-              queryClient.refetchQueries({ queryKey: ['assignments'] });
-            }} />
+            <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
           </TabsContent>
 
           <TabsContent value="photographers">
@@ -102,11 +115,9 @@ const Index = () => {
 
           <TabsContent value="new">
             <AssignmentForm onAssignmentCreated={() => {
-              // Show feedback and switch to assignments tab
               toast.success("Assignment created successfully");
               setActiveTab("assignments");
               
-              // Force data refresh
               queryClient.invalidateQueries({ queryKey: ['assignments'] });
               queryClient.refetchQueries({ queryKey: ['assignments'] });
             }} />

@@ -18,7 +18,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { format, parseISO } from "date-fns";
-import { toast } from "sonner";
+// Remove the sonner import as we'll use our custom toast hook
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -246,14 +246,17 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
       
       setIsDeleteDialogOpen(false);
-      toast.success("Assignment deleted", {
+      toast({
+        title: "Assignment deleted",
         description: "The assignment has been deleted successfully.",
       });
     },
     onError: (error) => {
       console.error("Delete error:", error);
-      toast.error("Error", {
+      toast({
+        title: "Error",
         description: `Failed to delete assignment: ${error.message}`,
+        variant: "destructive",
       });
     },
   });
@@ -315,8 +318,10 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       deleteAssignmentMutation.mutate(currentAssignment.id);
     } else {
       console.error("No assignment selected for deletion");
-      toast.error("Error", {
+      toast({
+        title: "Error",
         description: "No assignment selected for deletion.",
+        variant: "destructive",
       });
     }
   };

@@ -18,6 +18,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { format, parseISO } from "date-fns";
+import { toast } from "sonner";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -217,33 +218,42 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (id: string) => {
       console.log("Deleting assignment with ID:", id);
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('assignments')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
       
       if (error) {
         console.error("Delete error from Supabase:", error);
         throw error;
       }
+      
+      console.log("Delete response:", data);
       return id;
     },
-    onSuccess: () => {
-      console.log("Assignment deleted successfully, invalidating queries");
+    onSuccess: (id) => {
+      console.log("Assignment deleted successfully, ID:", id);
+      console.log("Invalidating and refetching queries");
+      
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.refetchQueries({ queryKey: ['assignments'] });
+      
+      queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
+      queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
+      
       setIsDeleteDialogOpen(false);
-      toast({
-        title: "Assignment deleted",
+      toast.success("Assignment deleted", {
         description: "The assignment has been deleted successfully.",
       });
     },
     onError: (error) => {
       console.error("Delete error:", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: `Failed to delete assignment: ${error.message}`,
-        variant: "destructive",
       });
     },
   });
@@ -303,6 +313,11 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     if (currentAssignment) {
       console.log("Confirming delete for assignment ID:", currentAssignment.id);
       deleteAssignmentMutation.mutate(currentAssignment.id);
+    } else {
+      console.error("No assignment selected for deletion");
+      toast.error("Error", {
+        description: "No assignment selected for deletion.",
+      });
     }
   };
 

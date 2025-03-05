@@ -91,18 +91,8 @@ const SearchResults = ({
   );
 };
 
-const AppRouter = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/calendar" element={<Calendar />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
-
-const App = () => {
+// This is a wrapper component to ensure we have access to the useNavigate hook
+const AppContent = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Array<{ type: 'assignment' | 'photographer', data: any }>>([]);
@@ -215,57 +205,72 @@ const App = () => {
   };
 
   return (
+    <>
+      <div className="fixed top-4 right-4 z-50">
+        <Button 
+          variant="outline" 
+          onClick={() => setIsSearchOpen(true)}
+          className="rounded-full bg-white shadow-md dark:bg-gray-800 flex items-center gap-2 px-3"
+          type="button"
+        >
+          <Search className="h-[1.2rem] w-[1.2rem]" />
+          <span>Search</span>
+        </Button>
+      </div>
+      
+      <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Search Assignments and Photographers</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <div className="grid flex-1 gap-2">
+                <Input
+                  type="text"
+                  placeholder="Search for assignments, photographers, locations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                />
+                <p className="text-sm text-muted-foreground">
+                  Enter keywords to search for assignments, locations, or photographers
+                </p>
+              </div>
+            </div>
+            
+            {isSearching ? (
+              <div className="py-8 text-center">
+                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                <p className="mt-2 text-sm text-muted-foreground">Searching...</p>
+              </div>
+            ) : (
+              <SearchResults results={searchResults} onClose={handleCloseSearch} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/settings" element={<Settings />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+};
+
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         
-        <div className="fixed top-4 right-4 z-50">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsSearchOpen(true)}
-            className="rounded-full bg-white shadow-md dark:bg-gray-800 flex items-center gap-2 px-3"
-          >
-            <Search className="h-[1.2rem] w-[1.2rem]" />
-            <span>Search</span>
-          </Button>
-        </div>
-        
-        <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Search Assignments and Photographers</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="grid flex-1 gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Search for assignments, photographers, locations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoFocus
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Enter keywords to search for assignments, locations, or photographers
-                  </p>
-                </div>
-              </div>
-              
-              {isSearching ? (
-                <div className="py-8 text-center">
-                  <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                  <p className="mt-2 text-sm text-muted-foreground">Searching...</p>
-                </div>
-              ) : (
-                <SearchResults results={searchResults} onClose={handleCloseSearch} />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-        
         <BrowserRouter>
-          <AppRouter />
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

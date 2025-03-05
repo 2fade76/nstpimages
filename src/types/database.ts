@@ -4,6 +4,7 @@ export interface Photographer {
   name: string;
   email: string | null;
   phone: string | null;
+  equipment: string | null;
   status: 'active' | 'onleave';
   created_at: string;
 }

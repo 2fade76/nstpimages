@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Assignment, Photographer } from '@/types/database';
 import { toast } from "sonner";
+import { SupabaseDashboardAccess } from "@/components/SupabaseDashboardAccess";
 
 const queryClient = new QueryClient();
 
@@ -258,6 +259,9 @@ const AppContent = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {/* Add the Supabase dashboard access component */}
+      <SupabaseDashboardAccess />
     </>
   );
 };

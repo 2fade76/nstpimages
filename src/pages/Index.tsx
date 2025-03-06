@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
@@ -8,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("assignments");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     console.log("Setting up real-time subscription on Index component");
@@ -24,8 +26,10 @@ const Index = () => {
         (payload) => {
           console.log("Index component received real-time update:", payload);
           
-          toast.info("Assignment data updated", {
-            position: "bottom-right"
+          toast({
+            title: "Assignment data updated",
+            description: "Assignment data has been updated",
+            duration: 3000,
           });
           
           console.log("Invalidating assignments queries");
@@ -56,7 +60,7 @@ const Index = () => {
       console.log("Cleaning up real-time subscription on Index component");
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, toast]);
 
   const handleAssignmentStatusUpdate = () => {
     console.log("Assignment status updated in Index component, forcing refresh of all relevant queries");
@@ -75,9 +79,10 @@ const Index = () => {
     queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
     queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
     
-    toast.success("Assignment status updated", {
-      position: "bottom-right",
-      description: "All data has been refreshed"
+    toast({
+      title: "Success",
+      description: "Assignment status updated. All data has been refreshed",
+      duration: 3000,
     });
   };
 
@@ -115,7 +120,11 @@ const Index = () => {
 
           <TabsContent value="new">
             <AssignmentForm onAssignmentCreated={() => {
-              toast.success("Assignment created successfully");
+              toast({
+                title: "Success",
+                description: "Assignment created successfully",
+                duration: 3000,
+              });
               setActiveTab("assignments");
               
               queryClient.invalidateQueries({ queryKey: ['assignments'] });

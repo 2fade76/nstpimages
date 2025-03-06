@@ -18,7 +18,6 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { format, parseISO } from "date-fns";
-// Remove the sonner import as we'll use our custom toast hook
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -40,7 +39,7 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
     date: "",
     time: "",
     photographer_id: "",
-    status: "" as Assignment['status'], // Correctly typed
+    status: "" as Assignment['status'],
   });
   
   const queryClient = useQueryClient();
@@ -203,6 +202,7 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       toast({
         title: "Assignment updated",
         description: "The assignment has been updated successfully.",
+        duration: 5000,
       });
     },
     onError: (error) => {
@@ -211,6 +211,7 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         title: "Error",
         description: `Failed to update assignment: ${error.message}`,
         variant: "destructive",
+        duration: 5000,
       });
     },
   });

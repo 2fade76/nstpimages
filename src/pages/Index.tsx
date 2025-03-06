@@ -8,13 +8,41 @@ import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, verifySupabaseConnection } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("assignments");
+  const [connectionError, setConnectionError] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Function to verify connection and handle reconnection
+  const checkConnection = async () => {
+    setIsReconnecting(true);
+    const isConnected = await verifySupabaseConnection();
+    setConnectionError(!isConnected);
+    
+    if (isConnected) {
+      // Refresh data if connection was restored
+      queryClient.invalidateQueries();
+      toast({
+        title: "Connection restored",
+        description: "Successfully connected to Supabase",
+        duration: 3000,
+      });
+    }
+    setIsReconnecting(false);
+  };
+
+  // Check connection on initial load
+  useEffect(() => {
+    checkConnection();
+  }, []);
 
   useEffect(() => {
     console.log("Setting up real-time subscription on Index component");
@@ -53,6 +81,13 @@ const Index = () => {
         console.log("Real-time subscription status:", status);
         if (status === 'SUBSCRIBED') {
           console.log("Successfully subscribed to assignment changes");
+          setConnectionError(false);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error("Error in real-time subscription");
+          setConnectionError(true);
+        } else if (status === 'TIMED_OUT') {
+          console.error("Real-time subscription timed out");
+          setConnectionError(true);
         }
       });
 
@@ -89,6 +124,26 @@ const Index = () => {
   return (
     <DashboardLayout>
       <div className="space-y-8">
+        {connectionError && (
+          <Alert variant="destructive" className="animate-pulse">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Connection Error</AlertTitle>
+            <AlertDescription className="flex justify-between items-center">
+              <span>Unable to connect to Supabase. Some features may not work correctly.</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={checkConnection}
+                disabled={isReconnecting}
+                className="flex items-center gap-2"
+              >
+                {isReconnecting ? "Reconnecting..." : "Reconnect"}
+                <RefreshCw className={`h-4 w-4 ${isReconnecting ? 'animate-spin' : ''}`} />
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+      
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-semibold tracking-tight">
             Photo Assignment Tracker Dashboard

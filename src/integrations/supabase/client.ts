@@ -6,24 +6,59 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://ynbwhrvvpcgoowwtnpbp.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluYndocnZ2cGNnb293d3RucGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0NjQ0MzYsImV4cCI6MjA1NjA0MDQzNn0.vVEfUVz2EZjoK1HCbbjd8ZJYhp6cm-cE4VVZES9lFco";
 
-// Configure client with options to optimize performance
+// Configure client with options to optimize performance and improve reconnection
 const supabaseOptions = {
   auth: {
     autoRefreshToken: true,
-    persistSession: true
+    persistSession: true,
+    detectSessionInUrl: true
   },
   realtime: {
-    timeout: 30000, // Increase timeout to 30s
+    timeout: 60000, // Increase timeout to 60s for better connection stability
     params: {
       eventsPerSecond: 10
+    }
+  },
+  global: {
+    headers: {
+      'x-application-name': 'photo-assignment-tracker'
+    },
+    fetch: (url: string, options: RequestInit) => {
+      // Set longer timeout for fetch operations
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(() => timeoutController.abort(), 30000);
+      
+      return fetch(url, {
+        ...options,
+        signal: timeoutController.signal
+      }).finally(() => {
+        clearTimeout(timeoutId);
+      });
     }
   }
 };
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
-
+// Create the Supabase client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, supabaseOptions);
+
+// Add a helper function to verify connection and reconnect if needed
+export const verifySupabaseConnection = async () => {
+  try {
+    // Test query to verify connection
+    const { error } = await supabase.from('assignments').select('id').limit(1);
+    
+    if (error) {
+      console.error('Supabase connection error:', error.message);
+      return false;
+    }
+    
+    console.log('Supabase connection verified successfully');
+    return true;
+  } catch (err) {
+    console.error('Failed to verify Supabase connection:', err);
+    return false;
+  }
+};
 
 // Optional: Add convenience method to directly open the dashboard
 export const openSupabaseDashboard = (path = "") => {

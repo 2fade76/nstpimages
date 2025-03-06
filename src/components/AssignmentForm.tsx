@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -124,8 +125,10 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Assignment Title</label>
+        <label htmlFor="assignment-title" className="text-sm font-medium">Assignment Title</label>
         <Input
+          id="assignment-title"
+          name="assignment-title"
           placeholder="Enter assignment title"
           className="w-full"
           required
@@ -135,8 +138,10 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Location</label>
+        <label htmlFor="assignment-location" className="text-sm font-medium">Location</label>
         <Input
+          id="assignment-location"
+          name="assignment-location"
           placeholder="Enter location"
           className="w-full"
           required
@@ -147,10 +152,11 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Date</label>
+          <label htmlFor="assignment-date" className="text-sm font-medium">Date</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
+                id="assignment-date"
                 variant="outline"
                 className={cn(
                   "w-full justify-start text-left font-normal",
@@ -173,10 +179,12 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Time (24hr)</label>
+          <label htmlFor="assignment-time" className="text-sm font-medium">Time (24hr)</label>
           <div className="flex items-center">
             <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
             <Input
+              id="assignment-time"
+              name="assignment-time"
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
@@ -187,12 +195,12 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Photographer</label>
+        <label htmlFor="assignment-photographer" className="text-sm font-medium">Photographer</label>
         <Select
           value={photographer}
           onValueChange={setPhotographer}
         >
-          <SelectTrigger>
+          <SelectTrigger id="assignment-photographer">
             <SelectValue placeholder="Select a photographer" />
           </SelectTrigger>
           <SelectContent>
@@ -216,7 +224,7 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Status</label>
+        <label htmlFor="assignment-status" className="text-sm font-medium">Status</label>
         <Select 
           value={status}
           onValueChange={(value) => {
@@ -224,7 +232,7 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
             setStatus(value as Assignment['status']);
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger id="assignment-status">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>

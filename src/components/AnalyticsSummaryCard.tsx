@@ -38,9 +38,9 @@ export const AnalyticsSummaryCard = () => {
     },
   });
 
-  // New query for daily average
-  const { data: todayAssignments, isLoading: loadingToday } = useQuery({
-    queryKey: ['today-assignments'],
+  // Updated query for today's completed assignments instead of average
+  const { data: todayCompletedAssignments, isLoading: loadingToday } = useQuery({
+    queryKey: ['today-completed-assignments'],
     queryFn: async () => {
       const today = new Date();
       const startOfToday = startOfDay(today).toISOString();
@@ -50,16 +50,12 @@ export const AnalyticsSummaryCard = () => {
         .from('assignments')
         .select('*', { count: 'exact' })
         .gte('date', startOfToday)
-        .lte('date', endOfToday);
+        .lte('date', endOfToday)
+        .eq('status', 'complete');
       
       return count || 0;
     },
   });
-
-  // Calculate average assignments per day
-  const averageAssignments = totalAssignments && todayAssignments 
-    ? (totalAssignments > 0 ? (todayAssignments / 1).toFixed(1) : '0.0') 
-    : '0.0';
 
   const isLoading = loadingTotal || loadingOpen || loadingCompleted || loadingToday;
   const currentDate = format(new Date(), 'MMMM d, yyyy');
@@ -116,17 +112,17 @@ export const AnalyticsSummaryCard = () => {
             )}
           </div>
 
-          {/* Today's Average Card */}
+          {/* Today's Completed Card - Changed from Today's Average */}
           <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 shadow-sm">
             <div className="flex items-center justify-center mb-2 text-blue-500">
               <BarChart2 className="h-6 w-6" />
             </div>
-            <p className="text-sm text-muted-foreground mb-1">Today's Average</p>
+            <p className="text-sm text-muted-foreground mb-1">Today's Completed</p>
             {isLoading ? (
               <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div>
             ) : (
               <>
-                <p className="text-3xl font-bold text-blue-500">{averageAssignments}</p>
+                <p className="text-3xl font-bold text-blue-500">{todayCompletedAssignments}</p>
                 <p className="text-xs text-muted-foreground mt-1">{currentDate}</p>
               </>
             )}

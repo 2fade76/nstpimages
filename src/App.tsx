@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,18 +31,16 @@ import {
 } from "@/components/ui/command";
 import { Search, X } from "lucide-react";
 
-// Initialize the query client once
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1, // Number of retry attempts for failed queries
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+      staleTime: 1000 * 60 * 5,
+      retry: 1,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   },
 });
 
-// Define pages for command palette
 const pages = [
   {
     title: "Home",
@@ -71,7 +68,6 @@ const pages = [
   },
 ];
 
-// App component
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -94,7 +90,6 @@ const AppContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Keyboard shortcut to open search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -113,7 +108,6 @@ const AppContent = () => {
     };
   }, [isSearchOpen]);
 
-  // When location changes, close search
   useEffect(() => {
     setIsSearchOpen(false);
   }, [location]);
@@ -124,13 +118,11 @@ const AppContent = () => {
     setSearchQuery("");
   };
   
-  // Filter pages based on search query
   const filteredPages = pages.filter((page) => {
     if (!searchQuery) return true;
     return page.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
-  
-  // Get command palette trigger positions
+
   const getTriggerPosition = () => {
     const commandTrigger = document.querySelector('[data-command-trigger="true"]');
     if (commandTrigger instanceof HTMLElement) {
@@ -138,8 +130,7 @@ const AppContent = () => {
       const centerX = rect.left + rect.width / 2;
       const top = rect.bottom + 8;
       
-      // Check if the trigger is too close to the right edge
-      const maxWidth = 500; // Max width of dialog
+      const maxWidth = 500;
       const leftPos = Math.max(24, Math.min(centerX - maxWidth / 2, window.innerWidth - maxWidth - 24));
       
       return {
@@ -167,7 +158,7 @@ const AppContent = () => {
       <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
         <DialogContent 
           className="p-0 gap-0 overflow-hidden"
-          hideClose={true}
+          hideCloseButton={true}
           {...getTriggerPosition()}
         >
           <Command className="rounded-lg" shouldFilter={false}>

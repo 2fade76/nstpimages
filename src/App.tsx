@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -92,7 +92,6 @@ const SearchResults = ({
   );
 };
 
-// This is a wrapper component to ensure we have access to the useNavigate hook
 const AppContent = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -256,11 +255,10 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/settings" element={<Settings />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       
-      {/* Add the Supabase dashboard access component */}
       <SupabaseDashboardAccess />
     </>
   );

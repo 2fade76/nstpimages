@@ -1,8 +1,6 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
-import { AnalyticsSection } from "@/components/AnalyticsSection";
 import { PhotographersMenu } from "@/components/PhotographersMenu";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,14 +19,12 @@ const Index = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Function to verify connection and handle reconnection
   const checkConnection = async () => {
     setIsReconnecting(true);
     const isConnected = await verifySupabaseConnection();
     setConnectionError(!isConnected);
     
     if (isConnected) {
-      // Refresh data if connection was restored
       queryClient.invalidateQueries();
       toast({
         title: "Connection restored",
@@ -39,7 +35,6 @@ const Index = () => {
     setIsReconnecting(false);
   };
 
-  // Check connection on initial load
   useEffect(() => {
     checkConnection();
   }, []);
@@ -162,7 +157,6 @@ const Index = () => {
             <TabsTrigger value="assignments">Assignments</TabsTrigger>
             <TabsTrigger value="photographers">Photographers</TabsTrigger>
             <TabsTrigger value="new">New Assignment</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="assignments" className="space-y-6">
@@ -185,10 +179,6 @@ const Index = () => {
               queryClient.invalidateQueries({ queryKey: ['assignments'] });
               queryClient.refetchQueries({ queryKey: ['assignments'] });
             }} />
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <AnalyticsSection />
           </TabsContent>
         </Tabs>
       </div>

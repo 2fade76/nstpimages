@@ -3,7 +3,7 @@ import {
   Calendar,
   Home,
   Plus,
-  BarChart,
+  BarChart2,
   Settings,
   Users,
 } from "lucide-react";
@@ -24,7 +24,7 @@ const menuItems = [
   { title: "Photographers", icon: Users, path: "/?tab=photographers" },
   { title: "New Assignment", icon: Plus, path: "/?tab=new" },
   { title: "Calendar", icon: Calendar, path: "/calendar" },
-  { title: "Analytics", icon: BarChart, path: "/?tab=analytics" },
+  { title: "Analytics", icon: BarChart2, path: "/analytics" }, // Changed from tab to a dedicated page
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
 

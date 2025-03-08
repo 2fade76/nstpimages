@@ -1,7 +1,7 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
-import { PhotographersMenu } from "@/components/PhotographersMenu";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
@@ -155,16 +155,11 @@ const Index = () => {
         >
           <TabsList>
             <TabsTrigger value="assignments">Assignments</TabsTrigger>
-            <TabsTrigger value="photographers">Photographers</TabsTrigger>
             <TabsTrigger value="new">New Assignment</TabsTrigger>
           </TabsList>
 
           <TabsContent value="assignments" className="space-y-6">
             <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
-          </TabsContent>
-
-          <TabsContent value="photographers">
-            <PhotographersMenu />
           </TabsContent>
 
           <TabsContent value="new">

@@ -48,12 +48,12 @@ const pages = [
     path: "/",
   },
   {
-    title: "Photographers",
-    path: "/photographers",
-  },
-  {
     title: "New Assignment",
     path: "/?tab=new",
+  },
+  {
+    title: "Photographers",
+    path: "/photographers",
   },
   {
     title: "Calendar",

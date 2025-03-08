@@ -21,8 +21,8 @@ import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
   { title: "Overview", icon: Home, path: "/" },
-  { title: "Photographers", icon: Users, path: "/photographers" }, // Changed from tab to a dedicated page
   { title: "New Assignment", icon: Plus, path: "/?tab=new" },
+  { title: "Photographers", icon: Users, path: "/photographers" }, // Moved to be after New Assignment
   { title: "Calendar", icon: Calendar, path: "/calendar" },
   { title: "Analytics", icon: BarChart2, path: "/analytics" },
   { title: "Settings", icon: Settings, path: "/settings" },

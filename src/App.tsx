@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -119,8 +120,8 @@ const AppContent = () => {
   };
   
   const filteredPages = pages.filter((page) => {
-    if (!searchQuery) return true;
-    return page.title.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!searchQuery.trim()) return true;
+    return page.title.toLowerCase().includes(searchQuery.toLowerCase().trim());
   });
 
   const getTriggerPosition = () => {
@@ -161,7 +162,7 @@ const AppContent = () => {
           hideCloseButton={true}
           {...getTriggerPosition()}
         >
-          <Command className="rounded-lg" shouldFilter={false}>
+          <Command className="rounded-lg">
             <div className="flex items-center border-b p-2 px-3">
               <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
               <CommandInput 

@@ -6,6 +6,7 @@ import {
   BarChart2,
   Settings,
   Users,
+  Camera,
 } from "lucide-react";
 import {
   Sidebar,
@@ -54,6 +55,11 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
+        {/* Logo Section */}
+        <div className="flex justify-center items-center py-4 mb-2">
+          <Camera className="h-8 w-8 text-primary" />
+        </div>
+        
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>

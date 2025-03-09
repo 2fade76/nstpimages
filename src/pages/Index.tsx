@@ -1,7 +1,9 @@
 
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
+import { AssignmentForm } from "@/components/AssignmentForm";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase, verifySupabaseConnection } from "@/integrations/supabase/client";
@@ -11,6 +13,7 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("assignments");
   const [connectionError, setConnectionError] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const queryClient = useQueryClient();
@@ -144,7 +147,35 @@ const Index = () => {
         
         <AnalyticsSummaryCard />
 
-        <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
+        <Tabs 
+          defaultValue="assignments" 
+          className="space-y-6"
+          value={activeTab}
+          onValueChange={setActiveTab}
+        >
+          <TabsList>
+            <TabsTrigger value="assignments">Assignments</TabsTrigger>
+            <TabsTrigger value="new">New Assignment</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="assignments" className="space-y-6">
+            <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
+          </TabsContent>
+
+          <TabsContent value="new">
+            <AssignmentForm onAssignmentCreated={() => {
+              toast({
+                title: "Success",
+                description: "Assignment created successfully",
+                duration: 3000,
+              });
+              setActiveTab("assignments");
+              
+              queryClient.invalidateQueries({ queryKey: ['assignments'] });
+              queryClient.refetchQueries({ queryKey: ['assignments'] });
+            }} />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

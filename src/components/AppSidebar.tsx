@@ -2,7 +2,6 @@
 import {
   Calendar,
   Home,
-  Plus,
   BarChart2,
   Settings,
   Users,
@@ -22,8 +21,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
   { title: "Overview", icon: Home, path: "/" },
-  { title: "New Assignment", icon: Plus, path: "/?tab=new" },
-  { title: "Photographers", icon: Users, path: "/photographers" }, // Moved to be after New Assignment
+  { title: "Photographers", icon: Users, path: "/photographers" }, 
   { title: "Calendar", icon: Calendar, path: "/calendar" },
   { title: "Analytics", icon: BarChart2, path: "/analytics" },
   { title: "Settings", icon: Settings, path: "/settings" },

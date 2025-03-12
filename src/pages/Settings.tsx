@@ -1,17 +1,13 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-
 const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
-
-  return (
-    <DashboardLayout>
+  return <DashboardLayout>
       <div className="space-y-8">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -20,11 +16,11 @@ const Settings = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
+          <Card className="bg-slate-300">
+            <CardHeader className="bg-slate-400">
               <CardTitle>Application Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 bg-slate-300">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="notifications">Notifications</Label>
@@ -32,11 +28,7 @@ const Settings = () => {
                     Receive notifications about assignment updates
                   </p>
                 </div>
-                <Switch 
-                  id="notifications" 
-                  checked={notificationsEnabled}
-                  onCheckedChange={setNotificationsEnabled}
-                />
+                <Switch id="notifications" checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
               </div>
               
               <div className="flex items-center justify-between">
@@ -46,11 +38,7 @@ const Settings = () => {
                     Switch between light and dark theme
                   </p>
                 </div>
-                <Switch 
-                  id="darkMode" 
-                  checked={darkModeEnabled}
-                  onCheckedChange={setDarkModeEnabled}
-                />
+                <Switch id="darkMode" checked={darkModeEnabled} onCheckedChange={setDarkModeEnabled} />
               </div>
               
               <div className="flex items-center justify-between">
@@ -60,23 +48,19 @@ const Settings = () => {
                     Automatically save changes to assignments
                   </p>
                 </div>
-                <Switch 
-                  id="autoSave" 
-                  checked={autoSaveEnabled}
-                  onCheckedChange={setAutoSaveEnabled}
-                />
+                <Switch id="autoSave" checked={autoSaveEnabled} onCheckedChange={setAutoSaveEnabled} />
               </div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader>
+          <Card className="bg-slate-300">
+            <CardHeader className="bg-slate-400">
               <CardTitle>Account Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-1">
                 <Label>Email Address</Label>
-                <p className="text-sm font-medium">admin@photomanager.com</p>
+                <p className="text-sm font-medium">photoadmin@gmail.com</p>
               </div>
               
               <div className="space-y-1">
@@ -92,8 +76,6 @@ const Settings = () => {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>;
 };
-
 export default Settings;

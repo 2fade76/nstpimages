@@ -52,7 +52,7 @@ export function AppSidebar() {
   return <Sidebar>
       <SidebarContent className="bg-slate-300">
         {/* Logo Section */}
-        <div className="flex justify-center items-center py-4 mb-2">
+        <div className="flex justify-center items-center py-4 mb-2 bg-red-100">
           <Camera className="h-8 w-8 text-primary" />
         </div>
         

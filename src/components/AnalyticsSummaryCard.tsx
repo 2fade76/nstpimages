@@ -111,7 +111,7 @@ export const AnalyticsSummaryCard = () => {
             <div className="flex items-center justify-center mb-2 text-blue-500">
               <BarChart2 className="h-6 w-6" />
             </div>
-            <p className="text-sm text-muted-foreground mb-1">Today's Completed</p>
+            <p className="text-muted-foreground mb-1 text-xs">Today's Completed</p>
             {isLoading ? <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div> : <>
                 <p className="text-3xl font-bold text-blue-500">{todayCompletedAssignments}</p>
                 <p className="text-xs text-muted-foreground mt-1">{currentDate}</p>

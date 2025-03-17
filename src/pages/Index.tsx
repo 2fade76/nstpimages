@@ -139,9 +139,7 @@ const Index = () => {
           </Alert>}
       
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">
-            Photo Assignment Tracker Dashboard
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
         </div>
         
         <AnalyticsSummaryCard />

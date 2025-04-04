@@ -17,6 +17,7 @@ export type Database = {
           location: string
           photographer_id: string
           status: string
+          time: string | null
           title: string
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           location: string
           photographer_id: string
           status: string
+          time?: string | null
           title: string
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           location?: string
           photographer_id?: string
           status?: string
+          time?: string | null
           title?: string
         }
         Relationships: [

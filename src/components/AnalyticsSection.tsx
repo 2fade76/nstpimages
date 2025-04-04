@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ResponsiveContainer, 
@@ -11,14 +10,15 @@ import {
   Legend,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  BarChart,
+  Bar
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subDays, startOfDay, endOfDay, parseISO } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
 
-// Define proper types for our data structures
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
@@ -44,18 +44,21 @@ interface CompletedAssignmentsData {
   photographers: string[];
 }
 
+interface MonthlyCompletionsData {
+  chartData: { month: string, [photographer: string]: number }[];
+  photographers: string[];
+}
+
 type AssignmentWithPhotographer = Assignment & {
   photographers?: Photographer;
 };
 
 export const AnalyticsSection = () => {
-  // Weekly assignments query - existing functionality
   const { data: weeklyData, isLoading } = useQuery({
     queryKey: ['assignments-last-7-days'],
     queryFn: async () => {
-      // Generate dates for the last 7 days
       const lastSevenDays = Array.from({ length: 7 }, (_, i) => {
-        const date = subDays(new Date(), 6 - i); // Start from 6 days ago
+        const date = subDays(new Date(), 6 - i);
         return {
           date,
           formattedDate: format(date, 'MMM dd'),
@@ -63,7 +66,6 @@ export const AnalyticsSection = () => {
         };
       });
       
-      // Get all assignments from the last 7 days
       const sevenDaysAgo = subDays(new Date(), 6);
       const { data, error } = await supabase
         .from('assignments')
@@ -73,7 +75,6 @@ export const AnalyticsSection = () => {
       
       if (error) throw error;
       
-      // Count assignments for each day
       if (data) {
         data.forEach(assignment => {
           const assignmentDate = new Date(assignment.date);
@@ -91,14 +92,12 @@ export const AnalyticsSection = () => {
       
       return lastSevenDays;
     },
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 5000,
   });
 
-  // Query for completed assignments over time by photographer
   const { data: completedAssignmentsData, isLoading: isLoadingCompletedData } = useQuery<CompletedAssignmentsData>({
     queryKey: ['completed-assignments-by-date'],
     queryFn: async () => {
-      // Get all completed assignments with date and photographer info
       const { data, error } = await supabase
         .from('assignments')
         .select(`
@@ -119,7 +118,6 @@ export const AnalyticsSection = () => {
         };
       }
       
-      // Group by date and then by photographer
       const groupedByDate: Record<string, DateGroupedData> = {};
       
       (data as AssignmentWithPhotographer[]).forEach(assignment => {
@@ -140,17 +138,14 @@ export const AnalyticsSection = () => {
         groupedByDate[dateString].photographers[photographerName] += 1;
       });
       
-      // Convert to array and flatten photographer data
       const uniquePhotographers = new Set<string>();
       (data as AssignmentWithPhotographer[]).forEach(assignment => {
         uniquePhotographers.add(assignment.photographers?.name || 'Unknown');
       });
       
-      // Convert to array format for recharts
       const chartData: ChartDataPoint[] = Object.values(groupedByDate).map(item => {
         const dateData: ChartDataPoint = { date: item.date };
         
-        // Add count for each photographer
         Array.from(uniquePhotographers).forEach(photographer => {
           dateData[photographer] = item.photographers[photographer] || 0;
         });
@@ -158,7 +153,6 @@ export const AnalyticsSection = () => {
         return dateData;
       });
       
-      // Sort by date
       chartData.sort((a, b) => {
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
@@ -170,31 +164,106 @@ export const AnalyticsSection = () => {
         photographers: Array.from(uniquePhotographers)
       };
     },
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 5000,
   });
 
-  // Color constants to match the status colors used in the app
+  const { data: monthlyCompletionsData, isLoading: isLoadingMonthlyData } = useQuery({
+    queryKey: ['monthly-completions-by-photographer'],
+    queryFn: async () => {
+      const today = new Date();
+      const monthsToShow = 6;
+      
+      const startDate = startOfMonth(subMonths(today, monthsToShow - 1));
+      const endDate = endOfMonth(today);
+      
+      const { data, error } = await supabase
+        .from('assignments')
+        .select(`
+          date,
+          status,
+          photographers (id, name)
+        `)
+        .eq('status', 'complete')
+        .gte('date', startDate.toISOString())
+        .lte('date', endDate.toISOString())
+        .order('date', { ascending: true });
+      
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        return {
+          chartData: [],
+          months: []
+        };
+      }
+      
+      const months = Array.from({ length: monthsToShow }, (_, i) => {
+        const monthDate = subMonths(today, monthsToShow - 1 - i);
+        return format(monthDate, 'MMM yyyy');
+      });
+      
+      const photographers = new Map();
+      data.forEach((assignment) => {
+        if (assignment.photographers) {
+          photographers.set(assignment.photographers.id, assignment.photographers.name);
+        }
+      });
+      
+      const photographerCounts = {};
+      photographers.forEach((name, id) => {
+        photographerCounts[name] = months.reduce((acc, month) => {
+          acc[month] = 0;
+          return acc;
+        }, {});
+      });
+      
+      data.forEach((assignment) => {
+        if (assignment.photographers && assignment.status === 'complete') {
+          const assignmentMonth = format(parseISO(assignment.date), 'MMM yyyy');
+          const photographerName = assignment.photographers.name;
+          
+          if (months.includes(assignmentMonth) && photographerCounts[photographerName]) {
+            photographerCounts[photographerName][assignmentMonth]++;
+          }
+        }
+      });
+      
+      const chartData = months.map(month => {
+        const monthData = { month };
+        photographers.forEach((name) => {
+          monthData[name] = photographerCounts[name][month] || 0;
+        });
+        return monthData;
+      });
+      
+      return {
+        chartData,
+        photographers: Array.from(photographers.values())
+      };
+    },
+    refetchInterval: 5000,
+  });
+
   const COLORS = {
-    total: '#9b87f5', // Purple for total
-    open: '#f97316', // Orange for open
-    progress: '#3b82f6', // Blue for in progress
-    complete: '#4ade80', // Green for completed
-    cancel: '#ef4444' // Red for cancelled
+    total: '#9b87f5',
+    open: '#f97316',
+    progress: '#3b82f6',
+    complete: '#4ade80',
+    cancel: '#ef4444'
   };
 
-  // Generate random colors for photographers
   const getColor = (index: number) => {
     const colorPalette = [
-      '#4ade80', // Green
-      '#3b82f6', // Blue
-      '#f97316', // Orange
-      '#ef4444', // Red
-      '#9b87f5', // Purple
-      '#ec4899', // Pink
-      '#14b8a6', // Teal
-      '#f59e0b', // Amber
-      '#8b5cf6', // Violet
-      '#06b6d4'  // Cyan
+      '#4ade80',
+      '#3b82f6',
+      '#f97316',
+      '#ef4444',
+      '#9b87f5',
+      '#ec4899',
+      '#14b8a6',
+      '#f59e0b',
+      '#8b5cf6',
+      '#06b6d4'
     ];
     
     return colorPalette[index % colorPalette.length];
@@ -249,6 +318,62 @@ export const AnalyticsSection = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Monthly Completed Assignments by Photographer</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[400px]">
+          {isLoadingMonthlyData ? (
+            <div className="flex items-center justify-center h-full">
+              <p>Loading monthly data...</p>
+            </div>
+          ) : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={monthlyCompletionsData.chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#8E9196" strokeOpacity={0.2} />
+                <XAxis 
+                  dataKey="month" 
+                  label={{ 
+                    value: 'Month', 
+                    position: 'insideBottom', 
+                    offset: -20 
+                  }}
+                />
+                <YAxis 
+                  label={{ 
+                    value: 'Completed Assignments', 
+                    angle: -90, 
+                    position: 'insideLeft', 
+                    offset: -5
+                  }}
+                />
+                <Tooltip 
+                  formatter={(value, name) => [`${value} assignments`, name]}
+                  labelFormatter={(label) => `Month: ${label}`}
+                />
+                <Legend />
+                {monthlyCompletionsData.photographers.map((photographer, index) => (
+                  <Bar 
+                    key={photographer}
+                    dataKey={photographer} 
+                    name={photographer}
+                    fill={getColor(index)}
+                    stackId="a"
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p>No monthly completed assignments found</p>
+            </div>
           )}
         </CardContent>
       </Card>

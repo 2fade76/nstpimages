@@ -1,20 +1,17 @@
+
 import { Calendar, Home, Plus, BarChart2, Settings, Users, Camera } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
+
 const menuItems = [{
   title: "Overview",
   icon: Home,
   path: "/"
 }, {
-  title: "New Assignment",
-  icon: Plus,
-  path: "/?tab=new"
-}, {
   title: "Photographers",
   icon: Users,
   path: "/photographers"
 },
-// Moved to be after New Assignment
 {
   title: "Calendar",
   icon: Calendar,
@@ -28,6 +25,7 @@ const menuItems = [{
   icon: Settings,
   path: "/settings"
 }];
+
 export function AppSidebar() {
   const location = useLocation();
 
@@ -49,6 +47,7 @@ export function AppSidebar() {
     }
     return false;
   };
+  
   return <Sidebar>
       <SidebarContent className="bg-slate-300">
         {/* Logo Section */}

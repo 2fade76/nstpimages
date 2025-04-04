@@ -23,7 +23,7 @@ interface AssignmentsListProps {
   onStatusUpdate?: () => void;
 }
 
-type SortField = 'date' | 'status' | 'title';
+type SortField = 'date' | 'status' | 'photographer';
 type SortDirection = 'asc' | 'desc';
 
 export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
@@ -31,8 +31,8 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState<(Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) | null>(null);
-  const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortField, setSortField] = useState<'date' | 'status' | 'photographer'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [editForm, setEditForm] = useState({
     title: "",
     location: "",
@@ -88,15 +88,15 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
         comparison = (statusOrder[a.status as keyof typeof statusOrder] || 0) - 
                     (statusOrder[b.status as keyof typeof statusOrder] || 0);
       }
-      else if (sortField === 'title') {
-        comparison = a.title.localeCompare(b.title);
+      else if (sortField === 'photographer') {
+        comparison = a.photographers.name.localeCompare(b.photographers.name);
       }
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
   }, [assignments, sortField, sortDirection]);
 
-  const handleSort = (field: SortField) => {
+  const handleSort = (field: 'date' | 'status' | 'photographer') => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -391,14 +391,14 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleSort('title')}
+              onClick={() => handleSort('photographer')}
               className="flex items-center gap-1"
             >
-              Title
-              {sortField === 'title' && (
+              Photographer
+              {sortField === 'photographer' && (
                 sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
               )}
-              {sortField !== 'title' && <ArrowUpDown className="h-4 w-4" />}
+              {sortField !== 'photographer' && <ArrowUpDown className="h-4 w-4" />}
             </Button>
             <Button
               variant="outline"

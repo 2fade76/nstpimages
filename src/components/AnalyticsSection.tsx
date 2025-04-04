@@ -44,8 +44,13 @@ interface CompletedAssignmentsData {
   photographers: string[];
 }
 
+interface MonthlyDataPoint {
+  month: string;
+  [photographer: string]: string | number;
+}
+
 interface MonthlyCompletionsData {
-  chartData: { month: string, [photographer: string]: number }[];
+  chartData: MonthlyDataPoint[];
   photographers: string[];
 }
 
@@ -167,7 +172,7 @@ export const AnalyticsSection = () => {
     refetchInterval: 5000,
   });
 
-  const { data: monthlyCompletionsData, isLoading: isLoadingMonthlyData } = useQuery({
+  const { data: monthlyCompletionsData, isLoading: isLoadingMonthlyData } = useQuery<MonthlyCompletionsData>({
     queryKey: ['monthly-completions-by-photographer'],
     queryFn: async () => {
       const today = new Date();
@@ -193,7 +198,7 @@ export const AnalyticsSection = () => {
       if (!data || data.length === 0) {
         return {
           chartData: [],
-          months: []
+          photographers: []
         };
       }
       
@@ -209,12 +214,12 @@ export const AnalyticsSection = () => {
         }
       });
       
-      const photographerCounts = {};
+      const photographerCounts: Record<string, Record<string, number>> = {};
       photographers.forEach((name, id) => {
         photographerCounts[name] = months.reduce((acc, month) => {
           acc[month] = 0;
           return acc;
-        }, {});
+        }, {} as Record<string, number>);
       });
       
       data.forEach((assignment) => {
@@ -228,10 +233,10 @@ export const AnalyticsSection = () => {
         }
       });
       
-      const chartData = months.map(month => {
-        const monthData = { month };
+      const chartData: MonthlyDataPoint[] = months.map(month => {
+        const monthData: MonthlyDataPoint = { month };
         photographers.forEach((name) => {
-          monthData[name] = photographerCounts[name][month] || 0;
+          monthData[name] = photographerCounts[name]?.[month] || 0;
         });
         return monthData;
       });

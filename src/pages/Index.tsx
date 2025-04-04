@@ -8,14 +8,32 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase, verifySupabaseConnection } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 const Index = () => {
   const [connectionError, setConnectionError] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(location.search);
+  const currentTab = urlParams.get("tab") || "overview";
+
+  const handleTabChange = (value: string) => {
+    const newParams = new URLSearchParams(location.search);
+    if (value === "overview") {
+      newParams.delete("tab");
+    } else {
+      newParams.set("tab", value);
+    }
+    navigate({ search: newParams.toString() });
+  };
 
   const checkConnection = async () => {
     setIsReconnecting(true);
@@ -127,6 +145,16 @@ const Index = () => {
     });
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // You can implement search functionality here
+    toast({
+      title: "Search",
+      description: `Searching for: ${searchQuery}`,
+      duration: 3000
+    });
+  };
+
   return <DashboardLayout>
       <div className="space-y-8">
         {connectionError && <Alert variant="destructive" className="animate-pulse">
@@ -143,11 +171,33 @@ const Index = () => {
       
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
+          <form onSubmit={handleSearch} className="flex items-center gap-2">
+            <Input
+              placeholder="Search assignments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-[200px]"
+            />
+            <Button type="submit" size="icon" variant="ghost">
+              <Search className="h-5 w-5" />
+            </Button>
+          </form>
         </div>
         
-        <AnalyticsSummaryCard />
-
-        <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
+        <Tabs defaultValue={currentTab} onValueChange={handleTabChange} value={currentTab} className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="new">New Assignment</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="space-y-8">
+            <AnalyticsSummaryCard />
+            <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
+          </TabsContent>
+          <TabsContent value="new" className="space-y-4">
+            <h2 className="text-2xl font-semibold">Create New Assignment</h2>
+            <AssignmentForm />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>;
 };

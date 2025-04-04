@@ -1,5 +1,5 @@
 
-import { Calendar, Home, Plus, BarChart2, Settings, Users, Camera } from "lucide-react";
+import { Calendar, Home, Plus, BarChart2, Settings, Users, Camera, Search } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 
@@ -7,6 +7,10 @@ const menuItems = [{
   title: "Overview",
   icon: Home,
   path: "/"
+}, {
+  title: "New Assignment",
+  icon: Plus,
+  path: "/?tab=new"
 }, {
   title: "Photographers",
   icon: Users,

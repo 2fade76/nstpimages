@@ -18,6 +18,7 @@ const Index = () => {
   const [connectionError, setConnectionError] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const location = useLocation();
@@ -147,11 +148,34 @@ const Index = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // You can implement search functionality here
+    setIsSearching(true);
+    
+    console.log("Searching for:", searchQuery);
+    
+    if (searchQuery.trim() === "") {
+      // If search is empty, clear search state
+      setIsSearching(false);
+      queryClient.invalidateQueries({
+        queryKey: ['assignments']
+      });
+      toast({
+        title: "Search cleared",
+        description: "Showing all assignments",
+        duration: 2000
+      });
+      return;
+    }
+    
+    // Update the URL to include the search parameter
+    const newParams = new URLSearchParams(location.search);
+    newParams.set("search", searchQuery);
+    navigate({ search: newParams.toString() });
+    
+    // We'll pass the search query to the AssignmentsList component
     toast({
       title: "Search",
       description: `Searching for: ${searchQuery}`,
-      duration: 3000
+      duration: 2000
     });
   };
 
@@ -178,8 +202,8 @@ const Index = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-[200px]"
             />
-            <Button type="submit" size="icon" variant="ghost">
-              <Search className="h-5 w-5" />
+            <Button type="submit" size="icon" variant="ghost" disabled={isSearching}>
+              <Search className={`h-5 w-5 ${isSearching ? 'animate-spin' : ''}`} />
             </Button>
           </form>
         </div>
@@ -191,7 +215,12 @@ const Index = () => {
           </TabsList>
           <TabsContent value="overview" className="space-y-8">
             <AnalyticsSummaryCard />
-            <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} />
+            <AssignmentsList 
+              onStatusUpdate={handleAssignmentStatusUpdate} 
+              searchQuery={searchQuery}
+              isSearchActive={isSearching}
+              onSearchComplete={() => setIsSearching(false)}
+            />
           </TabsContent>
           <TabsContent value="new" className="space-y-4">
             <h2 className="text-2xl font-semibold">Create New Assignment</h2>

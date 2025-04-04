@@ -21,12 +21,20 @@ import { format, parseISO } from "date-fns";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
+  searchQuery?: string;
+  isSearchActive?: boolean;
+  onSearchComplete?: () => void;
 }
 
 type SortField = 'date' | 'status' | 'photographer';
 type SortDirection = 'asc' | 'desc';
 
-export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
+export const AssignmentsList = ({ 
+  onStatusUpdate, 
+  searchQuery = "", 
+  isSearchActive = false,
+  onSearchComplete
+}: AssignmentsListProps) => {
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -45,11 +53,14 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const shouldSearch = Boolean(searchQuery?.trim());
+
   const { data: assignments, isLoading, refetch } = useQuery({
-    queryKey: ['assignments'],
+    queryKey: ['assignments', searchQuery],
     queryFn: async () => {
-      console.log("Fetching assignments data");
-      const { data, error } = await supabase
+      console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search");
+      
+      let query = supabase
         .from('assignments')
         .select(`
           *,
@@ -57,18 +68,40 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
             id,
             name
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
+        
+      if (shouldSearch) {
+        const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
+        query = query
+          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
+          .order('created_at', { ascending: false });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error("Error fetching assignments:", error);
         throw error;
       }
+      
       console.log("Assignments data fetched:", data?.length || 0, "records");
+      
+      if (onSearchComplete) {
+        onSearchComplete();
+      }
       
       return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
     },
+    enabled: !isSearchActive || shouldSearch,
   });
+
+  useEffect(() => {
+    if (searchQuery?.trim()) {
+      refetch();
+    }
+  }, [searchQuery, refetch]);
 
   const sortedAssignments = useMemo(() => {
     if (!assignments) return [];
@@ -385,7 +418,8 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
           <div className="text-sm text-muted-foreground">
-            {sortedAssignments.length} total assignments
+            {sortedAssignments.length} {shouldSearch ? "matching" : "total"} assignments
+            {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
           </div>
           <div className="flex gap-2">
             <Button
@@ -429,7 +463,9 @@ export const AssignmentsList = ({ onStatusUpdate }: AssignmentsListProps) => {
 
         {sortedAssignments?.length === 0 ? (
           <div className="text-center p-8 border rounded-lg bg-muted/10">
-            No assignments found. Create a new assignment to get started.
+            {shouldSearch 
+              ? `No assignments found matching "${searchQuery}". Try a different search term.` 
+              : "No assignments found. Create a new assignment to get started."}
           </div>
         ) : (
           <div className="space-y-2">

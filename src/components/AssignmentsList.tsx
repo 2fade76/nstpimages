@@ -390,23 +390,20 @@ export const AssignmentsList = ({
 
   const statusColors = {
     open: "bg-status-open",
-    progress: "bg-status-progress",
-    cancel: "bg-status-hold",
     complete: "bg-status-complete",
+    cancelled: "bg-status-hold",
   };
 
   const statusTextColors = {
     open: "text-status-open",
-    progress: "text-status-progress",
-    cancel: "text-status-hold",
     complete: "text-status-complete",
+    cancelled: "text-status-hold",
   };
 
   const statusLabels = {
     open: "Open",
-    progress: "In Progress",
-    cancel: "Cancelled",
     complete: "Complete",
+    cancelled: "Cancelled",
   };
 
   if (isLoading) {
@@ -622,22 +619,16 @@ export const AssignmentsList = ({
                         Open
                       </span>
                     </SelectItem>
-                    <SelectItem value="progress">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-status-progress" />
-                        In Progress
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="cancel">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-status-hold" />
-                        Cancelled
-                      </span>
-                    </SelectItem>
                     <SelectItem value="complete">
                       <span className="flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-status-complete" />
                         Complete
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="cancelled">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-status-hold" />
+                        Cancelled
                       </span>
                     </SelectItem>
                   </SelectContent>

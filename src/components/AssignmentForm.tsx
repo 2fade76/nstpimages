@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -66,12 +65,10 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
     setIsSubmitting(true);
 
     try {
-      // Combine date and time
       const dateTime = new Date(date);
       const [hours, minutes] = time.split(':').map(Number);
       dateTime.setHours(hours, minutes);
       
-      // Format the date and time for storage
       const formattedDateTime = format(dateTime, "yyyy-MM-dd'T'HH:mm:ss");
       
       console.log("Creating assignment with status:", status);
@@ -103,7 +100,6 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
         description: "The photo assignment has been successfully created.",
       });
 
-      // Reset the form
       setTitle("");
       setLocation("");
       setDate(undefined);
@@ -242,22 +238,16 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
                 Open
               </span>
             </SelectItem>
-            <SelectItem value="progress">
-              <span className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-status-progress" />
-                In Progress
-              </span>
-            </SelectItem>
-            <SelectItem value="cancel">
-              <span className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-status-hold" />
-                Cancelled
-              </span>
-            </SelectItem>
             <SelectItem value="complete">
               <span className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-status-complete" />
                 Complete
+              </span>
+            </SelectItem>
+            <SelectItem value="cancelled">
+              <span className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-status-hold" />
+                Cancelled
               </span>
             </SelectItem>
           </SelectContent>

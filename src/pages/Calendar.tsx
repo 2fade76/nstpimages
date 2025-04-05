@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +35,6 @@ const Calendar = () => {
     },
   });
 
-  // Setup real-time subscription to assignments
   useEffect(() => {
     console.log('Setting up real-time subscription for calendar');
     const channel = supabase
@@ -47,7 +45,6 @@ const Calendar = () => {
         table: 'assignments',
       }, (payload) => {
         console.log('Calendar received real-time update:', payload);
-        // Force immediate refetch
         queryClient.invalidateQueries({ queryKey: ['assignments'] });
         queryClient.refetchQueries({ queryKey: ['assignments'] });
       })
@@ -61,11 +58,9 @@ const Calendar = () => {
     };
   }, [queryClient]);
 
-  // Format assignments for the selected date
   const selectedDateAssignments = assignments?.filter((assignment) => {
     if (!date) return false;
     
-    // Convert assignment.date string to Date object for comparison
     const assignmentDate = new Date(assignment.date);
     return (
       assignmentDate.getDate() === date.getDate() &&
@@ -127,11 +122,9 @@ const Calendar = () => {
                             ${
                               assignment.status === "open"
                                 ? "bg-status-open"
-                                : assignment.status === "progress"
-                                ? "bg-status-progress"
-                                : assignment.status === "cancel"
-                                ? "bg-status-hold"
-                                : "bg-status-complete"
+                                : assignment.status === "complete"
+                                ? "bg-status-complete"
+                                : "bg-status-hold"
                             }`}
                         ></span>
                         {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}

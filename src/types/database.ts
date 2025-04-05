@@ -15,6 +15,6 @@ export interface Assignment {
   location: string;
   date: string; // Now can include time, stored as ISO string
   photographer_id: string;
-  status: 'open' | 'progress' | 'cancel' | 'complete';
+  status: 'open' | 'complete' | 'cancelled';
   created_at: string;
 }

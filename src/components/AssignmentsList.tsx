@@ -183,7 +183,7 @@ export const AssignmentsList = ({
     mutationFn: async (assignmentData: Partial<Assignment>) => {
       console.log("Updating assignment with data:", assignmentData);
       
-      if (assignmentData.status && !['open', 'progress', 'cancel', 'complete'].includes(assignmentData.status)) {
+      if (assignmentData.status && !['open', 'complete', 'cancelled'].includes(assignmentData.status)) {
         throw new Error(`Invalid status: ${assignmentData.status}`);
       }
       

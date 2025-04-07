@@ -66,9 +66,6 @@ export const setupRealtimeSubscriptions = () => {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, payload => {
       console.log('Assignment change received:', payload);
     })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'photographers' }, payload => {
-      console.log('Photographer change received:', payload);
-    })
     .subscribe(status => {
       console.log('Realtime subscription status:', status);
     });

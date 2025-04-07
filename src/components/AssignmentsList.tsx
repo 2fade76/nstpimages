@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -72,8 +73,9 @@ export const AssignmentsList = ({
         
       if (shouldSearch) {
         const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
+        // Only search in title and location, removing photographer name search
         query = query
-          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm},photographers.name.ilike.${searchTerm}`)
+          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
           .order('created_at', { ascending: false });
       } else {
         query = query.order('created_at', { ascending: false });

@@ -60,6 +60,24 @@ export const verifySupabaseConnection = async () => {
   }
 };
 
+// Setup function for realtime subscriptions
+export const setupRealtimeSubscriptions = () => {
+  const channel = supabase.channel('db-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, payload => {
+      console.log('Assignment change received:', payload);
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'photographers' }, payload => {
+      console.log('Photographer change received:', payload);
+    })
+    .subscribe(status => {
+      console.log('Realtime subscription status:', status);
+    });
+    
+  return () => {
+    supabase.removeChannel(channel);
+  };
+};
+
 // Optional: Add convenience method to directly open the dashboard
 export const openSupabaseDashboard = (path = "") => {
   const projectId = "ynbwhrvvpcgoowwtnpbp";

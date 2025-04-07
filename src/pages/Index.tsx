@@ -5,7 +5,7 @@ import { AssignmentForm } from "@/components/AssignmentForm";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase, verifySupabaseConnection } from "@/integrations/supabase/client";
+import { supabase, verifySupabaseConnection, setupRealtimeSubscriptions } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw, Search } from "lucide-react";
@@ -53,6 +53,13 @@ const Index = () => {
 
   useEffect(() => {
     checkConnection();
+    
+    // Setup realtime subscriptions
+    const cleanupSubscriptions = setupRealtimeSubscriptions();
+    
+    return () => {
+      cleanupSubscriptions();
+    };
   }, []);
 
   useEffect(() => {
@@ -106,9 +113,27 @@ const Index = () => {
         setConnectionError(true);
       }
     });
+    
+    // Also subscribe to photographer changes for search functionality
+    const photographerChannel = supabase.channel('photographers-index-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'photographers'
+    }, payload => {
+      console.log("Index component received photographer update:", payload);
+      queryClient.invalidateQueries({
+        queryKey: ['photographers']
+      });
+      // Also refresh assignments since they include photographer data
+      queryClient.invalidateQueries({
+        queryKey: ['assignments']
+      });
+    }).subscribe();
+    
     return () => {
       console.log("Cleaning up real-time subscription on Index component");
       supabase.removeChannel(channel);
+      supabase.removeChannel(photographerChannel);
     };
   }, [queryClient, toast]);
 
@@ -197,10 +222,10 @@ const Index = () => {
           <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <Input
-              placeholder="Search assignments..."
+              placeholder="Search title, location, or photographer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-[200px]"
+              className="w-[280px]"
             />
             <Button type="submit" size="icon" variant="ghost" disabled={isSearching}>
               <Search className={`h-5 w-5 ${isSearching ? 'animate-spin' : ''}`} />

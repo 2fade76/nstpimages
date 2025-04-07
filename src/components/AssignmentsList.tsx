@@ -73,7 +73,7 @@ export const AssignmentsList = ({
       if (shouldSearch) {
         const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
         query = query
-          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
+          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm},photographers.name.ilike.${searchTerm}`)
           .order('created_at', { ascending: false });
       } else {
         query = query.order('created_at', { ascending: false });

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
 interface DailyAssignmentData {
   date: Date;
@@ -37,40 +37,55 @@ type AssignmentWithPhotographer = Assignment & {
 };
 export const AnalyticsSection = () => {
   const {
-    data: weeklyData,
+    data: monthlyData,
     isLoading
   } = useQuery({
-    queryKey: ['assignments-last-7-days'],
+    queryKey: ['assignments-this-month'],
     queryFn: async () => {
-      const lastSevenDays = Array.from({
-        length: 7
+      const today = new Date();
+      const startOfCurrentMonth = startOfMonth(today);
+      const endOfCurrentMonth = endOfMonth(today);
+      const daysInMonth = getDaysInMonth(today);
+      
+      // Create an array for all days in the current month
+      const daysInCurrentMonth = Array.from({
+        length: daysInMonth
       }, (_, i) => {
-        const date = subDays(new Date(), 6 - i);
+        const date = new Date(today.getFullYear(), today.getMonth(), i + 1);
         return {
           date,
           formattedDate: format(date, 'MMM dd'),
           count: 0
         };
       });
-      const sevenDaysAgo = subDays(new Date(), 6);
+
       const {
         data,
         error
-      } = await supabase.from('assignments').select('date').gte('date', startOfDay(sevenDaysAgo).toISOString()).lte('date', endOfDay(new Date()).toISOString());
+      } = await supabase.from('assignments')
+        .select('date')
+        .gte('date', startOfCurrentMonth.toISOString())
+        .lte('date', endOfCurrentMonth.toISOString());
+
       if (error) throw error;
+      
       if (data) {
         data.forEach(assignment => {
           const assignmentDate = new Date(assignment.date);
-          const dayIndex = lastSevenDays.findIndex(day => assignmentDate.getDate() === day.date.getDate() && assignmentDate.getMonth() === day.date.getMonth() && assignmentDate.getFullYear() === day.date.getFullYear());
-          if (dayIndex !== -1) {
-            lastSevenDays[dayIndex].count += 1;
+          if (isValid(assignmentDate)) {
+            const dayOfMonth = getDate(assignmentDate) - 1; // Arrays are 0-indexed
+            if (dayOfMonth >= 0 && dayOfMonth < daysInCurrentMonth.length) {
+              daysInCurrentMonth[dayOfMonth].count += 1;
+            }
           }
         });
       }
-      return lastSevenDays;
+      
+      return daysInCurrentMonth;
     },
     refetchInterval: 5000
   });
+
   const {
     data: completedAssignmentsData,
     isLoading: isLoadingCompletedData
@@ -225,13 +240,13 @@ export const AnalyticsSection = () => {
   return <div className="grid gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between bg-zinc-300">
-          <CardTitle>Assignments - Last 7 Days</CardTitle>
+          <CardTitle>Assignments - This Month</CardTitle>
         </CardHeader>
         <CardContent className="h-[400px]">
           {isLoading ? <div className="flex items-center justify-center h-full">
               <p>Loading data...</p>
             </div> : <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyData} margin={{
+              <LineChart data={monthlyData} margin={{
             top: 10,
             right: 30,
             left: 0,

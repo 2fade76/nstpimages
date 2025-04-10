@@ -1,40 +1,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar, LabelList } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
+
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
   count: number;
 }
+
 interface PhotographerAssignmentData {
   [photographerName: string]: number;
 }
+
 interface DateGroupedData {
   date: string;
   photographers: PhotographerAssignmentData;
 }
+
 interface ChartDataPoint {
   date: string;
   [photographerName: string]: string | number;
 }
+
 interface CompletedAssignmentsData {
   chartData: ChartDataPoint[];
   photographers: string[];
 }
+
 interface MonthlyDataPoint {
   month: string;
   [photographer: string]: string | number;
 }
+
 interface MonthlyCompletionsData {
   chartData: MonthlyDataPoint[];
   photographers: string[];
 }
+
 type AssignmentWithPhotographer = Assignment & {
   photographers?: Photographer;
 };
+
 export const AnalyticsSection = () => {
   const {
     data: monthlyData,
@@ -47,7 +56,6 @@ export const AnalyticsSection = () => {
       const endOfCurrentMonth = endOfMonth(today);
       const daysInMonth = getDaysInMonth(today);
       
-      // Create an array for all days in the current month
       const daysInCurrentMonth = Array.from({
         length: daysInMonth
       }, (_, i) => {
@@ -73,7 +81,7 @@ export const AnalyticsSection = () => {
         data.forEach(assignment => {
           const assignmentDate = new Date(assignment.date);
           if (isValid(assignmentDate)) {
-            const dayOfMonth = getDate(assignmentDate) - 1; // Arrays are 0-indexed
+            const dayOfMonth = getDate(assignmentDate) - 1;
             if (dayOfMonth >= 0 && dayOfMonth < daysInCurrentMonth.length) {
               daysInCurrentMonth[dayOfMonth].count += 1;
             }
@@ -150,6 +158,7 @@ export const AnalyticsSection = () => {
     },
     refetchInterval: 5000
   });
+
   const {
     data: monthlyCompletionsData,
     isLoading: isLoadingMonthlyData
@@ -160,6 +169,7 @@ export const AnalyticsSection = () => {
       const monthsToShow = 6;
       const startDate = startOfMonth(subMonths(today, monthsToShow - 1));
       const endDate = endOfMonth(today);
+
       const {
         data,
         error
@@ -170,30 +180,36 @@ export const AnalyticsSection = () => {
         `).eq('status', 'complete').gte('date', startDate.toISOString()).lte('date', endDate.toISOString()).order('date', {
         ascending: true
       });
+
       if (error) throw error;
+
       if (!data || data.length === 0) {
         return {
           chartData: [],
           photographers: []
         };
       }
+
       const months = Array.from({
         length: monthsToShow
       }, (_, i) => {
         const monthDate = subMonths(today, monthsToShow - 1 - i);
         return format(monthDate, 'MMM yyyy');
       });
+
       const photographers = new Map<string, string>();
       data.forEach(assignment => {
         if (assignment.photographers) {
           photographers.set(assignment.photographers.id, assignment.photographers.name);
         }
       });
+
       type PhotographerMonthCounts = {
         [photographer: string]: {
           [month: string]: number;
         };
       };
+
       const photographerCounts: PhotographerMonthCounts = {};
       photographers.forEach((name, id) => {
         photographerCounts[name] = months.reduce<Record<string, number>>((acc, month) => {
@@ -201,6 +217,7 @@ export const AnalyticsSection = () => {
           return acc;
         }, {});
       });
+
       data.forEach(assignment => {
         if (assignment.photographers && assignment.status === 'complete') {
           const assignmentMonth = format(parseISO(assignment.date), 'MMM yyyy');
@@ -210,15 +227,25 @@ export const AnalyticsSection = () => {
           }
         }
       });
+
       const chartData = months.map(month => {
         const monthData: MonthlyDataPoint = {
           month
         };
+        
         photographers.forEach(name => {
           monthData[name] = photographerCounts[name]?.[month] || 0;
         });
+        
+        let total = 0;
+        photographers.forEach(name => {
+          total += photographerCounts[name]?.[month] || 0;
+        });
+        monthData['total'] = total;
+        
         return monthData;
       });
+
       return {
         chartData,
         photographers: Array.from(photographers.values())
@@ -226,6 +253,7 @@ export const AnalyticsSection = () => {
     },
     refetchInterval: 5000
   });
+
   const COLORS = {
     total: '#9b87f5',
     open: '#f97316',
@@ -233,10 +261,12 @@ export const AnalyticsSection = () => {
     complete: '#4ade80',
     cancel: '#ef4444'
   };
+
   const getColor = (index: number) => {
     const colorPalette = ['#4ade80', '#3b82f6', '#f97316', '#ef4444', '#9b87f5', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#06b6d4'];
     return colorPalette[index % colorPalette.length];
   };
+
   return <div className="grid gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between bg-zinc-300">
@@ -302,7 +332,31 @@ export const AnalyticsSection = () => {
             }} />
                 <Tooltip formatter={(value, name) => [`${value} assignments`, name]} labelFormatter={label => `Month: ${label}`} />
                 <Legend />
-                {monthlyCompletionsData.photographers.map((photographer, index) => <Bar key={photographer} dataKey={photographer} name={photographer} fill={getColor(index)} stackId="a" />)}
+                {monthlyCompletionsData.photographers.map((photographer, index) => (
+                  <Bar key={photographer} dataKey={photographer} name={photographer} fill={getColor(index)} stackId="a" />
+                ))}
+                <Bar dataKey="total" name="Total" hide stackId="a">
+                  <LabelList 
+                    dataKey="total" 
+                    position="top" 
+                    content={({ x, y, width, height, value }) => {
+                      return (
+                        <g>
+                          <text 
+                            x={Number(x) + (Number(width) / 2)} 
+                            y={Number(y) - 10} 
+                            fill="#000000" 
+                            textAnchor="middle" 
+                            dominantBaseline="middle"
+                            fontWeight="bold"
+                          >
+                            {value}
+                          </text>
+                        </g>
+                      );
+                    }}
+                  />
+                </Bar>
               </BarChart>
             </ResponsiveContainer> : <div className="flex items-center justify-center h-full">
               <p>No monthly completed assignments found</p>

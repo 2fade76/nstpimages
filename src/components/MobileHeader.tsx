@@ -27,7 +27,7 @@ export const MobileHeader = () => {
       
       <div className="flex items-center">
         <Camera className="h-6 w-6 text-primary mr-2" />
-        <span className="font-semibold">NSTP PHOTO UNIT</span>
+        <span className="font-semibold text-sm sm:text-base">NSTP PHOTO UNIT</span>
       </div>
 
       <Button variant="ghost" size="icon" onClick={() => {}}>

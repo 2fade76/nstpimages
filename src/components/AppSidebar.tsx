@@ -1,8 +1,6 @@
-
 import { Calendar, Home, Plus, BarChart2, Settings, Users, Camera, Search } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-
 const menuItems = [{
   title: "Overview",
   icon: Home,
@@ -15,8 +13,7 @@ const menuItems = [{
   title: "Photographers",
   icon: Users,
   path: "/photographers"
-},
-{
+}, {
   title: "Calendar",
   icon: Calendar,
   path: "/calendar"
@@ -29,7 +26,6 @@ const menuItems = [{
   icon: Settings,
   path: "/settings"
 }];
-
 export function AppSidebar() {
   const location = useLocation();
 
@@ -51,9 +47,8 @@ export function AppSidebar() {
     }
     return false;
   };
-  
   return <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="bg-slate-200">
         {/* Logo Section - Only show in sidebar content, not in mobile view */}
         <div className="flex justify-center items-center py-3 sm:py-4 mb-2 hidden md:flex">
           <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />

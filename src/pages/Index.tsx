@@ -204,9 +204,11 @@ const Index = () => {
     });
   };
 
-  return <DashboardLayout>
+  return (
+    <DashboardLayout>
       <div className="space-y-8">
-        {connectionError && <Alert variant="destructive" className="animate-pulse">
+        {connectionError && (
+          <Alert variant="destructive" className="animate-pulse">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Connection Error</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
@@ -216,7 +218,8 @@ const Index = () => {
                 <RefreshCw className={`h-4 w-4 ${isReconnecting ? 'animate-spin' : ''}`} />
               </Button>
             </AlertDescription>
-          </Alert>}
+          </Alert>
+        )}
       
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
@@ -253,7 +256,8 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>;
+    </DashboardLayout>
+  );
 };
 
 export default Index;

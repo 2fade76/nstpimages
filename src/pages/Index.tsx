@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [connectionError, setConnectionError] = useState(false);
@@ -25,8 +26,28 @@ const Index = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const currentTab = urlParams.get("tab") || "overview";
+  const { isAdmin, isEditor } = useAuth();
+
+  // Only admins and editors can create new assignments, so redirect to overview if user doesn't have permission
+  useEffect(() => {
+    if (currentTab === "new" && !isAdmin && !isEditor) {
+      const newParams = new URLSearchParams(location.search);
+      newParams.delete("tab");
+      navigate({ search: newParams.toString() });
+    }
+  }, [currentTab, isAdmin, isEditor, location.search, navigate]);
 
   const handleTabChange = (value: string) => {
+    // Don't allow switching to new tab if not admin or editor
+    if (value === "new" && !isAdmin && !isEditor) {
+      toast({
+        title: "Permission denied",
+        description: "You don't have permission to create new assignments",
+        duration: 3000
+      });
+      return;
+    }
+
     const newParams = new URLSearchParams(location.search);
     if (value === "overview") {
       newParams.delete("tab");
@@ -236,7 +257,7 @@ const Index = () => {
         <Tabs defaultValue={currentTab} onValueChange={handleTabChange} value={currentTab} className="w-full">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="new">New Assignment</TabsTrigger>
+            {(isAdmin || isEditor) && <TabsTrigger value="new">New Assignment</TabsTrigger>}
           </TabsList>
           <TabsContent value="overview" className="space-y-8">
             <AnalyticsSummaryCard />
@@ -247,10 +268,12 @@ const Index = () => {
               onSearchComplete={() => setIsSearching(false)}
             />
           </TabsContent>
-          <TabsContent value="new" className="space-y-4">
-            <h2 className="text-2xl font-semibold">Create New Assignment</h2>
-            <AssignmentForm />
-          </TabsContent>
+          {(isAdmin || isEditor) && (
+            <TabsContent value="new" className="space-y-4">
+              <h2 className="text-2xl font-semibold">Create New Assignment</h2>
+              <AssignmentForm />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </DashboardLayout>;

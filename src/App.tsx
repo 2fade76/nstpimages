@@ -10,7 +10,6 @@ import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import Photographers from "./pages/Photographers";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { SupabaseDashboardAccess } from "./components/SupabaseDashboardAccess";
@@ -32,8 +31,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Search, X } from "lucide-react";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,26 +67,20 @@ const pages = [
     title: "Settings",
     path: "/settings",
   },
-  {
-    title: "Login",
-    path: "/auth",
-  }
 ];
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SidebarProvider defaultOpen={true}>
-          <TooltipProvider delayDuration={300}>
-            <BrowserRouter>
-              <AppContent />
-              <Toaster />
-              <Sonner position="top-center" />
-            </BrowserRouter>
-          </TooltipProvider>
-        </SidebarProvider>
-      </AuthProvider>
+      <SidebarProvider defaultOpen={true}>
+        <TooltipProvider delayDuration={300}>
+          <BrowserRouter>
+            <AppContent />
+            <Toaster />
+            <Sonner position="top-center" />
+          </BrowserRouter>
+        </TooltipProvider>
+      </SidebarProvider>
     </QueryClientProvider>
   );
 };
@@ -213,47 +204,11 @@ const AppContent = () => {
       </Dialog>
       
       <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route 
-          path="/" 
-          element={
-            <ProtectedRoute>
-              <Index />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/calendar" 
-          element={
-            <ProtectedRoute>
-              <Calendar />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/settings" 
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/analytics" 
-          element={
-            <ProtectedRoute>
-              <Analytics />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/photographers" 
-          element={
-            <ProtectedRoute>
-              <Photographers />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="/" element={<Index />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/photographers" element={<Photographers />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

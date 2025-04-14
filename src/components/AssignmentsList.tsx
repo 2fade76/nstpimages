@@ -1,6 +1,9 @@
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Calendar, MapPin, User, Edit, Trash2, Search, Clock, ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
@@ -15,8 +18,6 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { format, parseISO } from "date-fns";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -49,7 +50,6 @@ export const AssignmentsList = ({
     status: "" as Assignment['status'],
   });
   
-  const { isAdmin, isEditor } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -72,6 +72,7 @@ export const AssignmentsList = ({
         
       if (shouldSearch) {
         const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
+        // Only search in title and location, removing photographer name search
         query = query
           .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
           .order('created_at', { ascending: false });
@@ -296,15 +297,6 @@ export const AssignmentsList = ({
   });
 
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
-    if (!isAdmin && !isEditor) {
-      toast({
-        title: "Permission denied",
-        description: "You don't have permission to edit assignments",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setCurrentAssignment(assignment);
     
     let dateValue = assignment.date;
@@ -331,15 +323,6 @@ export const AssignmentsList = ({
   };
 
   const handleDeleteClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
-    if (!isAdmin) {
-      toast({
-        title: "Permission denied",
-        description: "Only administrators can delete assignments",
-        variant: "destructive",
-      });
-      return;
-    }
-
     console.log("Opening delete dialog for assignment:", assignment.id);
     setCurrentAssignment(assignment);
     setIsDeleteDialogOpen(true);
@@ -373,47 +356,6 @@ export const AssignmentsList = ({
       toast({
         title: "Error",
         description: "No assignment selected for deletion.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleStatusUpdate = async (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }, newStatus: Assignment['status']) => {
-    if (!isAdmin && !isEditor && assignment.status === newStatus) {
-      return; // No change, no need to update
-    }
-    
-    try {
-      const { error } = await supabase
-        .from('assignments')
-        .update({ status: newStatus })
-        .eq('id', assignment.id);
-      
-      if (error) {
-        console.error("Error updating status:", error);
-        toast({
-          title: "Error",
-          description: `Failed to update status: ${error.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      toast({
-        title: "Status updated",
-        description: `Assignment status updated to ${newStatus}`,
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      
-      if (onStatusUpdate) {
-        onStatusUpdate();
-      }
-    } catch (error) {
-      console.error("Error in handleStatusUpdate:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
         variant: "destructive",
       });
     }
@@ -533,38 +475,17 @@ export const AssignmentsList = ({
                       <h3 className={`text-lg font-semibold ${statusTextColors[assignment.status]}`}>
                         {assignment.title}
                       </h3>
-                      <div className="flex items-center space-x-3">
-                        <Select
-                          value={assignment.status}
-                          onValueChange={(value) => handleStatusUpdate(assignment, value as Assignment['status'])}
-                        >
-                          <SelectTrigger className="h-8 w-auto min-w-[120px]">
-                            <div className="flex items-center">
-                              <span className={`h-2 w-2 rounded-full mr-2 ${statusColors[assignment.status]}`} />
-                              <span className="text-sm">{statusLabels[assignment.status]}</span>
-                            </div>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="open">
-                              <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-status-open" />
-                                Open
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="complete">
-                              <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-status-complete" />
-                                Complete
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="cancelled">
-                              <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-status-hold" />
-                                Cancelled
-                              </span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
+                          <span
+                            className={`h-3 w-3 rounded-full mr-2 ${
+                              statusColors[assignment.status]
+                            }`}
+                          />
+                          <span className="text-sm">
+                            {statusLabels[assignment.status]}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-col md:flex-row md:items-center gap-3 text-sm text-muted-foreground">
@@ -591,26 +512,22 @@ export const AssignmentsList = ({
                       </div>
                     </div>
                   </div>
-                  {(isAdmin || isEditor) && (
-                    <div className="flex space-x-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEditClick(assignment)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      {isAdmin && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleDeleteClick(assignment)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex space-x-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleEditClick(assignment)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleDeleteClick(assignment)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}

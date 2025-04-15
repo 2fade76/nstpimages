@@ -18,10 +18,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm md:hidden border-b">
           <MobileHeader />
         </div>
-        <div className="hidden md:flex w-full items-center justify-end p-4 border-b">
+        <div className="hidden md:flex w-full items-center justify-end p-2 border-b">
           <UserMenu />
         </div>
-        <div className="container max-w-7xl py-4 md:py-8">
+        <div className="container py-4 md:py-6 px-4">
           {children}
         </div>
       </div>

@@ -1,32 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Search, X } from "lucide-react";
-import { 
-  Command, 
-  CommandInput, 
-  CommandList, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandItem 
-} from "@/components/ui/command";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import Index from "./pages/Index";
-import Calendar from "./pages/Calendar";
-import Settings from "./pages/Settings";
-import Analytics from "./pages/Analytics";
-import Photographers from "./pages/Photographers";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import { useAuth } from "./hooks/useAuth";
-import { SidebarProvider } from "./components/ui/sidebar";
-import { SupabaseDashboardAccess } from "./components/SupabaseDashboardAccess";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { CommandDialog } from "@/components/CommandDialog";
+import { AppRoutes } from "@/components/AppRoutes";
+import { SupabaseDashboardAccess } from "@/components/SupabaseDashboardAccess";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,68 +20,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const pages = [
-  {
-    title: "Home",
-    path: "/",
-  },
-  {
-    title: "New Assignment",
-    path: "/?tab=new",
-  },
-  {
-    title: "Photographers",
-    path: "/photographers",
-  },
-  {
-    title: "Calendar",
-    path: "/calendar",
-  },
-  {
-    title: "Analytics",
-    path: "/analytics",
-  },
-  {
-    title: "Settings",
-    path: "/settings",
-  },
-];
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  return <>{children}</>;
-};
-
 const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SidebarProvider defaultOpen={true}>
-        <TooltipProvider delayDuration={300}>
-          <BrowserRouter>
-            <AppContent />
-            <Toaster />
-            <Sonner position="top-center" />
-          </BrowserRouter>
-        </TooltipProvider>
-      </SidebarProvider>
-    </QueryClientProvider>
-  );
-};
-
-const AppContent = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -119,147 +41,20 @@ const AppContent = () => {
     };
   }, [isSearchOpen]);
 
-  useEffect(() => {
-    setIsSearchOpen(false);
-  }, [location]);
-
-  const handleSelect = (path: string) => {
-    navigate(path);
-    setIsSearchOpen(false);
-    setSearchQuery("");
-  };
-  
-  const filteredPages = pages.filter((page) => {
-    if (!searchQuery.trim()) return true;
-    return page.title.toLowerCase().includes(searchQuery.toLowerCase().trim());
-  });
-
-  const getTriggerPosition = () => {
-    const commandTrigger = document.querySelector('[data-command-trigger="true"]');
-    if (commandTrigger instanceof HTMLElement) {
-      const rect = commandTrigger.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const top = rect.bottom + 8;
-      
-      const maxWidth = 500;
-      const leftPos = Math.max(24, Math.min(centerX - maxWidth / 2, window.innerWidth - maxWidth - 24));
-      
-      return {
-        style: {
-          position: "fixed" as const,
-          top: `${top}px`,
-          left: `${leftPos}px`,
-          width: `${Math.min(maxWidth, window.innerWidth - 48)}px`,
-        },
-      };
-    }
-    
-    return {};
-  };
-
   return (
-    <>
-      <button
-        data-command-trigger="true"
-        className="h-0 w-0 overflow-hidden"
-        aria-label="Open command palette"
-        onClick={() => setIsSearchOpen(true)}
-      />
-      
-      <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <DialogContent 
-          className="p-0 gap-0 overflow-hidden"
-          hideCloseButton={true}
-          {...getTriggerPosition()}
-        >
-          <Command className="rounded-lg">
-            <div className="flex items-center border-b p-2 px-3">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <CommandInput 
-                placeholder="Search pages..."
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                className="flex-1 border-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0 h-9"
-              />
-              <div className="flex gap-1">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-7 w-7 rounded-full"
-                  onClick={() => setIsSearchOpen(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <CommandList className="max-h-[300px]">
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup heading="Pages">
-                {filteredPages.map((page) => (
-                  <CommandItem
-                    key={page.path}
-                    value={page.title}
-                    onSelect={() => handleSelect(page.path)}
-                    className="flex items-center gap-2 px-4 cursor-pointer"
-                  >
-                    <div className="flex flex-col">
-                      <span>{page.title}</span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </DialogContent>
-      </Dialog>
-      
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Index />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/calendar"
-          element={
-            <ProtectedRoute>
-              <Calendar />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute>
-              <Analytics />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/photographers"
-          element={
-            <ProtectedRoute>
-              <Photographers />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      
+    <QueryClientProvider client={queryClient}>
+      <SidebarProvider defaultOpen={true}>
+        <TooltipProvider delayDuration={300}>
+          <BrowserRouter>
+            <CommandDialog isOpen={isSearchOpen} setIsOpen={setIsSearchOpen} />
+            <AppRoutes />
+            <Toaster />
+            <Sonner position="top-center" />
+          </BrowserRouter>
+        </TooltipProvider>
+      </SidebarProvider>
       <SupabaseDashboardAccess />
-    </>
+    </QueryClientProvider>
   );
 };
 

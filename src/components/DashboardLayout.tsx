@@ -9,12 +9,12 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { isSidebarOpen } = useSidebar();
+  const { open } = useSidebar();
 
   return (
     <div className="flex min-h-screen bg-background">
       <AppSidebar />
-      <div className={`flex-1 transition-all ${isSidebarOpen ? 'md:ml-[240px]' : 'md:ml-0'}`}>
+      <div className={`flex-1 transition-all ${open ? 'md:ml-[240px]' : 'md:ml-0'}`}>
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm md:hidden border-b">
           <MobileHeader />
         </div>

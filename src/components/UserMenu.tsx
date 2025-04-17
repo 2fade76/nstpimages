@@ -18,9 +18,12 @@ export function UserMenu() {
     );
   }
 
+  // Extract display name from the email if no user metadata is available
+  const displayName = user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">{user.email}</span>
+      <span className="text-sm text-muted-foreground">Welcome, {displayName}</span>
       <Button
         variant="ghost"
         size="icon"

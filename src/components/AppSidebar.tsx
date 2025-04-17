@@ -1,4 +1,3 @@
-
 import { Calendar, Home, Plus, BarChart2, Settings, Users, Search } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
@@ -33,19 +32,15 @@ const menuItems = [{
 export function AppSidebar() {
   const location = useLocation();
 
-  // Function to determine if a menu item is active
   const isActive = (path: string) => {
-    // For the home page with no tab param
     if (path === "/" && location.pathname === "/" && !location.search) {
       return true;
     }
 
-    // For tab-based navigation
     if (path.includes("?tab=") && location.search.includes(path.split("?")[1])) {
       return true;
     }
 
-    // For direct routes like /calendar
     if (path !== "/" && location.pathname === path) {
       return true;
     }
@@ -55,12 +50,11 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent className="bg-slate-200">
-        {/* Logo Section - Only show in sidebar content, not in mobile view */}
         <div className="flex justify-center items-center py-3 sm:py-4 mb-2 hidden md:flex">
           <img 
             src="/lovable-uploads/bb1c2738-cc8b-4894-bdba-c321f66338dd.png" 
             alt="NSTP Images Logo" 
-            className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+            className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
           />
         </div>
         
@@ -83,7 +77,6 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      {/* Add user welcome message and sign out at the bottom */}
       <SidebarFooter className="bg-slate-200 py-2 px-3">
         <UserMenu />
       </SidebarFooter>

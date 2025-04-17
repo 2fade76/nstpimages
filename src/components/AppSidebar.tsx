@@ -1,5 +1,5 @@
 
-import { Calendar, Home, Plus, BarChart2, Settings, Users, Camera, Search } from "lucide-react";
+import { Calendar, Home, Plus, BarChart2, Settings, Users, Search } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "@/components/UserMenu";
@@ -57,7 +57,11 @@ export function AppSidebar() {
       <SidebarContent className="bg-slate-200">
         {/* Logo Section - Only show in sidebar content, not in mobile view */}
         <div className="flex justify-center items-center py-3 sm:py-4 mb-2 hidden md:flex">
-          <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+          <img 
+            src="/lovable-uploads/bb1c2738-cc8b-4894-bdba-c321f66338dd.png" 
+            alt="NSTP Images Logo" 
+            className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+          />
         </div>
         
         <SidebarGroup>

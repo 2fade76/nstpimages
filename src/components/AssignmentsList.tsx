@@ -103,12 +103,6 @@ export const AssignmentsList = ({
     enabled: !isSearchActive || shouldSearch,
   });
 
-  useEffect(() => {
-    if (searchQuery?.trim()) {
-      refetch();
-    }
-  }, [searchQuery, refetch]);
-
   const sortedAndFilteredAssignments = useMemo(() => {
     if (!assignments) return [];
     
@@ -132,21 +126,6 @@ export const AssignmentsList = ({
       return sortDirection === 'asc' ? comparison : -comparison;
     });
   }, [assignments, sortField, sortDirection]);
-
-  useEffect(() => {
-    setSelectedPhotographerFilter(null);
-  }, [searchQuery]);
-
-  const handleSort = (field: 'date' | 'status' | 'photographer') => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-    
-    console.log(`Sorting changed to ${field} in ${sortDirection === 'asc' ? 'desc' : 'asc'} order`);
-  };
 
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],

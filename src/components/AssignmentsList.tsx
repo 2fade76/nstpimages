@@ -55,7 +55,6 @@ export const AssignmentsList = ({
     photographer_id: "",
     status: "" as Assignment['status'],
   });
-  const [selectedPhotographerFilter, setSelectedPhotographerFilter] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -113,13 +112,7 @@ export const AssignmentsList = ({
   const sortedAndFilteredAssignments = useMemo(() => {
     if (!assignments) return [];
     
-    let filtered = [...assignments];
-    
-    if (selectedPhotographerFilter) {
-      filtered = filtered.filter(assignment => assignment.photographer_id === selectedPhotographerFilter);
-    }
-    
-    return filtered.sort((a, b) => {
+    return assignments.sort((a, b) => {
       let comparison = 0;
       
       if (sortField === 'date') {
@@ -138,7 +131,7 @@ export const AssignmentsList = ({
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  }, [assignments, sortField, sortDirection, selectedPhotographerFilter]);
+  }, [assignments, sortField, sortDirection]);
 
   useEffect(() => {
     setSelectedPhotographerFilter(null);
@@ -434,39 +427,6 @@ export const AssignmentsList = ({
             {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
           </div>
           <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <Filter className="h-4 w-4 mr-1" />
-                  {selectedPhotographerFilter ? 
-                    photographers?.find(p => p.id === selectedPhotographerFilter)?.name :
-                    "Filter Photographer"
-                  }
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                {selectedPhotographerFilter && (
-                  <DropdownMenuItem 
-                    onClick={() => setSelectedPhotographerFilter(null)}
-                  >
-                    Show All
-                  </DropdownMenuItem>
-                )}
-                {photographers?.map((photographer) => (
-                  <DropdownMenuItem
-                    key={photographer.id}
-                    onClick={() => setSelectedPhotographerFilter(photographer.id)}
-                  >
-                    {photographer.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
             <Button
               variant="outline"
               size="sm"

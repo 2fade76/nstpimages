@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -427,14 +428,14 @@ export function AssignmentsList({
           </div>
           <div className="flex gap-2">
             <Select
-              value={selectedPhotographerId || ""}
-              onValueChange={(value) => setSelectedPhotographerId(value || null)}
+              value={selectedPhotographerId || "all"}
+              onValueChange={(value) => setSelectedPhotographerId(value === "all" ? null : value)}
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Filter by photographer" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All photographers</SelectItem>
+                <SelectItem value="all">All photographers</SelectItem>
                 {photographers?.map((photographer) => (
                   <SelectItem key={photographer.id} value={photographer.id}>
                     {photographer.name}

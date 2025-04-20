@@ -32,20 +32,20 @@ interface AssignmentsListProps {
   onSearchComplete?: () => void;
 }
 
-type SortField = 'date' | 'status' | 'photographer';
+type SortField = 'date' | 'status';
 type SortDirection = 'asc' | 'desc';
 
-export const AssignmentsList = ({ 
+export function AssignmentsList({ 
   onStatusUpdate, 
   searchQuery = "", 
   isSearchActive = false,
   onSearchComplete
-}: AssignmentsListProps) => {
+}: AssignmentsListProps) {
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState<(Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) | null>(null);
-  const [sortField, setSortField] = useState<'date' | 'status' | 'photographer'>('date');
+  const [sortField, setSortField] = useState<'date' | 'status'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [editForm, setEditForm] = useState({
     title: "",
@@ -106,7 +106,14 @@ export const AssignmentsList = ({
   const sortedAndFilteredAssignments = useMemo(() => {
     if (!assignments) return [];
     
-    return assignments.sort((a, b) => {
+    let filtered = assignments;
+    
+    // Filter by photographer if one is selected
+    if (selectedPhotographerId) {
+      filtered = assignments.filter(assignment => assignment.photographer_id === selectedPhotographerId);
+    }
+    
+    return filtered.sort((a, b) => {
       let comparison = 0;
       
       if (sortField === 'date') {
@@ -119,13 +126,10 @@ export const AssignmentsList = ({
         comparison = (statusOrder[a.status as keyof typeof statusOrder] || 0) - 
                     (statusOrder[b.status as keyof typeof statusOrder] || 0);
       }
-      else if (sortField === 'photographer') {
-        comparison = a.photographers.name.localeCompare(b.photographers.name);
-      }
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  }, [assignments, sortField, sortDirection]);
+  }, [assignments, sortField, sortDirection, selectedPhotographerId]);
 
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],
@@ -139,6 +143,15 @@ export const AssignmentsList = ({
       return data as Photographer[];
     },
   });
+
+  const handleSort = (field: 'date' | 'status') => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
 
   useEffect(() => {
     console.log("Setting up real-time subscription in AssignmentsList");
@@ -393,6 +406,13 @@ export const AssignmentsList = ({
     cancelled: "Cancelled",
   };
 
+  // Reset photographer filter when search is performed
+  useEffect(() => {
+    if (searchQuery?.trim()) {
+      setSelectedPhotographerId(null);
+    }
+  }, [searchQuery]);
+
   if (isLoading) {
     return <div className="p-4 text-center">Loading assignments...</div>;
   }
@@ -406,18 +426,22 @@ export const AssignmentsList = ({
             {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSort('photographer')}
-              className="flex items-center gap-1"
+            <Select
+              value={selectedPhotographerId || ""}
+              onValueChange={(value) => setSelectedPhotographerId(value || null)}
             >
-              Photographer
-              {sortField === 'photographer' && (
-                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-              )}
-              {sortField !== 'photographer' && <ArrowUpDown className="h-4 w-4" />}
-            </Button>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by photographer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All photographers</SelectItem>
+                {photographers?.map((photographer) => (
+                  <SelectItem key={photographer.id} value={photographer.id}>
+                    {photographer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="sm"
@@ -671,4 +695,4 @@ export const AssignmentsList = ({
       )}
     </>
   );
-};
+}

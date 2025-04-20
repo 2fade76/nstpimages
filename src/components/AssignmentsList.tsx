@@ -5,7 +5,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Calendar, MapPin, User, Edit, Trash2, Search, Clock, ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
+import { Calendar, MapPin, User, Edit, Trash2, Search, Clock, ArrowUpDown, ArrowDown, ArrowUp, Filter } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -18,6 +18,12 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { format, parseISO } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -49,7 +55,8 @@ export const AssignmentsList = ({
     photographer_id: "",
     status: "" as Assignment['status'],
   });
-  
+  const [selectedPhotographerFilter, setSelectedPhotographerFilter] = useState<string | null>(null);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -72,7 +79,6 @@ export const AssignmentsList = ({
         
       if (shouldSearch) {
         const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
-        // Only search in title and location, removing photographer name search
         query = query
           .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
           .order('created_at', { ascending: false });
@@ -104,12 +110,16 @@ export const AssignmentsList = ({
     }
   }, [searchQuery, refetch]);
 
-  const sortedAssignments = useMemo(() => {
+  const sortedAndFilteredAssignments = useMemo(() => {
     if (!assignments) return [];
     
-    console.log(`Sorting assignments by ${sortField} in ${sortDirection} order`);
+    let filtered = [...assignments];
     
-    return [...assignments].sort((a, b) => {
+    if (selectedPhotographerFilter) {
+      filtered = filtered.filter(assignment => assignment.photographer_id === selectedPhotographerFilter);
+    }
+    
+    return filtered.sort((a, b) => {
       let comparison = 0;
       
       if (sortField === 'date') {
@@ -128,7 +138,11 @@ export const AssignmentsList = ({
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  }, [assignments, sortField, sortDirection]);
+  }, [assignments, sortField, sortDirection, selectedPhotographerFilter]);
+
+  useEffect(() => {
+    setSelectedPhotographerFilter(null);
+  }, [searchQuery]);
 
   const handleSort = (field: 'date' | 'status' | 'photographer') => {
     if (field === sortField) {
@@ -416,10 +430,43 @@ export const AssignmentsList = ({
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
           <div className="text-sm text-muted-foreground">
-            {sortedAssignments.length} {shouldSearch ? "matching" : "total"} assignments
+            {sortedAndFilteredAssignments.length} {shouldSearch ? "matching" : "total"} assignments
             {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
           </div>
           <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Filter className="h-4 w-4 mr-1" />
+                  {selectedPhotographerFilter ? 
+                    photographers?.find(p => p.id === selectedPhotographerFilter)?.name :
+                    "Filter Photographer"
+                  }
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[200px]">
+                {selectedPhotographerFilter && (
+                  <DropdownMenuItem 
+                    onClick={() => setSelectedPhotographerFilter(null)}
+                  >
+                    Show All
+                  </DropdownMenuItem>
+                )}
+                {photographers?.map((photographer) => (
+                  <DropdownMenuItem
+                    key={photographer.id}
+                    onClick={() => setSelectedPhotographerFilter(photographer.id)}
+                  >
+                    {photographer.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button
               variant="outline"
               size="sm"
@@ -459,7 +506,7 @@ export const AssignmentsList = ({
           </div>
         </div>
 
-        {sortedAssignments?.length === 0 ? (
+        {sortedAndFilteredAssignments?.length === 0 ? (
           <div className="text-center p-8 border rounded-lg bg-muted/10">
             {shouldSearch 
               ? `No assignments found matching "${searchQuery}". Try a different search term.` 
@@ -467,7 +514,7 @@ export const AssignmentsList = ({
           </div>
         ) : (
           <div className="space-y-2">
-            {sortedAssignments?.map((assignment) => (
+            {sortedAndFilteredAssignments?.map((assignment) => (
               <Card key={assignment.id} className="animate-fadeIn">
                 <div className="p-4 flex items-start justify-between">
                   <div className="space-y-2 flex-1">
@@ -680,7 +727,7 @@ export const AssignmentsList = ({
           isOpen={true}
           onClose={() => setSelectedPhotographerId(null)}
           photographerId={selectedPhotographerId}
-          assignments={sortedAssignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
+          assignments={sortedAndFilteredAssignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
         />
       )}
     </>

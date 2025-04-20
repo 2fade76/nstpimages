@@ -1,18 +1,20 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AssignmentWithPhotographer } from "@/types/assignments";
 import { useToast } from "./use-toast";
 
-export const useAssignments = (searchQuery: string = "") => {
+export const useAssignments = (searchQuery: string = "", photographerId: string | null = null) => {
   const shouldSearch = Boolean(searchQuery?.trim());
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: assignments, isLoading, refetch } = useQuery({
-    queryKey: ['assignments', searchQuery],
+    queryKey: ['assignments', searchQuery, photographerId],
     queryFn: async () => {
-      console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search");
+      console.log("Fetching assignments data", 
+        shouldSearch ? `with search: ${searchQuery}` : "without search",
+        photographerId ? `for photographer: ${photographerId}` : "for all photographers"
+      );
       
       let query = supabase
         .from('assignments')
@@ -26,12 +28,14 @@ export const useAssignments = (searchQuery: string = "") => {
         
       if (shouldSearch) {
         const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
-        query = query
-          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
-          .order('created_at', { ascending: false });
-      } else {
-        query = query.order('created_at', { ascending: false });
+        query = query.or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`);
       }
+
+      if (photographerId) {
+        query = query.eq('photographer_id', photographerId);
+      }
+      
+      query = query.order('created_at', { ascending: false });
       
       const { data, error } = await query;
       
@@ -42,7 +46,7 @@ export const useAssignments = (searchQuery: string = "") => {
       
       return data as AssignmentWithPhotographer[];
     },
-    enabled: !shouldSearch || Boolean(searchQuery?.trim()),
+    enabled: !shouldSearch || Boolean(searchQuery?.trim()) || Boolean(photographerId),
   });
 
   const updateAssignmentMutation = useMutation({
@@ -115,4 +119,3 @@ export const useAssignments = (searchQuery: string = "") => {
     isDeleting: deleteAssignmentMutation.isPending,
   };
 };
-

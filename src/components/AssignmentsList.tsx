@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import { AssignmentFilters } from "./assignments/AssignmentFilters";
 import { EditAssignmentDialog } from "./assignments/EditAssignmentDialog";
 import { DeleteAssignmentDialog } from "./assignments/DeleteAssignmentDialog";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
+import { Photographer } from "@/types/database";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -45,7 +45,7 @@ export function AssignmentsList({
     deleteAssignment,
     isUpdating,
     isDeleting
-  } = useAssignments(searchQuery);
+  } = useAssignments(searchQuery, selectedPhotographerId);
 
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],
@@ -56,7 +56,11 @@ export function AssignmentsList({
         .order('name');
       
       if (error) throw error;
-      return data;
+      
+      return (data || []).map(photographer => ({
+        ...photographer,
+        status: photographer.status as Photographer['status']
+      })) as Photographer[];
     },
   });
 
@@ -155,7 +159,6 @@ export function AssignmentsList({
     }
   };
 
-  // Reset photographer filter when search is performed
   useEffect(() => {
     if (searchQuery?.trim()) {
       setSelectedPhotographerId(null);
@@ -237,4 +240,3 @@ export function AssignmentsList({
     </>
   );
 }
-

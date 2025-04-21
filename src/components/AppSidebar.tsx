@@ -2,6 +2,7 @@ import { Calendar, Home, Plus, BarChart2, Settings, Users, Search } from "lucide
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "@/components/UserMenu";
+import { DateTimeDisplay } from "./DateTimeDisplay";
 
 const menuItems = [{
   title: "Overview",
@@ -50,12 +51,13 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent className="bg-slate-200">
-        <div className="flex justify-center items-center py-3 sm:py-4 mb-2 hidden md:flex">
+        <div className="flex flex-col justify-center items-center py-3 sm:py-4 mb-2 hidden md:flex">
           <img 
             src="/lovable-uploads/bb1c2738-cc8b-4894-bdba-c321f66338dd.png" 
             alt="NSTP Images Logo" 
             className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
           />
+          <DateTimeDisplay />
         </div>
         
         <SidebarGroup>

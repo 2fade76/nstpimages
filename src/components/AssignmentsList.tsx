@@ -208,6 +208,10 @@ export const AssignmentsList = ({
       
       console.log(`Updating assignment ID: ${currentAssignment.id} with status: ${assignmentData.status}`);
       
+      if (assignmentData.date && typeof assignmentData.date === 'string') {
+        console.log("Combined date and time before update:", assignmentData.date);
+      }
+      
       const { data, error } = await supabase
         .from('assignments')
         .update(assignmentData)
@@ -313,16 +317,21 @@ export const AssignmentsList = ({
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
     setCurrentAssignment(assignment);
     
-    let dateValue = assignment.date;
-    let timeValue = "12:00";
+    let dateValue = '';
+    let timeValue = '';
     
-    if (assignment.date.includes('T')) {
-      const [datePart, timePart] = assignment.date.split('T');
-      dateValue = datePart;
-      if (timePart) {
-        timeValue = timePart.substring(0, 5);
+    if (assignment.date) {
+      if (assignment.date.includes('T')) {
+        const [datePart, timePart] = assignment.date.split('T');
+        dateValue = datePart;
+        timeValue = timePart ? timePart.substring(0, 5) : '12:00';
+      } else {
+        dateValue = assignment.date;
+        timeValue = '12:00';
       }
     }
+    
+    console.log("Edit assignment with date:", dateValue, "and time:", timeValue);
     
     setEditForm({
       title: assignment.title,
@@ -347,7 +356,7 @@ export const AssignmentsList = ({
     console.log("Submitting form with data:", editForm);
     
     const combinedDate = `${editForm.date}T${editForm.time}:00`;
-    console.log("Combined date and time:", combinedDate);
+    console.log("Combined date and time for update:", combinedDate);
     
     const updatedAssignment: Partial<Assignment> = {
       title: editForm.title,
@@ -544,12 +553,10 @@ export const AssignmentsList = ({
                         <Calendar className="mr-2 h-4 w-4" />
                         {formatDateTime(assignment.date)}
                       </div>
-                      {assignment.date.includes('T') && (
-                        <div className="flex items-center">
-                          <Clock className="mr-2 h-4 w-4" />
-                          {formatTime(assignment.date)}
-                        </div>
-                      )}
+                      <div className="flex items-center">
+                        <Clock className="mr-2 h-4 w-4" />
+                        {formatTime(assignment.date)}
+                      </div>
                       <div 
                         className="flex items-center cursor-pointer hover:text-primary transition-colors"
                         onClick={() => setSelectedPhotographerId(assignment.photographers.id)}

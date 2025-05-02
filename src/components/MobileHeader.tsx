@@ -3,6 +3,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/UserMenu";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function MobileHeader() {
   const { toggleSidebar } = useSidebar();
@@ -13,7 +14,10 @@ export function MobileHeader() {
         <Menu className="h-5 w-5" />
       </Button>
       
-      <UserMenu />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <UserMenu />
+      </div>
     </div>
   );
 }

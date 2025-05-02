@@ -1,8 +1,10 @@
-import { Calendar, Home, Plus, BarChart2, Settings, Users, Search } from "lucide-react";
+
+import { Calendar, Home, Plus, BarChart2, Settings, Users, Moon, Sun } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "@/components/UserMenu";
 import { DateTimeDisplay } from "./DateTimeDisplay";
+import { ThemeToggle } from "./ThemeToggle";
 
 const menuItems = [{
   title: "Overview",
@@ -50,7 +52,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent className="bg-slate-200">
+      <SidebarContent className="bg-slate-200 dark:bg-slate-900">
         <div className="flex flex-col justify-center items-center py-3 sm:py-4 mb-2 hidden md:flex">
           <img 
             src="/lovable-uploads/bb1c2738-cc8b-4894-bdba-c321f66338dd.png" 
@@ -79,7 +81,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="bg-slate-200 py-2 px-3">
+      <SidebarFooter className="bg-slate-200 dark:bg-slate-900 py-2 px-3 flex items-center justify-between">
+        <ThemeToggle />
         <UserMenu />
       </SidebarFooter>
     </Sidebar>

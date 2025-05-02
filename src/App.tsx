@@ -9,6 +9,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { CommandDialog } from "@/components/CommandDialog";
 import { AppRoutes } from "@/components/AppRoutes";
 import { SupabaseDashboardAccess } from "@/components/SupabaseDashboardAccess";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,16 +44,18 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider defaultOpen={true}>
-        <TooltipProvider delayDuration={300}>
-          <BrowserRouter>
-            <CommandDialog isOpen={isSearchOpen} setIsOpen={setIsSearchOpen} />
-            <AppRoutes />
-            <Toaster />
-            <Sonner position="top-center" />
-          </BrowserRouter>
-        </TooltipProvider>
-      </SidebarProvider>
+      <ThemeProvider>
+        <SidebarProvider defaultOpen={true}>
+          <TooltipProvider delayDuration={300}>
+            <BrowserRouter>
+              <CommandDialog isOpen={isSearchOpen} setIsOpen={setIsSearchOpen} />
+              <AppRoutes />
+              <Toaster />
+              <Sonner position="top-center" />
+            </BrowserRouter>
+          </TooltipProvider>
+        </SidebarProvider>
+      </ThemeProvider>
       <SupabaseDashboardAccess />
     </QueryClientProvider>
   );

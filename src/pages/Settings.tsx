@@ -1,12 +1,21 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useTheme } from "@/providers/ThemeProvider";
+
 const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const { theme, setTheme } = useTheme();
+  const darkModeEnabled = theme === "dark";
+  
+  const handleDarkModeChange = (checked: boolean) => {
+    setTheme(checked ? "dark" : "light");
+  };
+
   return <DashboardLayout>
       <div className="space-y-8">
         <div className="flex justify-between items-center">
@@ -16,11 +25,11 @@ const Settings = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-slate-300">
-            <CardHeader className="bg-slate-400">
+          <Card className="bg-slate-300 dark:bg-slate-800">
+            <CardHeader className="bg-slate-400 dark:bg-slate-700">
               <CardTitle>Application Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 bg-slate-300">
+            <CardContent className="space-y-6 bg-slate-300 dark:bg-slate-800">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="notifications">Notifications</Label>
@@ -38,7 +47,7 @@ const Settings = () => {
                     Switch between light and dark theme
                   </p>
                 </div>
-                <Switch id="darkMode" checked={darkModeEnabled} onCheckedChange={setDarkModeEnabled} />
+                <Switch id="darkMode" checked={darkModeEnabled} onCheckedChange={handleDarkModeChange} />
               </div>
               
               <div className="flex items-center justify-between">
@@ -53,8 +62,8 @@ const Settings = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-300">
-            <CardHeader className="bg-slate-400">
+          <Card className="bg-slate-300 dark:bg-slate-800">
+            <CardHeader className="bg-slate-400 dark:bg-slate-700">
               <CardTitle>Account Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">

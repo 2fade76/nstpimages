@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -319,7 +318,7 @@ export const AssignmentsList = ({
     setCurrentAssignment(assignment);
     
     let dateValue = '';
-    let timeValue = '';
+    let timeValue = '12:00'; // Default time if none is set
     
     if (assignment.date) {
       if (assignment.date.includes('T')) {
@@ -328,7 +327,6 @@ export const AssignmentsList = ({
         timeValue = timePart ? timePart.substring(0, 5) : '12:00';
       } else {
         dateValue = assignment.date;
-        timeValue = '12:00';
       }
     }
     
@@ -402,14 +400,18 @@ export const AssignmentsList = ({
   };
 
   const formatTime = (dateString: string) => {
-    if (!dateString || !dateString.includes('T')) return '';
+    if (!dateString) return '12:00';
     
     try {
-      const date = parseISO(dateString);
-      return format(date, 'h:mm a');
+      if (dateString.includes('T')) {
+        const date = parseISO(dateString);
+        return format(date, 'h:mm a');
+      } else {
+        return '12:00';
+      }
     } catch (error) {
       console.error("Error formatting time:", error);
-      return '';
+      return '12:00';
     }
   };
 
@@ -556,7 +558,7 @@ export const AssignmentsList = ({
                       </div>
                       <div className="flex items-center">
                         <Clock className="mr-2 h-4 w-4" />
-                        {formatTime(assignment.date) || "No time set"}
+                        {formatTime(assignment.date)}
                       </div>
                       <div 
                         className="flex items-center cursor-pointer hover:text-primary transition-colors"

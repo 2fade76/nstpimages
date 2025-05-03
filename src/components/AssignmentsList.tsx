@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -555,7 +556,7 @@ export const AssignmentsList = ({
                       </div>
                       <div className="flex items-center">
                         <Clock className="mr-2 h-4 w-4" />
-                        {formatTime(assignment.date)}
+                        {formatTime(assignment.date) || "No time set"}
                       </div>
                       <div 
                         className="flex items-center cursor-pointer hover:text-primary transition-colors"

@@ -100,6 +100,10 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
         description: "The photo assignment has been successfully created.",
       });
 
+      if (onAssignmentCreated) {
+        onAssignmentCreated();
+      }
+
       setTitle("");
       setLocation("");
       setDate(undefined);

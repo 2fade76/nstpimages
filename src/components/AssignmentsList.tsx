@@ -94,6 +94,7 @@ export const AssignmentsList = ({
       }
       
       console.log("Assignments data fetched:", data?.length || 0, "records");
+      console.log("Sample data:", data?.[0]);
       
       if (onSearchComplete) {
         onSearchComplete();
@@ -321,6 +322,7 @@ export const AssignmentsList = ({
     let timeValue = '12:00'; // Default time if none is set
     
     if (assignment.date) {
+      // Extract date part from the date field
       if (assignment.date.includes('T')) {
         const [datePart, timePart] = assignment.date.split('T');
         dateValue = datePart;
@@ -400,18 +402,18 @@ export const AssignmentsList = ({
   };
 
   const formatTime = (dateString: string) => {
-    if (!dateString) return '12:00';
+    if (!dateString) return '12:00 PM';
     
     try {
       if (dateString.includes('T')) {
         const date = parseISO(dateString);
         return format(date, 'h:mm a');
       } else {
-        return '12:00';
+        return '12:00 PM'; // Default formatted time
       }
     } catch (error) {
       console.error("Error formatting time:", error);
-      return '12:00';
+      return '12:00 PM';
     }
   };
 

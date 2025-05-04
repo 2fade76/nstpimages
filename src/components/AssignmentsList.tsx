@@ -209,13 +209,23 @@ export const AssignmentsList = ({
       
       console.log(`Updating assignment ID: ${currentAssignment.id} with status: ${assignmentData.status}`);
       
-      if (assignmentData.date && typeof assignmentData.date === 'string') {
-        console.log("Combined date and time before update:", assignmentData.date);
-      }
+      // Handle date and time separately
+      const formattedDate = assignmentData.date;
+      const formattedTime = assignmentData.time;
+      
+      console.log("Updating with date:", formattedDate);
+      console.log("Updating with time:", formattedTime);
       
       const { data, error } = await supabase
         .from('assignments')
-        .update(assignmentData)
+        .update({
+          title: assignmentData.title,
+          location: assignmentData.location,
+          date: formattedDate,
+          time: formattedTime,
+          photographer_id: assignmentData.photographer_id,
+          status: assignmentData.status
+        })
         .eq('id', currentAssignment.id)
         .select();
       
@@ -318,19 +328,8 @@ export const AssignmentsList = ({
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
     setCurrentAssignment(assignment);
     
-    let dateValue = '';
-    let timeValue = '12:00'; // Default time if none is set
-    
-    if (assignment.date) {
-      // Extract date part from the date field
-      if (assignment.date.includes('T')) {
-        const [datePart, timePart] = assignment.date.split('T');
-        dateValue = datePart;
-        timeValue = timePart ? timePart.substring(0, 5) : '12:00';
-      } else {
-        dateValue = assignment.date;
-      }
-    }
+    let dateValue = assignment.date || '';
+    let timeValue = assignment.time ? assignment.time.substring(0, 5) : '12:00'; // Default time if none is set
     
     console.log("Edit assignment with date:", dateValue, "and time:", timeValue);
     
@@ -356,13 +355,12 @@ export const AssignmentsList = ({
     e.preventDefault();
     console.log("Submitting form with data:", editForm);
     
-    const combinedDate = `${editForm.date}T${editForm.time}:00`;
-    console.log("Combined date and time for update:", combinedDate);
-    
+    // Keep date and time separate
     const updatedAssignment: Partial<Assignment> = {
       title: editForm.title,
       location: editForm.location,
-      date: combinedDate,
+      date: editForm.date,
+      time: editForm.time + ':00', // Add seconds to match time format in database
       photographer_id: editForm.photographer_id,
       status: editForm.status as Assignment['status']
     };
@@ -389,28 +387,27 @@ export const AssignmentsList = ({
     if (!dateString) return '';
     
     try {
-      if (dateString.includes('T')) {
-        const date = parseISO(dateString);
-        return format(date, 'MMM d, yyyy');
-      } else {
-        return dateString;
-      }
+      // Just format the date part
+      return format(new Date(dateString), 'MMM d, yyyy');
     } catch (error) {
       console.error("Error formatting date:", error);
       return dateString;
     }
   };
 
-  const formatTime = (dateString: string) => {
-    if (!dateString) return '12:00 PM';
+  const formatTime = (timeString: string | null) => {
+    if (!timeString) return '12:00 PM';
     
     try {
-      if (dateString.includes('T')) {
-        const date = parseISO(dateString);
-        return format(date, 'h:mm a');
-      } else {
-        return '12:00 PM'; // Default formatted time
-      }
+      // Format the time from "HH:MM:SS" to "h:mm a" (e.g., "3:30 PM")
+      const [hours, minutes] = timeString.split(':').map(Number);
+      
+      // Create a date object with today's date but with the given hours and minutes
+      const date = new Date();
+      date.setHours(hours);
+      date.setMinutes(minutes);
+      
+      return format(date, 'h:mm a');
     } catch (error) {
       console.error("Error formatting time:", error);
       return '12:00 PM';
@@ -560,7 +557,7 @@ export const AssignmentsList = ({
                       </div>
                       <div className="flex items-center">
                         <Clock className="mr-2 h-4 w-4" />
-                        {formatTime(assignment.date)}
+                        {formatTime(assignment.time)}
                       </div>
                       <div 
                         className="flex items-center cursor-pointer hover:text-primary transition-colors"

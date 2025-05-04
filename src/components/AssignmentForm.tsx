@@ -65,21 +65,23 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
     setIsSubmitting(true);
 
     try {
-      const dateTime = new Date(date);
-      const [hours, minutes] = time.split(':').map(Number);
-      dateTime.setHours(hours, minutes);
+      // Format the date for the date column (YYYY-MM-DD) without time
+      const formattedDate = format(date, "yyyy-MM-dd");
       
-      const formattedDateTime = format(dateTime, "yyyy-MM-dd'T'HH:mm:ss");
+      // Keep time as a separate field in the format HH:MM:SS
+      const timeValue = time + ':00'; // Add seconds to time
       
       console.log("Creating assignment with status:", status);
-      console.log("Date and time:", formattedDateTime);
+      console.log("Date:", formattedDate);
+      console.log("Time:", timeValue);
       
       const { data, error } = await supabase
         .from('assignments')
         .insert({
           title,
           location,
-          date: formattedDateTime,
+          date: formattedDate,
+          time: timeValue,
           photographer_id: photographer,
           status
         })

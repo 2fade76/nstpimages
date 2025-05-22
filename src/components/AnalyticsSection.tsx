@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
+
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
@@ -35,6 +36,7 @@ interface MonthlyCompletionsData {
 type AssignmentWithPhotographer = Assignment & {
   photographers?: Photographer;
 };
+
 export const AnalyticsSection = () => {
   const {
     data: monthlyData,
@@ -144,79 +146,64 @@ export const AnalyticsSection = () => {
     data: monthlyCompletionsData,
     isLoading: isLoadingMonthlyData
   } = useQuery({
-    queryKey: ['monthly-completions-by-photographer'],
+    queryKey: ['monthly-completions-total'],
     queryFn: async () => {
       const today = new Date();
       const monthsToShow = 6;
       const startDate = startOfMonth(subMonths(today, monthsToShow - 1));
       const endDate = endOfMonth(today);
+      
       const {
         data,
         error
-      } = await supabase.from('assignments').select(`
-          date,
-          status,
-          photographers (id, name)
-        `).eq('status', 'complete').gte('date', startDate.toISOString()).lte('date', endDate.toISOString()).order('date', {
-        ascending: true
-      });
+      } = await supabase.from('assignments')
+        .select('date, status')
+        .eq('status', 'complete')
+        .gte('date', startDate.toISOString())
+        .lte('date', endDate.toISOString())
+        .order('date', { ascending: true });
+        
       if (error) throw error;
+      
       if (!data || data.length === 0) {
         return {
           chartData: [],
-          photographers: []
         };
       }
+      
       const months = Array.from({
         length: monthsToShow
       }, (_, i) => {
         const monthDate = subMonths(today, monthsToShow - 1 - i);
         return format(monthDate, 'MMM yyyy');
       });
-      const photographers = new Map<string, string>();
+      
+      // Initialize monthly counts with zeros
+      const monthlyCounts = months.reduce<Record<string, number>>((acc, month) => {
+        acc[month] = 0;
+        return acc;
+      }, {});
+      
+      // Count completed assignments by month
       data.forEach(assignment => {
-        if (assignment.photographers) {
-          photographers.set(assignment.photographers.id, assignment.photographers.name);
-        }
-      });
-      type PhotographerMonthCounts = {
-        [photographer: string]: {
-          [month: string]: number;
-        };
-      };
-      const photographerCounts: PhotographerMonthCounts = {};
-      photographers.forEach((name, id) => {
-        photographerCounts[name] = months.reduce<Record<string, number>>((acc, month) => {
-          acc[month] = 0;
-          return acc;
-        }, {});
-      });
-      data.forEach(assignment => {
-        if (assignment.photographers && assignment.status === 'complete') {
+        if (assignment.status === 'complete') {
           const assignmentMonth = format(parseISO(assignment.date), 'MMM yyyy');
-          const photographerName = assignment.photographers.name;
-          if (months.includes(assignmentMonth) && photographerCounts[photographerName]) {
-            photographerCounts[photographerName][assignmentMonth]++;
+          if (months.includes(assignmentMonth)) {
+            monthlyCounts[assignmentMonth]++;
           }
         }
       });
+      
+      // Create chart data format
       const chartData = months.map(month => {
-        const monthData: MonthlyDataPoint = {
-          month
+        return {
+          month,
+          total: monthlyCounts[month]
         };
-        photographers.forEach(name => {
-          monthData[name] = photographerCounts[name]?.[month] || 0;
-        });
-        let total = 0;
-        photographers.forEach(name => {
-          total += photographerCounts[name]?.[month] || 0;
-        });
-        monthData['total'] = total;
-        return monthData;
       });
+      
       return {
-        chartData,
-        photographers: Array.from(photographers.values())
+        chartData
       };
     },
     refetchInterval: 5000
@@ -271,7 +258,7 @@ export const AnalyticsSection = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between bg-slate-950">
-          <CardTitle>Monthly Completed Assignments by Photographer</CardTitle>
+          <CardTitle>Monthly Completed Assignments - Total</CardTitle>
         </CardHeader>
         <CardContent className="h-[400px]">
           {isLoadingMonthlyData ? <div className="flex items-center justify-center h-full">
@@ -297,8 +284,7 @@ export const AnalyticsSection = () => {
             }} />
                 <Tooltip formatter={(value, name) => [`${value} assignments`, name]} labelFormatter={label => `Month: ${label}`} />
                 <Legend />
-                {monthlyCompletionsData.photographers.map((photographer, index) => <Bar key={photographer} dataKey={photographer} name={photographer} fill={getColor(index)} stackId="a" />)}
-                <Bar dataKey="total" name="Total" hide stackId="a">
+                <Bar dataKey="total" name="Total Completions" fill={COLORS.total} stackId="a">
                   <LabelList dataKey="total" position="top" content={({
                 x,
                 y,

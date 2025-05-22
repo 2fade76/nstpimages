@@ -234,7 +234,7 @@ export const AnalyticsSection = () => {
   };
   return <div className="grid gap-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between bg-gray-500">
+        <CardHeader className="flex flex-row items-center justify-between bg-slate-950">
           <CardTitle>Assignments Volume- This Month</CardTitle>
         </CardHeader>
         <CardContent className="h-[400px]">
@@ -270,7 +270,7 @@ export const AnalyticsSection = () => {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between bg-gray-500">
+        <CardHeader className="flex flex-row items-center justify-between bg-slate-950">
           <CardTitle>Monthly Completed Assignments by Photographer</CardTitle>
         </CardHeader>
         <CardContent className="h-[400px]">

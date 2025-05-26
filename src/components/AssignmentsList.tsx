@@ -24,6 +24,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -34,6 +43,8 @@ interface AssignmentsListProps {
 
 type SortField = 'date' | 'status' | 'photographer';
 type SortDirection = 'asc' | 'desc';
+
+const ITEMS_PER_PAGE = 10;
 
 export const AssignmentsList = ({ 
   onStatusUpdate, 
@@ -47,6 +58,7 @@ export const AssignmentsList = ({
   const [currentAssignment, setCurrentAssignment] = useState<(Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) | null>(null);
   const [sortField, setSortField] = useState<'date' | 'status' | 'photographer'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
   const [editForm, setEditForm] = useState({
     title: "",
     location: "",
@@ -62,8 +74,8 @@ export const AssignmentsList = ({
 
   const shouldSearch = Boolean(searchQuery?.trim());
 
-  const { data: assignments, isLoading, refetch } = useQuery({
-    queryKey: ['assignments', searchQuery],
+  const { data: assignmentsData, isLoading, refetch } = useQuery({
+    queryKey: ['assignments', searchQuery, currentPage, sortField, sortDirection, selectedPhotographerFilter],
     queryFn: async () => {
       console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search");
       
@@ -75,74 +87,66 @@ export const AssignmentsList = ({
             id,
             name
           )
-        `);
+        `, { count: 'exact' });
         
       if (shouldSearch) {
         const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
-        query = query
-          .or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`)
-          .order('created_at', { ascending: false });
-      } else {
-        query = query.order('created_at', { ascending: false });
+        query = query.or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`);
+      }
+
+      if (selectedPhotographerFilter) {
+        query = query.eq('photographer_id', selectedPhotographerFilter);
       }
       
-      const { data, error } = await query;
+      // Apply sorting
+      if (sortField === 'date') {
+        query = query.order('date', { ascending: sortDirection === 'asc' });
+      } else if (sortField === 'status') {
+        query = query.order('status', { ascending: sortDirection === 'asc' });
+      } else if (sortField === 'photographer') {
+        query = query.order('photographers(name)', { ascending: sortDirection === 'asc' });
+      }
+      
+      // Apply pagination
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      query = query.range(from, to);
+      
+      const { data, error, count } = await query;
       
       if (error) {
         console.error("Error fetching assignments:", error);
         throw error;
       }
       
-      console.log("Assignments data fetched:", data?.length || 0, "records");
-      console.log("Sample data:", data?.[0]);
+      console.log("Assignments data fetched:", data?.length || 0, "records", "Total count:", count);
       
       if (onSearchComplete) {
         onSearchComplete();
       }
       
-      return data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
+      return {
+        assignments: data as (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[],
+        totalCount: count || 0
+      };
     },
     enabled: !isSearchActive || shouldSearch,
   });
 
+  const assignments = assignmentsData?.assignments || [];
+  const totalCount = assignmentsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
   useEffect(() => {
     if (searchQuery?.trim()) {
+      setCurrentPage(1); // Reset to first page when searching
       refetch();
     }
   }, [searchQuery, refetch]);
 
-  const sortedAndFilteredAssignments = useMemo(() => {
-    if (!assignments) return [];
-    
-    let filtered = [...assignments];
-    
-    if (selectedPhotographerFilter) {
-      filtered = filtered.filter(assignment => assignment.photographer_id === selectedPhotographerFilter);
-    }
-    
-    return filtered.sort((a, b) => {
-      let comparison = 0;
-      
-      if (sortField === 'date') {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        comparison = dateA - dateB;
-      } 
-      else if (sortField === 'status') {
-        const statusOrder = { 'open': 0, 'progress': 1, 'complete': 2, 'cancel': 3 };
-        comparison = (statusOrder[a.status as keyof typeof statusOrder] || 0) - 
-                    (statusOrder[b.status as keyof typeof statusOrder] || 0);
-      }
-      else if (sortField === 'photographer') {
-        comparison = a.photographers.name.localeCompare(b.photographers.name);
-      }
-      
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }, [assignments, sortField, sortDirection, selectedPhotographerFilter]);
-
   useEffect(() => {
     setSelectedPhotographerFilter(null);
+    setCurrentPage(1); // Reset to first page when search query changes
   }, [searchQuery]);
 
   const handleSort = (field: 'date' | 'status' | 'photographer') => {
@@ -152,8 +156,15 @@ export const AssignmentsList = ({
       setSortField(field);
       setSortDirection('asc');
     }
+    setCurrentPage(1); // Reset to first page when sorting changes
     
     console.log(`Sorting changed to ${field} in ${sortDirection === 'asc' ? 'desc' : 'asc'} order`);
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   const { data: photographers } = useQuery({
@@ -209,20 +220,13 @@ export const AssignmentsList = ({
       
       console.log(`Updating assignment ID: ${currentAssignment.id} with status: ${assignmentData.status}`);
       
-      // Handle date and time separately
-      const formattedDate = assignmentData.date;
-      const formattedTime = assignmentData.time;
-      
-      console.log("Updating with date:", formattedDate);
-      console.log("Updating with time:", formattedTime);
-      
       const { data, error } = await supabase
         .from('assignments')
         .update({
           title: assignmentData.title,
           location: assignmentData.location,
-          date: formattedDate,
-          time: formattedTime,
+          date: assignmentData.date,
+          time: assignmentData.time,
           photographer_id: assignmentData.photographer_id,
           status: assignmentData.status
         })
@@ -329,7 +333,7 @@ export const AssignmentsList = ({
     setCurrentAssignment(assignment);
     
     let dateValue = assignment.date || '';
-    let timeValue = assignment.time ? assignment.time.substring(0, 5) : '12:00'; // Default time if none is set
+    let timeValue = assignment.time ? assignment.time.substring(0, 5) : '12:00';
     
     console.log("Edit assignment with date:", dateValue, "and time:", timeValue);
     
@@ -355,12 +359,11 @@ export const AssignmentsList = ({
     e.preventDefault();
     console.log("Submitting form with data:", editForm);
     
-    // Keep date and time separate
     const updatedAssignment: Partial<Assignment> = {
       title: editForm.title,
       location: editForm.location,
       date: editForm.date,
-      time: editForm.time + ':00', // Add seconds to match time format in database
+      time: editForm.time + ':00',
       photographer_id: editForm.photographer_id,
       status: editForm.status as Assignment['status']
     };
@@ -387,7 +390,6 @@ export const AssignmentsList = ({
     if (!dateString) return '';
     
     try {
-      // Just format the date part
       return format(new Date(dateString), 'MMM d, yyyy');
     } catch (error) {
       console.error("Error formatting date:", error);
@@ -399,10 +401,8 @@ export const AssignmentsList = ({
     if (!timeString) return '12:00 PM';
     
     try {
-      // Format the time from "HH:MM:SS" to "h:mm a" (e.g., "3:30 PM")
       const [hours, minutes] = timeString.split(':').map(Number);
       
-      // Create a date object with today's date but with the given hours and minutes
       const date = new Date();
       date.setHours(hours);
       date.setMinutes(minutes);
@@ -441,8 +441,12 @@ export const AssignmentsList = ({
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
           <div className="text-sm text-muted-foreground">
-            {sortedAndFilteredAssignments.length} {shouldSearch ? "matching" : "total"} assignments
-            {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
+            Showing {assignments.length} of {totalCount} assignments {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
+            {totalPages > 1 && (
+              <span className="ml-2">
+                (Page {currentPage} of {totalPages})
+              </span>
+            )}
           </div>
           <div className="flex gap-2">
             <DropdownMenu>
@@ -462,7 +466,10 @@ export const AssignmentsList = ({
               <DropdownMenuContent align="end" className="w-[200px]">
                 {selectedPhotographerFilter && (
                   <DropdownMenuItem 
-                    onClick={() => setSelectedPhotographerFilter(null)}
+                    onClick={() => {
+                      setSelectedPhotographerFilter(null);
+                      setCurrentPage(1);
+                    }}
                   >
                     Show All
                   </DropdownMenuItem>
@@ -470,7 +477,10 @@ export const AssignmentsList = ({
                 {photographers?.map((photographer) => (
                   <DropdownMenuItem
                     key={photographer.id}
-                    onClick={() => setSelectedPhotographerFilter(photographer.id)}
+                    onClick={() => {
+                      setSelectedPhotographerFilter(photographer.id);
+                      setCurrentPage(1);
+                    }}
                   >
                     {photographer.name}
                   </DropdownMenuItem>
@@ -517,77 +527,151 @@ export const AssignmentsList = ({
           </div>
         </div>
 
-        {sortedAndFilteredAssignments?.length === 0 ? (
+        {assignments?.length === 0 ? (
           <div className="text-center p-8 border rounded-lg bg-muted/10">
             {shouldSearch 
               ? `No assignments found matching "${searchQuery}". Try a different search term.` 
               : "No assignments found. Create a new assignment to get started."}
           </div>
         ) : (
-          <div className="space-y-2">
-            {sortedAndFilteredAssignments?.map((assignment) => (
-              <Card key={assignment.id} className="animate-fadeIn">
-                <div className="p-4 flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className={`text-lg font-semibold ${statusTextColors[assignment.status]}`}>
-                        {assignment.title}
-                      </h3>
-                      <div className="flex items-center space-x-2">
+          <>
+            <div className="space-y-2">
+              {assignments?.map((assignment) => (
+                <Card key={assignment.id} className="animate-fadeIn">
+                  <div className="p-4 flex items-start justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className={`text-lg font-semibold ${statusTextColors[assignment.status]}`}>
+                          {assignment.title}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center">
+                            <span
+                              className={`h-3 w-3 rounded-full mr-2 ${
+                                statusColors[assignment.status]
+                              }`}
+                            />
+                            <span className="text-sm">
+                              {statusLabels[assignment.status]}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col md:flex-row md:items-center gap-3 text-sm text-muted-foreground">
                         <div className="flex items-center">
-                          <span
-                            className={`h-3 w-3 rounded-full mr-2 ${
-                              statusColors[assignment.status]
-                            }`}
-                          />
-                          <span className="text-sm">
-                            {statusLabels[assignment.status]}
-                          </span>
+                          <MapPin className="mr-2 h-4 w-4" />
+                          {assignment.location}
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {formatDateTime(assignment.date)}
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="mr-2 h-4 w-4" />
+                          {formatTime(assignment.time)}
+                        </div>
+                        <div 
+                          className="flex items-center cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => setSelectedPhotographerId(assignment.photographers.id)}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          {assignment.photographers.name}
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col md:flex-row md:items-center gap-3 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <MapPin className="mr-2 h-4 w-4" />
-                        {assignment.location}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {formatDateTime(assignment.date)}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4" />
-                        {formatTime(assignment.time)}
-                      </div>
-                      <div 
-                        className="flex items-center cursor-pointer hover:text-primary transition-colors"
-                        onClick={() => setSelectedPhotographerId(assignment.photographers.id)}
+                    <div className="flex space-x-2 ml-4">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleEditClick(assignment)}
                       >
-                        <User className="mr-2 h-4 w-4" />
-                        {assignment.photographers.name}
-                      </div>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDeleteClick(assignment)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEditClick(assignment)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDeleteClick(assignment)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {/* Show first page */}
+                    {currentPage > 3 && (
+                      <>
+                        <PaginationItem>
+                          <PaginationLink onClick={() => handlePageChange(1)} className="cursor-pointer">
+                            1
+                          </PaginationLink>
+                        </PaginationItem>
+                        {currentPage > 4 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                      </>
+                    )}
+                    
+                    {/* Show pages around current page */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNumber = Math.max(1, currentPage - 2) + i;
+                      if (pageNumber > totalPages) return null;
+                      
+                      return (
+                        <PaginationItem key={pageNumber}>
+                          <PaginationLink 
+                            onClick={() => handlePageChange(pageNumber)}
+                            isActive={currentPage === pageNumber}
+                            className="cursor-pointer"
+                          >
+                            {pageNumber}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    
+                    {/* Show last page */}
+                    {currentPage < totalPages - 2 && (
+                      <>
+                        {currentPage < totalPages - 3 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink onClick={() => handlePageChange(totalPages)} className="cursor-pointer">
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </>
+                    )}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -736,7 +820,7 @@ export const AssignmentsList = ({
           isOpen={true}
           onClose={() => setSelectedPhotographerId(null)}
           photographerId={selectedPhotographerId}
-          assignments={sortedAndFilteredAssignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
+          assignments={assignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
         />
       )}
     </>

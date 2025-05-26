@@ -11,28 +11,12 @@ import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Assignment, Photographer } from "@/types/database";
-import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./ui/dialog";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { format, parseISO } from "date-fns";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { AssignmentCard } from "./AssignmentCard";
+import { AssignmentFilters } from "./AssignmentFilters";
+import { AssignmentPagination } from "./AssignmentPagination";
+import { EditAssignmentDialog } from "./EditAssignmentDialog";
+import { DeleteAssignmentDialog } from "./DeleteAssignmentDialog";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -98,7 +82,6 @@ export const AssignmentsList = ({
         query = query.eq('photographer_id', selectedPhotographerFilter);
       }
       
-      // Apply sorting
       if (sortField === 'date') {
         query = query.order('date', { ascending: sortDirection === 'asc' });
       } else if (sortField === 'status') {
@@ -107,7 +90,6 @@ export const AssignmentsList = ({
         query = query.order('photographers(name)', { ascending: sortDirection === 'asc' });
       }
       
-      // Apply pagination
       const from = (currentPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
       query = query.range(from, to);
@@ -139,14 +121,14 @@ export const AssignmentsList = ({
 
   useEffect(() => {
     if (searchQuery?.trim()) {
-      setCurrentPage(1); // Reset to first page when searching
+      setCurrentPage(1);
       refetch();
     }
   }, [searchQuery, refetch]);
 
   useEffect(() => {
     setSelectedPhotographerFilter(null);
-    setCurrentPage(1); // Reset to first page when search query changes
+    setCurrentPage(1);
   }, [searchQuery]);
 
   const handleSort = (field: 'date' | 'status' | 'photographer') => {
@@ -156,7 +138,7 @@ export const AssignmentsList = ({
       setSortField(field);
       setSortDirection('asc');
     }
-    setCurrentPage(1); // Reset to first page when sorting changes
+    setCurrentPage(1);
     
     console.log(`Sorting changed to ${field} in ${sortDirection === 'asc' ? 'desc' : 'asc'} order`);
   };
@@ -165,6 +147,11 @@ export const AssignmentsList = ({
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
+  };
+
+  const handlePhotographerFilterChange = (photographerId: string | null) => {
+    setSelectedPhotographerFilter(photographerId);
+    setCurrentPage(1);
   };
 
   const { data: photographers } = useQuery({
@@ -355,6 +342,10 @@ export const AssignmentsList = ({
     setIsDeleteDialogOpen(true);
   };
 
+  const handleFormChange = (field: string, value: string) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleUpdateAssignment = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submitting form with data:", editForm);
@@ -386,52 +377,6 @@ export const AssignmentsList = ({
     }
   };
 
-  const formatDateTime = (dateString: string) => {
-    if (!dateString) return '';
-    
-    try {
-      return format(new Date(dateString), 'MMM d, yyyy');
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return dateString;
-    }
-  };
-
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return '12:00 PM';
-    
-    try {
-      const [hours, minutes] = timeString.split(':').map(Number);
-      
-      const date = new Date();
-      date.setHours(hours);
-      date.setMinutes(minutes);
-      
-      return format(date, 'h:mm a');
-    } catch (error) {
-      console.error("Error formatting time:", error);
-      return '12:00 PM';
-    }
-  };
-
-  const statusColors = {
-    open: "bg-status-open",
-    complete: "bg-status-complete",
-    cancelled: "bg-status-hold",
-  };
-
-  const statusTextColors = {
-    open: "text-status-open",
-    complete: "text-status-complete",
-    cancelled: "text-status-hold",
-  };
-
-  const statusLabels = {
-    open: "Open",
-    complete: "Complete",
-    cancelled: "Cancelled",
-  };
-
   if (isLoading) {
     return <div className="p-4 text-center">Loading assignments...</div>;
   }
@@ -448,83 +393,14 @@ export const AssignmentsList = ({
               </span>
             )}
           </div>
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <Filter className="h-4 w-4 mr-1" />
-                  {selectedPhotographerFilter ? 
-                    photographers?.find(p => p.id === selectedPhotographerFilter)?.name :
-                    "Filter Photographer"
-                  }
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                {selectedPhotographerFilter && (
-                  <DropdownMenuItem 
-                    onClick={() => {
-                      setSelectedPhotographerFilter(null);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Show All
-                  </DropdownMenuItem>
-                )}
-                {photographers?.map((photographer) => (
-                  <DropdownMenuItem
-                    key={photographer.id}
-                    onClick={() => {
-                      setSelectedPhotographerFilter(photographer.id);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    {photographer.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSort('photographer')}
-              className="flex items-center gap-1"
-            >
-              Photographer
-              {sortField === 'photographer' && (
-                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-              )}
-              {sortField !== 'photographer' && <ArrowUpDown className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSort('status')}
-              className="flex items-center gap-1"
-            >
-              Status
-              {sortField === 'status' && (
-                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-              )}
-              {sortField !== 'status' && <ArrowUpDown className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSort('date')}
-              className="flex items-center gap-1"
-            >
-              Date
-              {sortField === 'date' && (
-                sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-              )}
-              {sortField !== 'date' && <ArrowUpDown className="h-4 w-4" />}
-            </Button>
-          </div>
+          <AssignmentFilters
+            photographers={photographers}
+            selectedPhotographerFilter={selectedPhotographerFilter}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onPhotographerFilterChange={handlePhotographerFilterChange}
+            onSort={handleSort}
+          />
         </div>
 
         {assignments?.length === 0 ? (
@@ -537,283 +413,43 @@ export const AssignmentsList = ({
           <>
             <div className="space-y-2">
               {assignments?.map((assignment) => (
-                <Card key={assignment.id} className="animate-fadeIn">
-                  <div className="p-4 flex items-start justify-between">
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className={`text-lg font-semibold ${statusTextColors[assignment.status]}`}>
-                          {assignment.title}
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                          <div className="flex items-center">
-                            <span
-                              className={`h-3 w-3 rounded-full mr-2 ${
-                                statusColors[assignment.status]
-                              }`}
-                            />
-                            <span className="text-sm">
-                              {statusLabels[assignment.status]}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col md:flex-row md:items-center gap-3 text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <MapPin className="mr-2 h-4 w-4" />
-                          {assignment.location}
-                        </div>
-                        <div className="flex items-center">
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {formatDateTime(assignment.date)}
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="mr-2 h-4 w-4" />
-                          {formatTime(assignment.time)}
-                        </div>
-                        <div 
-                          className="flex items-center cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => setSelectedPhotographerId(assignment.photographers.id)}
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          {assignment.photographers.name}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEditClick(assignment)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleDeleteClick(assignment)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                <AssignmentCard
+                  key={assignment.id}
+                  assignment={assignment}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteClick}
+                  onPhotographerClick={setSelectedPhotographerId}
+                />
               ))}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                    
-                    {/* Show first page */}
-                    {currentPage > 3 && (
-                      <>
-                        <PaginationItem>
-                          <PaginationLink onClick={() => handlePageChange(1)} className="cursor-pointer">
-                            1
-                          </PaginationLink>
-                        </PaginationItem>
-                        {currentPage > 4 && (
-                          <PaginationItem>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        )}
-                      </>
-                    )}
-                    
-                    {/* Show pages around current page */}
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const pageNumber = Math.max(1, currentPage - 2) + i;
-                      if (pageNumber > totalPages) return null;
-                      
-                      return (
-                        <PaginationItem key={pageNumber}>
-                          <PaginationLink 
-                            onClick={() => handlePageChange(pageNumber)}
-                            isActive={currentPage === pageNumber}
-                            className="cursor-pointer"
-                          >
-                            {pageNumber}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    })}
-                    
-                    {/* Show last page */}
-                    {currentPage < totalPages - 2 && (
-                      <>
-                        {currentPage < totalPages - 3 && (
-                          <PaginationItem>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        )}
-                        <PaginationItem>
-                          <PaginationLink onClick={() => handlePageChange(totalPages)} className="cursor-pointer">
-                            {totalPages}
-                          </PaginationLink>
-                        </PaginationItem>
-                      </>
-                    )}
-                    
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
+            <AssignmentPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         )}
       </div>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Assignment</DialogTitle>
-            <DialogDescription>
-              Update the assignment information below.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUpdateAssignment}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={editForm.title}
-                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={editForm.location}
-                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={editForm.date}
-                  onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="time">Time (24hr format)</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={editForm.time}
-                  onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="photographer">Photographer</Label>
-                <Select
-                  value={editForm.photographer_id}
-                  onValueChange={(value) => setEditForm({ ...editForm, photographer_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a photographer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {photographers?.map((photographer) => (
-                      <SelectItem key={photographer.id} value={photographer.id}>
-                        {photographer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={editForm.status}
-                  onValueChange={(value) => {
-                    console.log("Status changed to:", value);
-                    setEditForm({ ...editForm, status: value as Assignment['status'] });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-status-open" />
-                        Open
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="complete">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-status-complete" />
-                        Complete
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="cancelled">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-status-hold" />
-                        Cancelled
-                      </span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button 
-                type="submit" 
-                disabled={updateAssignmentMutation.isPending}
-              >
-                {updateAssignmentMutation.isPending ? "Updating..." : "Update Assignment"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <EditAssignmentDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        assignment={currentAssignment}
+        photographers={photographers}
+        editForm={editForm}
+        onFormChange={handleFormChange}
+        onSubmit={handleUpdateAssignment}
+        isSubmitting={updateAssignmentMutation.isPending}
+      />
 
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>Are you sure you want to delete this assignment?</p>
-            <p className="font-medium mt-2">{currentAssignment?.title}</p>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAssignment}
-              disabled={deleteAssignmentMutation.isPending}
-            >
-              {deleteAssignmentMutation.isPending ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteAssignmentDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        assignment={currentAssignment}
+        onConfirm={handleDeleteAssignment}
+        isDeleting={deleteAssignmentMutation.isPending}
+      />
 
       {selectedPhotographerId && (
         <PhotographerInfoDialog

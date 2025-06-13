@@ -1,13 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Calendar, MapPin, User, Edit, Trash2, Search, Clock, ArrowUpDown, ArrowDown, ArrowUp, Filter } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
-import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
+
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Assignment, Photographer } from "@/types/database";
@@ -17,6 +9,9 @@ import { AssignmentFilters } from "./AssignmentFilters";
 import { AssignmentPagination } from "./AssignmentPagination";
 import { EditAssignmentDialog } from "./EditAssignmentDialog";
 import { DeleteAssignmentDialog } from "./DeleteAssignmentDialog";
+import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
+import { useAssignmentMutations } from "./hooks/useAssignmentMutations";
+import { useAssignmentFilters } from "./hooks/useAssignmentFilters";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -24,9 +19,6 @@ interface AssignmentsListProps {
   isSearchActive?: boolean;
   onSearchComplete?: () => void;
 }
-
-type SortField = 'date' | 'status' | 'photographer';
-type SortDirection = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -40,9 +32,6 @@ export const AssignmentsList = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState<(Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) | null>(null);
-  const [sortField, setSortField] = useState<'date' | 'status' | 'photographer'>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [currentPage, setCurrentPage] = useState(1);
   const [editForm, setEditForm] = useState({
     title: "",
     location: "",
@@ -51,10 +40,20 @@ export const AssignmentsList = ({
     photographer_id: "",
     status: "" as Assignment['status'],
   });
-  const [selectedPhotographerFilter, setSelectedPhotographerFilter] = useState<string | null>(null);
 
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const {
+    sortField,
+    sortDirection,
+    currentPage,
+    selectedPhotographerFilter,
+    handleSort,
+    handlePageChange,
+    handlePhotographerFilterChange,
+    setCurrentPage
+  } = useAssignmentFilters();
 
   const shouldSearch = Boolean(searchQuery?.trim());
 
@@ -120,41 +119,6 @@ export const AssignmentsList = ({
   const totalCount = assignmentsData?.totalCount || 0;
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  useEffect(() => {
-    if (searchQuery?.trim()) {
-      setCurrentPage(1);
-      refetch();
-    }
-  }, [searchQuery, refetch]);
-
-  useEffect(() => {
-    setSelectedPhotographerFilter(null);
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  const handleSort = (field: 'date' | 'status' | 'photographer') => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-    setCurrentPage(1);
-    
-    console.log(`Sorting changed to ${field} in ${sortDirection === 'asc' ? 'desc' : 'asc'} order`);
-  };
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handlePhotographerFilterChange = (photographerId: string | null) => {
-    setSelectedPhotographerFilter(photographerId);
-    setCurrentPage(1);
-  };
-
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],
     queryFn: async () => {
@@ -167,6 +131,29 @@ export const AssignmentsList = ({
       return data as Photographer[];
     },
   });
+
+  const {
+    updateAssignmentMutation,
+    deleteAssignmentMutation
+  } = useAssignmentMutations({
+    onStatusUpdate,
+    setIsEditDialogOpen,
+    setIsDeleteDialogOpen,
+    toast,
+    queryClient
+  });
+
+  useEffect(() => {
+    if (searchQuery?.trim()) {
+      setCurrentPage(1);
+      refetch();
+    }
+  }, [searchQuery, refetch, setCurrentPage]);
+
+  useEffect(() => {
+    handlePhotographerFilterChange(null);
+    setCurrentPage(1);
+  }, [searchQuery, handlePhotographerFilterChange, setCurrentPage]);
 
   useEffect(() => {
     console.log("Setting up real-time subscription in AssignmentsList");
@@ -193,129 +180,6 @@ export const AssignmentsList = ({
       supabase.removeChannel(channel);
     };
   }, [queryClient, refetch]);
-
-  const updateAssignmentMutation = useMutation({
-    mutationFn: async (assignmentData: Partial<Assignment>) => {
-      console.log("Updating assignment with data:", assignmentData);
-      
-      if (assignmentData.status && !['open', 'complete', 'cancelled'].includes(assignmentData.status)) {
-        throw new Error(`Invalid status: ${assignmentData.status}`);
-      }
-      
-      if (!currentAssignment?.id) {
-        throw new Error("No valid assignment ID for update");
-      }
-      
-      console.log(`Updating assignment ID: ${currentAssignment.id} with status: ${assignmentData.status}`);
-      
-      const { data, error } = await supabase
-        .from('assignments')
-        .update({
-          title: assignmentData.title,
-          location: assignmentData.location,
-          date: assignmentData.date,
-          time: assignmentData.time,
-          photographer_id: assignmentData.photographer_id,
-          status: assignmentData.status
-        })
-        .eq('id', currentAssignment.id)
-        .select();
-      
-      if (error) {
-        console.error("Update error from Supabase:", error);
-        throw error;
-      }
-      
-      console.log("Assignment updated successfully in database:", data);
-      
-      return data;
-    },
-    onSuccess: (data) => {
-      console.log("Assignment updated successfully, invalidating queries");
-      console.log("Updated data returned from server:", data);
-      
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      queryClient.refetchQueries({ 
-        queryKey: ['assignments'],
-        type: 'active',
-        exact: false
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
-      queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
-      
-      if (onStatusUpdate) {
-        console.log("Calling onStatusUpdate callback");
-        onStatusUpdate();
-      }
-      
-      setIsEditDialogOpen(false);
-      toast({
-        title: "Assignment updated",
-        description: "The assignment has been updated successfully.",
-        duration: 5000,
-      });
-    },
-    onError: (error) => {
-      console.error("Update error:", error);
-      toast({
-        title: "Error",
-        description: `Failed to update assignment: ${error.message}`,
-        variant: "destructive",
-        duration: 5000,
-      });
-    },
-  });
-
-  const deleteAssignmentMutation = useMutation({
-    mutationFn: async (id: string) => {
-      console.log("Deleting assignment with ID:", id);
-      const { data, error } = await supabase
-        .from('assignments')
-        .delete()
-        .eq('id', id)
-        .select();
-      
-      if (error) {
-        console.error("Delete error from Supabase:", error);
-        throw error;
-      }
-      
-      console.log("Delete response:", data);
-      return id;
-    },
-    onSuccess: (id) => {
-      console.log("Assignment deleted successfully, ID:", id);
-      console.log("Invalidating and refetching queries");
-      
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      queryClient.refetchQueries({ queryKey: ['assignments'] });
-      
-      queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
-      queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
-      
-      setIsDeleteDialogOpen(false);
-      toast({
-        title: "Assignment deleted",
-        description: "The assignment has been deleted successfully.",
-      });
-    },
-    onError: (error) => {
-      console.error("Delete error:", error);
-      toast({
-        title: "Error",
-        description: `Failed to delete assignment: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleEditClick = (assignment: Assignment & { photographers: Pick<Photographer, 'id' | 'name'> }) => {
     setCurrentAssignment(assignment);
@@ -361,7 +225,7 @@ export const AssignmentsList = ({
     };
     
     console.log("Sending updated assignment to mutation:", updatedAssignment);
-    updateAssignmentMutation.mutate(updatedAssignment);
+    updateAssignmentMutation.mutate({ assignment: updatedAssignment, currentAssignment });
   };
 
   const handleDeleteAssignment = () => {

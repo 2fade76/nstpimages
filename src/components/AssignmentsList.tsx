@@ -82,6 +82,7 @@ export const AssignmentsList = ({
         query = query.eq('photographer_id', selectedPhotographerFilter);
       }
       
+      // Fix the sorting logic - when sortDirection is 'desc', we want descending order (false for ascending)
       if (sortField === 'date') {
         query = query.order('date', { ascending: sortDirection === 'asc' });
       } else if (sortField === 'status') {

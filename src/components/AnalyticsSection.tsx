@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar, LabelList } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,13 @@ interface MonthlyCompletionsData {
 type AssignmentWithPhotographer = Assignment & {
   photographers?: Photographer;
 };
+
+interface TopPhotographer {
+  id: string;
+  name: string;
+  completedCount: number;
+  rank: number;
+}
 
 export const AnalyticsSection = () => {
   const {
@@ -241,6 +249,60 @@ export const AnalyticsSection = () => {
     );
   };
 
+  const {
+    data: topPhotographersData,
+    isLoading: isLoadingTopPhotographers
+  } = useQuery<TopPhotographer[]>({
+    queryKey: ['top-photographers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select(`
+          photographer_id,
+          photographers (id, name)
+        `)
+        .eq('status', 'complete');
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        return [];
+      }
+
+      // Count completions by photographer
+      const photographerCounts: Record<string, { name: string; count: number; id: string }> = {};
+      
+      (data as AssignmentWithPhotographer[]).forEach(assignment => {
+        const photographerId = assignment.photographer_id;
+        const photographerName = assignment.photographers?.name || 'Unknown';
+        const photographerDbId = assignment.photographers?.id || photographerId;
+        
+        if (!photographerCounts[photographerId]) {
+          photographerCounts[photographerId] = {
+            id: photographerDbId,
+            name: photographerName,
+            count: 0
+          };
+        }
+        photographerCounts[photographerId].count += 1;
+      });
+
+      // Convert to array and sort
+      const sortedPhotographers = Object.values(photographerCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10) // Top 10
+        .map((photographer, index) => ({
+          id: photographer.id,
+          name: photographer.name,
+          completedCount: photographer.count,
+          rank: index + 1
+        }));
+
+      return sortedPhotographers;
+    },
+    refetchInterval: 5000
+  });
+
   return <div className="grid gap-6">
       <Card className="shadow-sm border-gray-100">
         <CardHeader className="pb-4">
@@ -400,39 +462,56 @@ export const AnalyticsSection = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Completed Assignments Over Time by Photographer</CardTitle>
+          <CardTitle className="text-xl font-semibold">Top Photographers</CardTitle>
+          <span className="text-sm text-muted-foreground">Ranked by completed assignments</span>
         </CardHeader>
-        <CardContent className="h-[400px]">
-          {isLoadingCompletedData ? <div className="flex items-center justify-center h-full">
-              <p>Loading data...</p>
-            </div> : completedAssignmentsData && completedAssignmentsData.chartData && completedAssignmentsData.chartData.length > 0 ? <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={completedAssignmentsData.chartData} margin={{
-            top: 10,
-            right: 30,
-            left: 10,
-            bottom: 30
-          }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#8E9196" strokeOpacity={0.2} />
-                <XAxis dataKey="date" label={{
-              value: 'Date',
-              position: 'insideBottom',
-              offset: -20
-            }} />
-                <YAxis label={{
-              value: 'Completed Assignments',
-              angle: -90,
-              position: 'insideLeft',
-              offset: -5
-            }} />
-                <Tooltip />
-                <Legend />
-                {completedAssignmentsData.photographers.map((photographer, index) => <Line key={photographer} type="monotone" dataKey={photographer} name={photographer} stroke={getColor(index)} strokeWidth={2} activeDot={{
-              r: 6
-            }} />)}
-              </LineChart>
-            </ResponsiveContainer> : <div className="flex items-center justify-center h-full">
-              <p>No completed assignments found</p>
-            </div>}
+        <CardContent className="p-6">
+          {isLoadingTopPhotographers ? (
+            <div className="flex items-center justify-center h-32">
+              <p className="text-muted-foreground">Loading top photographers...</p>
+            </div>
+          ) : topPhotographersData && topPhotographersData.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16 text-center">Rank</TableHead>
+                  <TableHead>Photographer Name</TableHead>
+                  <TableHead className="text-right">Completed Assignments</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topPhotographersData.map((photographer) => (
+                  <TableRow key={photographer.id} className="hover:bg-muted/50">
+                    <TableCell className="text-center font-bold">
+                      <div 
+                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                          photographer.rank === 1 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : photographer.rank === 2 
+                            ? 'bg-gray-100 text-gray-800'
+                            : photographer.rank === 3
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-blue-50 text-blue-700'
+                        }`}
+                      >
+                        {photographer.rank}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{photographer.name}</TableCell>
+                    <TableCell className="text-right">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {photographer.completedCount}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex items-center justify-center h-32">
+              <p className="text-muted-foreground">No completed assignments found</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>;

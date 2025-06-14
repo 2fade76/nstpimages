@@ -9,12 +9,17 @@ export function MobileHeader() {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <div className="flex items-center justify-between px-4 py-2">
-      <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-        <Menu className="h-5 w-5" />
+    <div className="flex items-center justify-between px-3 py-3 min-h-[60px]">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={toggleSidebar}
+        className="h-10 w-10 touch-manipulation"
+      >
+        <Menu className="h-6 w-6" />
       </Button>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <ThemeToggle />
         <UserMenu />
       </div>

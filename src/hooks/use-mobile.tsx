@@ -26,7 +26,7 @@ export function useIsMobile() {
   return !!isMobile
 }
 
-// Additional hooks for different breakpoints
+// Additional hooks for different breakpoints with better mobile-first approach
 export function useIsTablet() {
   const [isTablet, setIsTablet] = React.useState<boolean | undefined>(undefined)
   
@@ -60,4 +60,22 @@ export function useIsDesktop() {
   }, [])
   
   return !!isDesktop
+}
+
+// Additional hook for small mobile devices
+export function useIsSmallMobile() {
+  const [isSmallMobile, setIsSmallMobile] = React.useState<boolean | undefined>(undefined)
+  
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsSmallMobile(window.innerWidth < 480)
+    }
+    
+    window.addEventListener('resize', handleResize)
+    handleResize()
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  
+  return !!isSmallMobile
 }

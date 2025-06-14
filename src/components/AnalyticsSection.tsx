@@ -209,16 +209,38 @@ export const AnalyticsSection = () => {
     refetchInterval: 5000
   });
   const COLORS = {
-    total: '#9b87f5',
+    total: '#6366f1',
     open: '#f97316',
     progress: '#3b82f6',
     complete: '#4ade80',
     cancel: '#ef4444'
   };
+  
   const getColor = (index: number) => {
     const colorPalette = ['#4ade80', '#3b82f6', '#f97316', '#ef4444', '#9b87f5', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#06b6d4'];
     return colorPalette[index % colorPalette.length];
   };
+
+  // Custom bar shape component for rounded bars
+  const RoundedBar = (props: any) => {
+    const { fill, x, y, width, height } = props;
+    const radius = Math.min(width / 6, 8); // Limit radius to prevent overly rounded bars
+    
+    return (
+      <g>
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={fill}
+          rx={radius}
+          ry={radius}
+        />
+      </g>
+    );
+  };
+
   return <div className="grid gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between bg-slate-950">
@@ -257,52 +279,90 @@ export const AnalyticsSection = () => {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between bg-slate-950">
-          <CardTitle>Monthly Completed Assignments - Total</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl font-semibold">Monthly Completed Assignments</CardTitle>
         </CardHeader>
-        <CardContent className="h-[400px]">
-          {isLoadingMonthlyData ? <div className="flex items-center justify-center h-full">
-              <p>Loading monthly data...</p>
-            </div> : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyCompletionsData.chartData} margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 30
-          }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#8E9196" strokeOpacity={0.2} />
-                <XAxis dataKey="month" label={{
-              value: 'Month',
-              position: 'insideBottom',
-              offset: -20
-            }} />
-                <YAxis label={{
-              value: 'Completed Assignments',
-              angle: -90,
-              position: 'insideLeft',
-              offset: -5
-            }} />
-                <Tooltip formatter={(value, name) => [`${value} assignments`, name]} labelFormatter={label => `Month: ${label}`} />
-                <Legend />
-                <Bar dataKey="total" name="Total Completions" fill={COLORS.total} stackId="a">
-                  <LabelList dataKey="total" position="top" content={({
-                x,
-                y,
-                width,
-                height,
-                value
-              }) => {
-                return <g>
-                          <text x={Number(x) + Number(width) / 2} y={Number(y) - 10} fill="#000000" textAnchor="middle" dominantBaseline="middle" fontWeight="bold">
-                            {value}
-                          </text>
-                        </g>;
-              }} />
+        <CardContent className="h-[450px] p-6">
+          {isLoadingMonthlyData ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground">Loading monthly data...</p>
+            </div>
+          ) : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={monthlyCompletionsData.chartData} 
+                margin={{
+                  top: 40,
+                  right: 30,
+                  left: 20,
+                  bottom: 20
+                }}
+                barCategoryGap="20%"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <Tooltip 
+                  formatter={(value, name) => [`${value} assignments`, 'Completed']} 
+                  labelFormatter={label => `Month: ${label}`}
+                  contentStyle={{
+                    backgroundColor: '#1e293b',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    fontSize: '12px'
+                  }}
+                />
+                <Bar 
+                  dataKey="total" 
+                  fill={COLORS.total}
+                  radius={[6, 6, 0, 0]}
+                  shape={<RoundedBar />}
+                >
+                  <LabelList 
+                    dataKey="total" 
+                    position="top" 
+                    style={{ 
+                      fill: '#1e293b', 
+                      fontSize: '12px', 
+                      fontWeight: '600' 
+                    }}
+                    content={({ x, y, width, value }) => {
+                      if (value === 0) return null;
+                      return (
+                        <text 
+                          x={Number(x) + Number(width) / 2} 
+                          y={Number(y) - 8} 
+                          textAnchor="middle" 
+                          dominantBaseline="middle"
+                          style={{ 
+                            fill: '#1e293b', 
+                            fontSize: '12px', 
+                            fontWeight: '600' 
+                          }}
+                        >
+                          {value}
+                        </text>
+                      );
+                    }}
+                  />
                 </Bar>
               </BarChart>
-            </ResponsiveContainer> : <div className="flex items-center justify-center h-full">
-              <p>No monthly completed assignments found</p>
-            </div>}
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground">No monthly completed assignments found</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

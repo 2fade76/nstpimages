@@ -242,37 +242,69 @@ export const AnalyticsSection = () => {
   };
 
   return <div className="grid gap-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between bg-slate-950">
-          <CardTitle>Assignments Volume- This Month</CardTitle>
+      <Card className="shadow-sm border-gray-100">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-medium text-gray-800">Assignments Volume - This Month</CardTitle>
         </CardHeader>
-        <CardContent className="h-[400px]">
+        <CardContent className="h-[350px] p-4">
           {isLoading ? <div className="flex items-center justify-center h-full">
-              <p>Loading data...</p>
+              <p className="text-sm text-gray-500">Loading data...</p>
             </div> : <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyData} margin={{
-            top: 10,
-            right: 30,
-            left: 0,
-            bottom: 30
+            top: 20,
+            right: 20,
+            left: 10,
+            bottom: 40
           }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#8E9196" strokeOpacity={0.2} />
-                <XAxis dataKey="formattedDate" label={{
-              value: 'Date',
-              position: 'insideBottom',
-              offset: -20
-            }} />
-                <YAxis label={{
-              value: 'Assignments',
-              angle: -90,
-              position: 'insideLeft',
-              offset: -5
-            }} />
-                <Tooltip formatter={value => [`${value} assignments`, 'Count']} labelFormatter={label => `Date: ${label}`} />
-                <Legend />
-                <Line type="monotone" dataKey="count" name="Assignments" stroke={COLORS.total} strokeWidth={2} activeDot={{
-              r: 8
-            }} />
+                <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" strokeOpacity={0.6} />
+                <XAxis 
+                  dataKey="formattedDate" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  width={30}
+                />
+                <Tooltip 
+                  formatter={(value) => [`${value}`, 'Assignments']} 
+                  labelFormatter={(label) => `${label}`}
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                  iconType="circle"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="count" 
+                  name="Assignments" 
+                  stroke="#6366f1" 
+                  strokeWidth={2.5} 
+                  activeDot={{
+                    r: 5,
+                    fill: '#6366f1',
+                    stroke: '#fff',
+                    strokeWidth: 2
+                  }}
+                  dot={{
+                    r: 3,
+                    fill: '#6366f1',
+                    stroke: '#fff',
+                    strokeWidth: 1
+                  }}
+                />
               </LineChart>
             </ResponsiveContainer>}
         </CardContent>

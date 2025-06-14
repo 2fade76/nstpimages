@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,12 +11,14 @@ import { DeleteAssignmentDialog } from "./DeleteAssignmentDialog";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
 import { useAssignmentMutations } from "./hooks/useAssignmentMutations";
 import { useAssignmentFilters } from "./hooks/useAssignmentFilters";
+import { format, startOfDay, endOfDay } from "date-fns";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
   searchQuery?: string;
   isSearchActive?: boolean;
   onSearchComplete?: () => void;
+  statusFilter?: 'all' | 'open' | 'complete' | 'today-complete';
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -26,7 +27,8 @@ export const AssignmentsList = ({
   onStatusUpdate, 
   searchQuery = "", 
   isSearchActive = false,
-  onSearchComplete
+  onSearchComplete,
+  statusFilter = 'all'
 }: AssignmentsListProps) => {
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -58,9 +60,9 @@ export const AssignmentsList = ({
   const shouldSearch = Boolean(searchQuery?.trim());
 
   const { data: assignmentsData, isLoading, refetch } = useQuery({
-    queryKey: ['assignments', searchQuery, currentPage, sortField, sortDirection, selectedPhotographerFilter],
+    queryKey: ['assignments', searchQuery, currentPage, sortField, sortDirection, selectedPhotographerFilter, statusFilter],
     queryFn: async () => {
-      console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search");
+      console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search", `with status filter: ${statusFilter}`);
       
       let query = supabase
         .from('assignments')
@@ -79,6 +81,21 @@ export const AssignmentsList = ({
 
       if (selectedPhotographerFilter) {
         query = query.eq('photographer_id', selectedPhotographerFilter);
+      }
+
+      // Apply status filter
+      if (statusFilter === 'open') {
+        query = query.eq('status', 'open');
+      } else if (statusFilter === 'complete') {
+        query = query.eq('status', 'complete');
+      } else if (statusFilter === 'today-complete') {
+        const today = new Date();
+        const startOfToday = startOfDay(today).toISOString();
+        const endOfToday = endOfDay(today).toISOString();
+        query = query
+          .eq('status', 'complete')
+          .gte('date', startOfToday)
+          .lte('date', endOfToday);
       }
       
       // Fix the sorting logic - when sortDirection is 'desc', we want descending order (false for ascending)
@@ -154,6 +171,11 @@ export const AssignmentsList = ({
     handlePhotographerFilterChange(null);
     setCurrentPage(1);
   }, [searchQuery, handlePhotographerFilterChange, setCurrentPage]);
+
+  // Reset page when status filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, setCurrentPage]);
 
   useEffect(() => {
     console.log("Setting up real-time subscription in AssignmentsList");
@@ -242,6 +264,19 @@ export const AssignmentsList = ({
     }
   };
 
+  const getFilterDescription = () => {
+    switch (statusFilter) {
+      case 'open':
+        return 'Open assignments';
+      case 'complete':
+        return 'Completed assignments';
+      case 'today-complete':
+        return "Today's completed assignments";
+      default:
+        return 'All assignments';
+    }
+  };
+
   if (isLoading) {
     return <div className="p-4 text-center">Loading assignments...</div>;
   }
@@ -251,7 +286,7 @@ export const AssignmentsList = ({
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
           <div className="text-sm text-muted-foreground">
-            Showing {assignments.length} of {totalCount} assignments {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
+            Showing {assignments.length} of {totalCount} {getFilterDescription().toLowerCase()} {shouldSearch && <span className="ml-2 font-medium">Search: "{searchQuery}"</span>}
             {totalPages > 1 && (
               <span className="ml-2">
                 (Page {currentPage} of {totalPages})
@@ -272,7 +307,7 @@ export const AssignmentsList = ({
           <div className="text-center p-8 border rounded-lg bg-muted/10">
             {shouldSearch 
               ? `No assignments found matching "${searchQuery}". Try a different search term.` 
-              : "No assignments found. Create a new assignment to get started."}
+              : `No ${getFilterDescription().toLowerCase()} found.`}
           </div>
         ) : (
           <>

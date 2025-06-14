@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
@@ -19,6 +18,7 @@ const Index = () => {
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'complete' | 'today-complete'>('all');
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const location = useLocation();
@@ -34,6 +34,16 @@ const Index = () => {
       newParams.set("tab", value);
     }
     navigate({ search: newParams.toString() });
+  };
+
+  const handleFilterChange = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
+    console.log("Filter changed to:", filter);
+    setStatusFilter(filter);
+    toast({
+      title: "Filter Applied",
+      description: `Showing ${filter === 'all' ? 'all' : filter === 'today-complete' ? "today's completed" : filter} assignments`,
+      duration: 2000
+    });
   };
 
   const checkConnection = async () => {
@@ -239,12 +249,16 @@ const Index = () => {
             <TabsTrigger value="new">New Assignment</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-8">
-            <AnalyticsSummaryCard />
+            <AnalyticsSummaryCard 
+              onFilterChange={handleFilterChange}
+              activeFilter={statusFilter}
+            />
             <AssignmentsList 
               onStatusUpdate={handleAssignmentStatusUpdate} 
               searchQuery={searchQuery}
               isSearchActive={isSearching}
               onSearchComplete={() => setIsSearching(false)}
+              statusFilter={statusFilter}
             />
           </TabsContent>
           <TabsContent value="new" className="space-y-4">

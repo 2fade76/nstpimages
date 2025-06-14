@@ -3,7 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList, CheckCircle, Clock, BarChart2 } from "lucide-react";
 import { format, startOfDay, endOfDay } from "date-fns";
-export const AnalyticsSummaryCard = () => {
+
+interface AnalyticsSummaryCardProps {
+  onFilterChange?: (filter: 'all' | 'open' | 'complete' | 'today-complete') => void;
+  activeFilter?: 'all' | 'open' | 'complete' | 'today-complete';
+}
+
+export const AnalyticsSummaryCard = ({ onFilterChange, activeFilter }: AnalyticsSummaryCardProps) => {
   const {
     data: totalAssignments,
     isLoading: loadingTotal
@@ -67,11 +73,25 @@ export const AnalyticsSummaryCard = () => {
   });
   const isLoading = loadingTotal || loadingOpen || loadingCompleted || loadingToday;
   const currentDate = format(new Date(), 'MMMM d, yyyy');
+
+  const handleCardClick = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
+    if (onFilterChange) {
+      onFilterChange(filter);
+    }
+  };
+
   return <Card className="mb-6 bg-gradient-to-br from-card to-secondary/10">
       <CardContent className="p-4">
         <div className="grid grid-cols-4 gap-4">
           {/* Total Assignments Card */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-red-50 to-red-100 border border-red-200 shadow-sm">
+          <div 
+            className={`flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-red-50 to-red-100 border border-red-200 shadow-sm transition-all duration-200 ${
+              activeFilter === 'all' 
+                ? 'ring-2 ring-red-400 bg-red-100' 
+                : 'cursor-pointer hover:shadow-md hover:scale-105'
+            }`}
+            onClick={() => handleCardClick('all')}
+          >
             <div className="flex items-center justify-center mb-2 text-red-500">
               <ClipboardList className="h-6 w-6" />
             </div>
@@ -83,11 +103,18 @@ export const AnalyticsSummaryCard = () => {
           </div>
 
           {/* Open Assignments Card */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-green-50 to-green-100 border border-green-200 shadow-sm">
+          <div 
+            className={`flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-green-50 to-green-100 border border-green-200 shadow-sm transition-all duration-200 ${
+              activeFilter === 'open' 
+                ? 'ring-2 ring-green-400 bg-green-100' 
+                : 'cursor-pointer hover:shadow-md hover:scale-105'
+            }`}
+            onClick={() => handleCardClick('open')}
+          >
             <div className="flex items-center justify-center mb-2 text-status-open">
               <Clock className="h-6 w-6" />
             </div>
-            <p className="text-sm text-muted-foreground mb-1">Open </p>
+            <p className="text-sm text-muted-foreground mb-1">Open </p>
             {isLoading ? <div className="h-8 w-12 bg-slate-200 animate-pulse rounded"></div> : <>
                 <p className="text-3xl font-bold text-status-open">{openAssignments}</p>
                 <p className="text-xs text-muted-foreground mt-1">{currentDate}</p>
@@ -95,7 +122,14 @@ export const AnalyticsSummaryCard = () => {
           </div>
 
           {/* Completed Assignments Card */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-indigo-50 to-indigo-100 border border-indigo-200 shadow-sm">
+          <div 
+            className={`flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-indigo-50 to-indigo-100 border border-indigo-200 shadow-sm transition-all duration-200 ${
+              activeFilter === 'complete' 
+                ? 'ring-2 ring-indigo-400 bg-indigo-100' 
+                : 'cursor-pointer hover:shadow-md hover:scale-105'
+            }`}
+            onClick={() => handleCardClick('complete')}
+          >
             <div className="flex items-center justify-center mb-2 text-status-complete">
               <CheckCircle className="h-6 w-6" />
             </div>
@@ -107,7 +141,14 @@ export const AnalyticsSummaryCard = () => {
           </div>
 
           {/* Today's Completed Card - Changed from Today's Average */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 shadow-sm">
+          <div 
+            className={`flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 shadow-sm transition-all duration-200 ${
+              activeFilter === 'today-complete' 
+                ? 'ring-2 ring-blue-400 bg-blue-100' 
+                : 'cursor-pointer hover:shadow-md hover:scale-105'
+            }`}
+            onClick={() => handleCardClick('today-complete')}
+          >
             <div className="flex items-center justify-center mb-2 text-blue-500">
               <BarChart2 className="h-6 w-6" />
             </div>

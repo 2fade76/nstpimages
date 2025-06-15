@@ -23,7 +23,9 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">Welcome, {displayName}</span>
+      <span className="text-sm sm:text-base md:text-lg font-medium text-foreground">
+        Welcome, {displayName}
+      </span>
       <Button
         variant="ghost"
         size="icon"

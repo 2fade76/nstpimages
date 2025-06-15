@@ -304,13 +304,13 @@ export const AnalyticsSection = () => {
   });
 
   return <div className="grid gap-6">
-      <Card className="shadow-sm border-gray-100">
+      <Card className="shadow-sm border-gray-100 dark:border-gray-800">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-medium text-gray-800">Assignments Volume - This Month</CardTitle>
+          <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">Assignments Volume - This Month</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] p-4">
           {isLoading ? <div className="flex items-center justify-center h-full">
-              <p className="text-sm text-gray-500">Loading data...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading data...</p>
             </div> : <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyData} margin={{
             top: 20,
@@ -318,34 +318,34 @@ export const AnalyticsSection = () => {
             left: 10,
             bottom: 40
           }}>
-                <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" strokeOpacity={0.6} />
+                <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" strokeOpacity={0.6} className="dark:stroke-gray-700" />
                 <XAxis 
                   dataKey="formattedDate" 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                   interval="preserveStartEnd"
                 />
                 <YAxis 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                   width={30}
                 />
                 <Tooltip 
                   formatter={(value) => [`${value}`, 'Assignments']} 
                   labelFormatter={(label) => `${label}`}
                   contentStyle={{
-                    backgroundColor: '#1f2937',
-                    border: 'none',
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
                     borderRadius: '6px',
-                    color: '#fff',
+                    color: 'hsl(var(--popover-foreground))',
                     fontSize: '12px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
                 />
                 <Legend 
-                  wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                  wrapperStyle={{ fontSize: '12px', paddingTop: '10px', color: 'hsl(var(--foreground))' }}
                   iconType="circle"
                 />
                 <Line 
@@ -357,13 +357,13 @@ export const AnalyticsSection = () => {
                   activeDot={{
                     r: 5,
                     fill: '#6366f1',
-                    stroke: '#fff',
+                    stroke: 'hsl(var(--background))',
                     strokeWidth: 2
                   }}
                   dot={{
                     r: 3,
                     fill: '#6366f1',
-                    stroke: '#fff',
+                    stroke: 'hsl(var(--background))',
                     strokeWidth: 1
                   }}
                 />

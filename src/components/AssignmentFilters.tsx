@@ -44,6 +44,11 @@ export const AssignmentFilters = ({
     </Button>
   );
 
+  const handlePhotographerClick = (photographerId: string | null) => {
+    console.log('Photographer filter button clicked with ID:', photographerId);
+    onPhotographerFilterChange(photographerId);
+  };
+
   return (
     <div className="flex gap-2">
       <DropdownMenu>
@@ -62,14 +67,14 @@ export const AssignmentFilters = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
           {selectedPhotographerFilter && (
-            <DropdownMenuItem onClick={() => onPhotographerFilterChange(null)}>
+            <DropdownMenuItem onClick={() => handlePhotographerClick(null)}>
               Show All
             </DropdownMenuItem>
           )}
           {photographers?.map((photographer) => (
             <DropdownMenuItem
               key={photographer.id}
-              onClick={() => onPhotographerFilterChange(photographer.id)}
+              onClick={() => handlePhotographerClick(photographer.id)}
             >
               {photographer.name}
             </DropdownMenuItem>

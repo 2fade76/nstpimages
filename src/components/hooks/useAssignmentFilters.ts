@@ -27,8 +27,10 @@ export const useAssignmentFilters = () => {
   };
 
   const handlePhotographerFilterChange = (photographerId: string | null) => {
+    console.log('Photographer filter changing from:', selectedPhotographerFilter, 'to:', photographerId);
     setSelectedPhotographerFilter(photographerId);
     setCurrentPage(1);
+    console.log('Photographer filter state updated to:', photographerId);
   };
 
   return {

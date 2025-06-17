@@ -62,7 +62,7 @@ export const AssignmentsList = ({
   const { data: assignmentsData, isLoading, refetch } = useQuery({
     queryKey: ['assignments', searchQuery, currentPage, sortField, sortDirection, selectedPhotographerFilter, statusFilter],
     queryFn: async () => {
-      console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search", `with status filter: ${statusFilter}`);
+      console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search", `with status filter: ${statusFilter}`, `page: ${currentPage}`);
       
       let query = supabase
         .from('assignments')
@@ -109,6 +109,7 @@ export const AssignmentsList = ({
       
       const from = (currentPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
+      console.log(`Applying pagination: from ${from} to ${to} (page ${currentPage})`);
       query = query.range(from, to);
       
       const { data, error, count } = await query;
@@ -118,7 +119,7 @@ export const AssignmentsList = ({
         throw error;
       }
       
-      console.log("Assignments data fetched:", data?.length || 0, "records", "Total count:", count);
+      console.log("Assignments data fetched:", data?.length || 0, "records", "Total count:", count, "for page:", currentPage);
       
       if (onSearchComplete) {
         onSearchComplete();
@@ -130,11 +131,20 @@ export const AssignmentsList = ({
       };
     },
     enabled: !isSearchActive || shouldSearch,
+    staleTime: 0, // Always refetch when dependencies change
+    refetchOnMount: true,
   });
 
   const assignments = assignmentsData?.assignments || [];
   const totalCount = assignmentsData?.totalCount || 0;
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  console.log("Current assignments state:", { 
+    assignmentsCount: assignments.length, 
+    totalCount, 
+    totalPages, 
+    currentPage 
+  });
 
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],
@@ -159,6 +169,12 @@ export const AssignmentsList = ({
     toast,
     queryClient
   });
+
+  // Force refetch when page changes
+  useEffect(() => {
+    console.log("Page changed to:", currentPage, "- forcing refetch");
+    refetch();
+  }, [currentPage, refetch]);
 
   useEffect(() => {
     if (searchQuery?.trim()) {

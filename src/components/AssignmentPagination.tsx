@@ -16,7 +16,31 @@ interface AssignmentPaginationProps {
 }
 
 export const AssignmentPagination = ({ currentPage, totalPages, onPageChange }: AssignmentPaginationProps) => {
-  if (totalPages <= 1) return null;
+  console.log("AssignmentPagination rendered with:", { currentPage, totalPages });
+  
+  if (totalPages <= 1) {
+    console.log("Not showing pagination - totalPages:", totalPages);
+    return null;
+  }
+
+  const handlePreviousClick = () => {
+    if (currentPage > 1) {
+      console.log("Previous clicked - going to page:", currentPage - 1);
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextClick = () => {
+    if (currentPage < totalPages) {
+      console.log("Next clicked - going to page:", currentPage + 1);
+      onPageChange(currentPage + 1);
+    }
+  };
+
+  const handlePageClick = (pageNumber: number) => {
+    console.log("Page clicked:", pageNumber);
+    onPageChange(pageNumber);
+  };
 
   return (
     <div className="flex justify-center mt-6">
@@ -24,7 +48,7 @@ export const AssignmentPagination = ({ currentPage, totalPages, onPageChange }: 
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious 
-              onClick={() => onPageChange(currentPage - 1)}
+              onClick={handlePreviousClick}
               className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
             />
           </PaginationItem>
@@ -33,7 +57,7 @@ export const AssignmentPagination = ({ currentPage, totalPages, onPageChange }: 
           {currentPage > 3 && (
             <>
               <PaginationItem>
-                <PaginationLink onClick={() => onPageChange(1)} className="cursor-pointer">
+                <PaginationLink onClick={() => handlePageClick(1)} className="cursor-pointer">
                   1
                 </PaginationLink>
               </PaginationItem>
@@ -53,7 +77,7 @@ export const AssignmentPagination = ({ currentPage, totalPages, onPageChange }: 
             return (
               <PaginationItem key={pageNumber}>
                 <PaginationLink 
-                  onClick={() => onPageChange(pageNumber)}
+                  onClick={() => handlePageClick(pageNumber)}
                   isActive={currentPage === pageNumber}
                   className="cursor-pointer"
                 >
@@ -72,7 +96,7 @@ export const AssignmentPagination = ({ currentPage, totalPages, onPageChange }: 
                 </PaginationItem>
               )}
               <PaginationItem>
-                <PaginationLink onClick={() => onPageChange(totalPages)} className="cursor-pointer">
+                <PaginationLink onClick={() => handlePageClick(totalPages)} className="cursor-pointer">
                   {totalPages}
                 </PaginationLink>
               </PaginationItem>
@@ -81,7 +105,7 @@ export const AssignmentPagination = ({ currentPage, totalPages, onPageChange }: 
           
           <PaginationItem>
             <PaginationNext 
-              onClick={() => onPageChange(currentPage + 1)}
+              onClick={handleNextClick}
               className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
             />
           </PaginationItem>

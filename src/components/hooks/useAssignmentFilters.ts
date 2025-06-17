@@ -23,12 +23,15 @@ export const useAssignmentFilters = () => {
   };
 
   const handlePageChange = (page: number) => {
+    console.log(`Page change requested: ${currentPage} -> ${page}`);
     setCurrentPage(page);
   };
 
   const handlePhotographerFilterChange = (photographerId: string | null) => {
+    console.log(`Photographer filter changing from: ${selectedPhotographerFilter} to: ${photographerId}`);
     setSelectedPhotographerFilter(photographerId);
     setCurrentPage(1);
+    console.log(`Photographer filter state updated to: ${photographerId}`);
   };
 
   return {

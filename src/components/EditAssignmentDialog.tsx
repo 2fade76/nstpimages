@@ -46,27 +46,30 @@ export const EditAssignmentDialog = ({
         <form onSubmit={onSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="edit-title">Title</Label>
               <Input
-                id="title"
+                id="edit-title"
+                name="title"
                 value={editForm.title}
                 onChange={(e) => onFormChange('title', e.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="edit-location">Location</Label>
               <Input
-                id="location"
+                id="edit-location"
+                name="location"
                 value={editForm.location}
                 onChange={(e) => onFormChange('location', e.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="edit-date">Date</Label>
               <Input
-                id="date"
+                id="edit-date"
+                name="date"
                 type="date"
                 value={editForm.date}
                 onChange={(e) => onFormChange('date', e.target.value)}
@@ -74,9 +77,10 @@ export const EditAssignmentDialog = ({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="time">Time (24hr format)</Label>
+              <Label htmlFor="edit-time">Time (24hr format)</Label>
               <Input
-                id="time"
+                id="edit-time"
+                name="time"
                 type="time"
                 value={editForm.time}
                 onChange={(e) => onFormChange('time', e.target.value)}
@@ -84,12 +88,13 @@ export const EditAssignmentDialog = ({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="photographer">Photographer</Label>
+              <Label htmlFor="edit-photographer">Photographer</Label>
               <Select
+                name="photographer_id"
                 value={editForm.photographer_id}
                 onValueChange={(value) => onFormChange('photographer_id', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger id="edit-photographer">
                   <SelectValue placeholder="Select a photographer" />
                 </SelectTrigger>
                 <SelectContent>
@@ -102,15 +107,16 @@ export const EditAssignmentDialog = ({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="edit-status">Status</Label>
               <Select
+                name="status"
                 value={editForm.status}
                 onValueChange={(value) => {
                   console.log("Status changed to:", value);
                   onFormChange('status', value);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger id="edit-status">
                   <SelectValue placeholder="Select a status" />
                 </SelectTrigger>
                 <SelectContent>

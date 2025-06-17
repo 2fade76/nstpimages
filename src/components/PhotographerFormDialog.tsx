@@ -118,9 +118,10 @@ export function PhotographerFormDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
+            <Label htmlFor="photographer-name">Name *</Label>
             <Input
-              id="name"
+              id="photographer-name"
+              name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -129,9 +130,10 @@ export function PhotographerFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="photographer-email">Email</Label>
             <Input
-              id="email"
+              id="photographer-email"
+              name="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -140,9 +142,10 @@ export function PhotographerFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="photographer-phone">Phone</Label>
             <Input
-              id="phone"
+              id="photographer-phone"
+              name="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(123) 456-7890"
@@ -150,9 +153,10 @@ export function PhotographerFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="equipment">Equipment</Label>
+            <Label htmlFor="photographer-equipment">Equipment</Label>
             <Input
-              id="equipment"
+              id="photographer-equipment"
+              name="equipment"
               value={equipment}
               onChange={(e) => setEquipment(e.target.value)}
               placeholder="Canon EOS R5, 24-70mm f/2.8, etc."
@@ -160,12 +164,13 @@ export function PhotographerFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor="photographer-status">Status</Label>
             <Select
+              name="status"
               value={status}
               onValueChange={(value: "active" | "onleave") => setStatus(value)}
             >
-              <SelectTrigger id="status">
+              <SelectTrigger id="photographer-status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>

@@ -106,6 +106,7 @@ export const AssignmentsList = ({
     refetch();
   }, [currentPage, refetch]);
 
+  // Reset page and refetch when search query changes
   useEffect(() => {
     if (searchQuery?.trim()) {
       setCurrentPage(1);
@@ -113,10 +114,14 @@ export const AssignmentsList = ({
     }
   }, [searchQuery, refetch, setCurrentPage]);
 
+  // Only reset photographer filter when there's an actual search query
   useEffect(() => {
-    handlePhotographerFilterChange(null);
-    setCurrentPage(1);
-  }, [searchQuery, handlePhotographerFilterChange, setCurrentPage]);
+    if (searchQuery?.trim()) {
+      console.log("Search query detected, resetting photographer filter");
+      handlePhotographerFilterChange(null);
+      setCurrentPage(1);
+    }
+  }, [searchQuery]);
 
   // Reset page when status filter changes
   useEffect(() => {

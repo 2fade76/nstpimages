@@ -52,30 +52,33 @@ export type Database = {
       }
       photographers: {
         Row: {
+          camera_body: string | null
           created_at: string
           email: string | null
-          equipment: string | null
           id: string
           name: string
           phone: string | null
+          serial_number: string | null
           status: string
         }
         Insert: {
+          camera_body?: string | null
           created_at?: string
           email?: string | null
-          equipment?: string | null
           id?: string
           name: string
           phone?: string | null
+          serial_number?: string | null
           status?: string
         }
         Update: {
+          camera_body?: string | null
           created_at?: string
           email?: string | null
-          equipment?: string | null
           id?: string
           name?: string
           phone?: string | null
+          serial_number?: string | null
           status?: string
         }
         Relationships: []

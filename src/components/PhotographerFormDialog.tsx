@@ -36,8 +36,9 @@ export function PhotographerFormDialog({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [equipment, setEquipment] = useState("");
-  const [status, setStatus] = useState<"active" | "onleave">("active");
+  const [cameraBody, setCameraBody] = useState("");
+  const [serialNumber, setSerialNumber] = useState("");
+  const [status, setStatus] = useState<"staff" | "stringers">("staff");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = !!photographer;
@@ -48,15 +49,17 @@ export function PhotographerFormDialog({
       setName(photographer.name);
       setEmail(photographer.email || "");
       setPhone(photographer.phone || "");
-      setEquipment(photographer.equipment || "");
+      setCameraBody(photographer.camera_body || "");
+      setSerialNumber(photographer.serial_number || "");
       setStatus(photographer.status);
     } else {
       // Reset form when adding new photographer
       setName("");
       setEmail("");
       setPhone("");
-      setEquipment("");
-      setStatus("active");
+      setCameraBody("");
+      setSerialNumber("");
+      setStatus("staff");
     }
   }, [photographer]);
 
@@ -73,7 +76,8 @@ export function PhotographerFormDialog({
             name,
             email: email || null,
             phone: phone || null,
-            equipment: equipment || null,
+            camera_body: cameraBody || null,
+            serial_number: serialNumber || null,
             status,
           })
           .eq("id", photographer.id);
@@ -86,7 +90,8 @@ export function PhotographerFormDialog({
           name,
           email: email || null,
           phone: phone || null,
-          equipment: equipment || null,
+          camera_body: cameraBody || null,
+          serial_number: serialNumber || null,
           status,
         });
 
@@ -153,13 +158,24 @@ export function PhotographerFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="photographer-equipment">Equipment</Label>
+            <Label htmlFor="photographer-camera-body">Camera Body</Label>
             <Input
-              id="photographer-equipment"
-              name="equipment"
-              value={equipment}
-              onChange={(e) => setEquipment(e.target.value)}
-              placeholder="Canon EOS R5, 24-70mm f/2.8, etc."
+              id="photographer-camera-body"
+              name="camera_body"
+              value={cameraBody}
+              onChange={(e) => setCameraBody(e.target.value)}
+              placeholder="Canon EOS R5, Nikon D850, etc."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="photographer-serial-number">Serial Number</Label>
+            <Input
+              id="photographer-serial-number"
+              name="serial_number"
+              value={serialNumber}
+              onChange={(e) => setSerialNumber(e.target.value)}
+              placeholder="Camera serial number"
             />
           </div>
 
@@ -168,14 +184,14 @@ export function PhotographerFormDialog({
             <Select
               name="status"
               value={status}
-              onValueChange={(value: "active" | "onleave") => setStatus(value)}
+              onValueChange={(value: "staff" | "stringers") => setStatus(value)}
             >
               <SelectTrigger id="photographer-status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="onleave">On Leave</SelectItem>
+                <SelectItem value="staff">Staff</SelectItem>
+                <SelectItem value="stringers">Stringers</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Mail, Phone, Camera } from "lucide-react";
+import { User, Mail, Phone, Camera, Hash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Photographer } from "@/types/database";
@@ -21,8 +21,8 @@ export function PhotographerCard({ photographer, onEdit, onDelete }: Photographe
             <User className="h-4 w-4" />
             <h3 className="font-semibold">{photographer.name}</h3>
           </div>
-          <Badge variant={photographer.status === 'active' ? 'default' : 'secondary'}>
-            {photographer.status === 'active' ? 'Active' : 'On Leave'}
+          <Badge variant={photographer.status === 'staff' ? 'default' : 'secondary'}>
+            {photographer.status === 'staff' ? 'Staff' : 'Stringers'}
           </Badge>
         </div>
         
@@ -40,10 +40,17 @@ export function PhotographerCard({ photographer, onEdit, onDelete }: Photographe
           </div>
         )}
 
-        {photographer.equipment && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        {photographer.camera_body && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <Camera className="h-4 w-4" />
-            <span>{photographer.equipment}</span>
+            <span>{photographer.camera_body}</span>
+          </div>
+        )}
+
+        {photographer.serial_number && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+            <Hash className="h-4 w-4" />
+            <span>{photographer.serial_number}</span>
           </div>
         )}
 

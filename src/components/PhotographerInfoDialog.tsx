@@ -1,109 +1,98 @@
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Photographer } from "@/types/database";
-import { Loader2, CheckCircle, CircleSlash } from "lucide-react";
+import { Mail, Phone, Camera, Hash } from "lucide-react";
 
 interface PhotographerInfoDialogProps {
+  photographer: Photographer | null;
   isOpen: boolean;
   onClose: () => void;
-  photographerId: string;
-  assignments: number;
 }
 
-export const PhotographerInfoDialog = ({
-  isOpen,
-  onClose,
-  photographerId,
-  assignments,
-}: PhotographerInfoDialogProps) => {
-  const { data: photographer, isLoading } = useQuery({
-    queryKey: ["photographer", photographerId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("photographers")
-        .select()
-        .eq("id", photographerId)
-        .single();
-
-      if (error) throw error;
-      return data as Photographer;
-    },
-    enabled: isOpen && !!photographerId,
-  });
+export const PhotographerInfoDialog = ({ photographer, isOpen, onClose }: PhotographerInfoDialogProps) => {
+  if (!photographer) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                {photographer?.name}
-                {photographer?.status === "active" ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <CircleSlash className="h-4 w-4 text-yellow-500" />
-                )}
-              </>
-            )}
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-sm font-semibold text-primary">
+                {photographer.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            {photographer.name}
           </DialogTitle>
         </DialogHeader>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-6 w-6 animate-spin" />
+        
+        <div className="space-y-4">
+          {/* Status Badge */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Status</span>
+            <Badge 
+              variant={photographer.status === 'staff' ? 'default' : 'secondary'}
+              className={
+                photographer.status === 'staff' 
+                  ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }
+            >
+              {photographer.status === 'staff' ? 'Staff' : 'Stringers'}
+            </Badge>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-primary mb-2">
-                    {assignments}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Total Assignments</p>
-                </div>
-              </CardContent>
-            </Card>
 
-            <div className="space-y-2">
-              {photographer?.email && (
-                <p className="text-sm">
-                  <span className="font-medium">Email:</span> {photographer.email}
-                </p>
-              )}
-              {photographer?.phone && (
-                <p className="text-sm">
-                  <span className="font-medium">Phone:</span> {photographer.phone}
-                </p>
-              )}
-              <p className="text-sm">
-                <span className="font-medium">Status:</span>{" "}
-                <span
-                  className={
-                    photographer?.status === "active"
-                      ? "text-green-500"
-                      : "text-yellow-500"
-                  }
-                >
-                  {photographer?.status === "active" ? "Active" : "On Leave"}
-                </span>
-              </p>
+          {/* Contact Information */}
+          {photographer.email && (
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Email</p>
+                <p className="text-sm text-muted-foreground">{photographer.email}</p>
+              </div>
             </div>
+          )}
+
+          {photographer.phone && (
+            <div className="flex items-center gap-3">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Phone</p>
+                <p className="text-sm text-muted-foreground">{photographer.phone}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Equipment Information */}
+          {photographer.camera_body && (
+            <div className="flex items-center gap-3">
+              <Camera className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Camera Body</p>
+                <p className="text-sm text-muted-foreground">{photographer.camera_body}</p>
+              </div>
+            </div>
+          )}
+
+          {photographer.serial_number && (
+            <div className="flex items-center gap-3">
+              <Hash className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Serial Number</p>
+                <p className="text-sm text-muted-foreground">{photographer.serial_number}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Created Date */}
+          <div className="pt-2 border-t">
+            <p className="text-xs text-muted-foreground">
+              Added on {new Date(photographer.created_at).toLocaleDateString()}
+            </p>
           </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 };
-

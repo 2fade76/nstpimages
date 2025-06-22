@@ -125,7 +125,7 @@ export const AnalyticsSummaryCard = ({
             </div>
             <p className="text-muted-foreground mb-1 text-[10px] md:text-xs text-center leading-tight font-bold">Today's Completed</p>
             {isLoading ? <div className="h-6 md:h-8 w-8 md:w-12 bg-slate-200 animate-pulse rounded"></div> : <>
-                <p className="text-xl md:text-3xl font-bold text-blue-500">{todayCompletedAssignments}</p>
+                <p className="text-xl font-bold text-blue-500 md:text-4xl">{todayCompletedAssignments}</p>
                 <p className="text-[10px] md:text-xs text-muted-foreground mt-1 hidden md:block">{currentDate}</p>
               </>}
           </div>

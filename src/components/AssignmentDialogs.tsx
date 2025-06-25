@@ -3,6 +3,8 @@ import { Assignment, Photographer } from "@/types/database";
 import { EditAssignmentDialog } from "./EditAssignmentDialog";
 import { DeleteAssignmentDialog } from "./DeleteAssignmentDialog";
 import { PhotographerInfoDialog } from "./PhotographerInfoDialog";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AssignmentDialogsProps {
   isEditDialogOpen: boolean;
@@ -46,6 +48,24 @@ export const AssignmentDialogs = ({
   onSubmit,
   onDeleteConfirm
 }: AssignmentDialogsProps) => {
+  // Get the selected photographer data when dialog is open
+  const { data: selectedPhotographer } = useQuery({
+    queryKey: ['photographer', selectedPhotographerId],
+    queryFn: async () => {
+      if (!selectedPhotographerId) return null;
+      
+      const { data, error } = await supabase
+        .from('photographers')
+        .select('*')
+        .eq('id', selectedPhotographerId)
+        .single();
+      
+      if (error) throw error;
+      return data as Photographer;
+    },
+    enabled: !!selectedPhotographerId,
+  });
+
   return (
     <>
       <EditAssignmentDialog
@@ -67,12 +87,11 @@ export const AssignmentDialogs = ({
         isDeleting={isDeleting}
       />
 
-      {selectedPhotographerId && (
+      {selectedPhotographerId && selectedPhotographer && (
         <PhotographerInfoDialog
           isOpen={true}
           onClose={onPhotographerDialogClose}
-          photographerId={selectedPhotographerId}
-          assignments={assignments?.filter(a => a.photographers.id === selectedPhotographerId).length || 0}
+          photographer={selectedPhotographer}
         />
       )}
     </>

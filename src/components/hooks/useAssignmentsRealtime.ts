@@ -21,15 +21,39 @@ export const useAssignmentsRealtime = () => {
           // Invalidate and refetch assignments queries
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
           
-          // Show toast notification
+          // Also invalidate analytics queries
+          queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['today-completed-assignments'] });
+          
+          // Show toast notification based on event type
+          const eventType = payload.eventType;
+          let message = "Assignment data has been updated";
+          
+          if (eventType === 'INSERT') {
+            message = "New assignment created";
+          } else if (eventType === 'UPDATE') {
+            message = "Assignment updated";
+          } else if (eventType === 'DELETE') {
+            message = "Assignment deleted";
+          }
+          
           toast({
-            title: "Assignment updated",
-            description: "Assignment data has been updated",
-            duration: 2000
+            title: "Real-time Update",
+            description: message,
+            duration: 3000
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Real-time subscription status:", status);
+        if (status === 'SUBSCRIBED') {
+          console.log("Successfully subscribed to assignments real-time updates");
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error("Error in real-time subscription for assignments");
+        }
+      });
 
     console.log("Subscribed to real-time updates for assignments");
 

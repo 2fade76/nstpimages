@@ -71,7 +71,7 @@ export type Database = {
           name: string
           phone?: string | null
           serial_number?: string | null
-          status?: string
+          status: string
         }
         Update: {
           camera_body?: string | null

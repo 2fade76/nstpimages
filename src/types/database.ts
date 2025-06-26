@@ -4,6 +4,7 @@ export interface Photographer {
   name: string;
   email: string | null;
   phone: string | null;
+  Location: string | null;
   camera_body: string | null;
   serial_number: string | null;
   status: 'staff' | 'stringers';

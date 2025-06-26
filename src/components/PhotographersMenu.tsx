@@ -27,9 +27,9 @@ export function PhotographersMenu() {
       // Ensure the status property is of the correct type and process other fields
       return data.map(photographer => ({
         ...photographer,
-        status: photographer.status === 'staff' || photographer.status === 'stringers' 
-          ? (photographer.status as 'staff' | 'stringers')
-          : 'staff', // Default to 'staff' if status is neither 'staff' nor 'stringers'
+        status: photographer.status === 'staff' || photographer.status === 'stringers' || photographer.status === 'staff_oc'
+          ? (photographer.status as 'staff' | 'stringers' | 'staff_oc')
+          : 'staff', // Default to 'staff' if status is not recognized
         camera_body: photographer.camera_body || null,
         serial_number: photographer.serial_number || null
       })) as Photographer[];

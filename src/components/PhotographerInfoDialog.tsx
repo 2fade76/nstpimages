@@ -10,6 +10,31 @@ interface PhotographerInfoDialogProps {
   onClose: () => void;
 }
 
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'staff':
+      return 'Staff Photographer';
+    case 'stringers':
+      return 'Stringer Photographer';
+    case 'staff_oc':
+      return 'Staff OC';
+    default:
+      return status;
+  }
+};
+
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case 'staff':
+    case 'staff_oc':
+      return 'default' as const;
+    case 'stringers':
+      return 'secondary' as const;
+    default:
+      return 'secondary' as const;
+  }
+};
+
 export const PhotographerInfoDialog = ({ photographer, isOpen, onClose }: PhotographerInfoDialogProps) => {
   if (!photographer) return null;
 
@@ -32,14 +57,14 @@ export const PhotographerInfoDialog = ({ photographer, isOpen, onClose }: Photog
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">Status</span>
             <Badge 
-              variant={photographer.status === 'staff' ? 'default' : 'secondary'}
+              variant={getStatusVariant(photographer.status)}
               className={
-                photographer.status === 'staff' 
+                photographer.status === 'staff' || photographer.status === 'staff_oc'
                   ? 'bg-green-100 text-green-800 hover:bg-green-200' 
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }
             >
-              {photographer.status === 'staff' ? 'Staff' : 'Stringers'}
+              {getStatusDisplay(photographer.status)}
             </Badge>
           </div>
 

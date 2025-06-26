@@ -7,7 +7,7 @@ export interface Photographer {
   Location: string | null;
   camera_body: string | null;
   serial_number: string | null;
-  status: 'staff' | 'stringers';
+  status: 'staff' | 'stringers' | 'staff_oc';
   created_at: string;
 }
 

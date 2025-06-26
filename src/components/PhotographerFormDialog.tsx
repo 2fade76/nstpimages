@@ -39,7 +39,7 @@ export function PhotographerFormDialog({
   const [location, setLocation] = useState("");
   const [cameraBody, setCameraBody] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
-  const [status, setStatus] = useState<"staff" | "stringers">("staff");
+  const [status, setStatus] = useState<"staff" | "stringers" | "staff_oc">("staff");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = !!photographer;
@@ -200,14 +200,15 @@ export function PhotographerFormDialog({
             <Select
               name="status"
               value={status}
-              onValueChange={(value: "staff" | "stringers") => setStatus(value)}
+              onValueChange={(value: "staff" | "stringers" | "staff_oc") => setStatus(value)}
             >
               <SelectTrigger id="photographer-status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="stringers">Stringers</SelectItem>
+                <SelectItem value="staff">Staff Photographer</SelectItem>
+                <SelectItem value="stringers">Stringer Photographer</SelectItem>
+                <SelectItem value="staff_oc">Staff OC</SelectItem>
               </SelectContent>
             </Select>
           </div>

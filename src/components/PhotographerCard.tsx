@@ -12,6 +12,31 @@ interface PhotographerCardProps {
   onDelete: (id: string) => void;
 }
 
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'staff':
+      return 'Staff Photographer';
+    case 'stringers':
+      return 'Stringer Photographer';
+    case 'staff_oc':
+      return 'Staff OC';
+    default:
+      return status;
+  }
+};
+
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case 'staff':
+    case 'staff_oc':
+      return 'default' as const;
+    case 'stringers':
+      return 'secondary' as const;
+    default:
+      return 'secondary' as const;
+  }
+};
+
 export function PhotographerCard({ photographer, onEdit, onDelete }: PhotographerCardProps) {
   return (
     <Card className="w-full">
@@ -21,8 +46,8 @@ export function PhotographerCard({ photographer, onEdit, onDelete }: Photographe
             <User className="h-4 w-4" />
             <h3 className="font-semibold">{photographer.name}</h3>
           </div>
-          <Badge variant={photographer.status === 'staff' ? 'default' : 'secondary'}>
-            {photographer.status === 'staff' ? 'Staff' : 'Stringers'}
+          <Badge variant={getStatusVariant(photographer.status)}>
+            {getStatusDisplay(photographer.status)}
           </Badge>
         </div>
         

@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -7,6 +6,7 @@ import { Photographer } from "@/types/database";
 import { Loader2, UserPlus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PhotographerFormDialog } from "./PhotographerFormDialog";
+import { PhotographerStatsCard } from "./PhotographerStatsCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -133,6 +133,8 @@ export function PhotographersMenu() {
           Add New
         </Button>
       </div>
+      
+      <PhotographerStatsCard photographers={photographers || []} />
       
       <div className="rounded-md border">
         <Table>

@@ -1,13 +1,46 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PhotographerCard } from "./PhotographerCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Photographer } from "@/types/database";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PhotographerFormDialog } from "./PhotographerFormDialog";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'staff':
+      return 'Staff Photographer';
+    case 'stringers':
+      return 'Stringer Photographer';
+    case 'staff_oc':
+      return 'Staff OC';
+    default:
+      return status;
+  }
+};
+
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case 'staff':
+    case 'staff_oc':
+      return 'default' as const;
+    case 'stringers':
+      return 'secondary' as const;
+    default:
+      return 'secondary' as const;
+  }
+};
 
 export function PhotographersMenu() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -101,15 +134,52 @@ export function PhotographersMenu() {
         </Button>
       </div>
       
-      <div className="grid gap-4">
-        {photographers?.map((photographer) => (
-          <PhotographerCard
-            key={photographer.id}
-            photographer={photographer}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Camera Body</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {photographers?.map((photographer) => (
+              <TableRow key={photographer.id}>
+                <TableCell className="font-medium">{photographer.name}</TableCell>
+                <TableCell>{photographer.Location || '-'}</TableCell>
+                <TableCell>{photographer.camera_body || '-'}</TableCell>
+                <TableCell>
+                  <Badge variant={getStatusVariant(photographer.status)}>
+                    {getStatusDisplay(photographer.status)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(photographer)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(photographer.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       <PhotographerFormDialog 

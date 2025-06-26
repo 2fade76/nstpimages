@@ -36,6 +36,7 @@ export function PhotographerFormDialog({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
   const [cameraBody, setCameraBody] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [status, setStatus] = useState<"staff" | "stringers">("staff");
@@ -49,6 +50,7 @@ export function PhotographerFormDialog({
       setName(photographer.name);
       setEmail(photographer.email || "");
       setPhone(photographer.phone || "");
+      setLocation(photographer.Location || "");
       setCameraBody(photographer.camera_body || "");
       setSerialNumber(photographer.serial_number || "");
       setStatus(photographer.status);
@@ -57,6 +59,7 @@ export function PhotographerFormDialog({
       setName("");
       setEmail("");
       setPhone("");
+      setLocation("");
       setCameraBody("");
       setSerialNumber("");
       setStatus("staff");
@@ -76,6 +79,7 @@ export function PhotographerFormDialog({
             name,
             email: email || null,
             phone: phone || null,
+            Location: location || null,
             camera_body: cameraBody || null,
             serial_number: serialNumber || null,
             status,
@@ -90,6 +94,7 @@ export function PhotographerFormDialog({
           name,
           email: email || null,
           phone: phone || null,
+          Location: location || null,
           camera_body: cameraBody || null,
           serial_number: serialNumber || null,
           status,
@@ -154,6 +159,17 @@ export function PhotographerFormDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(123) 456-7890"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="photographer-location">Location</Label>
+            <Input
+              id="photographer-location"
+              name="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="City, State or Region"
             />
           </div>
 

@@ -132,7 +132,7 @@ export function PhotographersMenu() {
                 <TableCell className="bg-indigo-950">{photographer.Location || '-'}</TableCell>
                 <TableCell>{photographer.camera_body || '-'}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(photographer.status)} className="bg-stone-500">
+                  <Badge variant={getStatusVariant(photographer.status)} className="bg-slate-500">
                     {getStatusDisplay(photographer.status)}
                   </Badge>
                 </TableCell>

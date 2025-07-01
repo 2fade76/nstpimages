@@ -8,8 +8,10 @@ import { Loader2, UserPlus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PhotographerFormDialog } from "./PhotographerFormDialog";
 import { PhotographerStatsCard } from "./PhotographerStatsCard";
+import { PhotographerSearch } from "./PhotographerSearch";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 const getStatusDisplay = (status: string) => {
   switch (status) {
     case 'staff':
@@ -22,6 +24,7 @@ const getStatusDisplay = (status: string) => {
       return status;
   }
 };
+
 const getStatusVariant = (status: string) => {
   switch (status) {
     case 'staff':
@@ -33,10 +36,13 @@ const getStatusVariant = (status: string) => {
       return 'secondary' as const;
   }
 };
+
 export function PhotographersMenu() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPhotographer, setEditingPhotographer] = useState<Photographer | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
+
   const {
     data: photographers,
     isLoading
@@ -59,14 +65,38 @@ export function PhotographersMenu() {
       })) as Photographer[];
     }
   });
+
+  // Filter photographers based on search query
+  const filteredPhotographers = photographers?.filter(photographer => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      photographer.name.toLowerCase().includes(query) ||
+      photographer.email?.toLowerCase().includes(query) ||
+      photographer.phone?.toLowerCase().includes(query) ||
+      photographer.Location?.toLowerCase().includes(query) ||
+      photographer.camera_body?.toLowerCase().includes(query) ||
+      photographer.body_serialno?.toLowerCase().includes(query) ||
+      photographer.Adapter?.toLowerCase().includes(query) ||
+      photographer["Lens 16-35mm"]?.toLowerCase().includes(query) ||
+      photographer["Lens 70-200mm"]?.toLowerCase().includes(query) ||
+      photographer["Battery Grip"]?.toLowerCase().includes(query) ||
+      photographer.Flash?.toLowerCase().includes(query) ||
+      getStatusDisplay(photographer.status).toLowerCase().includes(query)
+    );
+  });
+
   const handleAddNew = () => {
     setEditingPhotographer(null);
     setIsFormOpen(true);
   };
+
   const handleEdit = (photographer: Photographer) => {
     setEditingPhotographer(photographer);
     setIsFormOpen(true);
   };
+
   const handleCloseForm = () => {
     setIsFormOpen(false);
     // Invalidate the query to refresh the photographers list after adding/editing
@@ -74,6 +104,7 @@ export function PhotographersMenu() {
       queryKey: ['photographers']
     });
   };
+
   const handleDelete = async (id: string) => {
     try {
       // Check if photographer is assigned to any assignment
@@ -100,21 +131,35 @@ export function PhotographersMenu() {
       console.error(error);
     }
   };
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-full">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>;
   }
+
   return <div className="space-y-4">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">Photographers</h2>
-        <Button onClick={handleAddNew} size="sm">
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add New
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full sm:w-auto">
+          <PhotographerSearch 
+            onSearch={setSearchQuery} 
+            searchQuery={searchQuery}
+          />
+          <Button onClick={handleAddNew} size="sm" className="w-full sm:w-auto">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add New
+          </Button>
+        </div>
       </div>
+
+      {searchQuery && (
+        <div className="text-sm text-muted-foreground mb-4">
+          {filteredPhotographers?.length || 0} photographer(s) found for "{searchQuery}"
+        </div>
+      )}
       
-      <PhotographerStatsCard photographers={photographers || []} />
+      <PhotographerStatsCard photographers={filteredPhotographers || []} />
       
       <div className="rounded-md border">
         <Table>
@@ -128,28 +173,38 @@ export function PhotographersMenu() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {photographers?.map(photographer => <TableRow key={photographer.id}>
-                <TableCell className="font-medium">{photographer.name}</TableCell>
-                <TableCell className="bg-indigo-950">{photographer.Location || '-'}</TableCell>
-                <TableCell>{photographer.camera_body || '-'}</TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(photographer.status)} className="bg-slate-500">
-                    {getStatusDisplay(photographer.status)}
-                  </Badge>
+            {filteredPhotographers?.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  {searchQuery ? "No photographers found matching your search." : "No photographers found."}
                 </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(photographer)}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(photographer.id)}>
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>)}
+              </TableRow>
+            ) : (
+              filteredPhotographers?.map(photographer => (
+                <TableRow key={photographer.id}>
+                  <TableCell className="font-medium">{photographer.name}</TableCell>
+                  <TableCell className="bg-indigo-950">{photographer.Location || '-'}</TableCell>
+                  <TableCell>{photographer.camera_body || '-'}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(photographer.status)} className="bg-slate-500">
+                      {getStatusDisplay(photographer.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(photographer)}>
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(photographer.id)}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

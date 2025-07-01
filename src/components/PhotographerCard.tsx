@@ -79,10 +79,10 @@ export function PhotographerCard({ photographer, onEdit, onDelete }: Photographe
           </div>
         )}
 
-        {photographer.serial_number && (
+        {photographer.body_serialno && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Hash className="h-4 w-4" />
-            <span>{photographer.serial_number}</span>
+            <span>{photographer.body_serialno}</span>
           </div>
         )}
 

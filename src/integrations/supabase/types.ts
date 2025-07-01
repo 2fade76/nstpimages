@@ -52,36 +52,51 @@ export type Database = {
       }
       photographers: {
         Row: {
+          Adapter: string | null
+          "Battery Grip": string | null
+          body_serialno: string | null
           camera_body: string | null
           created_at: string
           email: string | null
+          Flash: string | null
           id: string
+          "Lens 16-35mm": string | null
+          "Lens 70-200mm": string | null
           Location: string | null
           name: string
           phone: string | null
-          serial_number: string | null
           status: string
         }
         Insert: {
+          Adapter?: string | null
+          "Battery Grip"?: string | null
+          body_serialno?: string | null
           camera_body?: string | null
           created_at?: string
           email?: string | null
+          Flash?: string | null
           id?: string
+          "Lens 16-35mm"?: string | null
+          "Lens 70-200mm"?: string | null
           Location?: string | null
           name: string
           phone?: string | null
-          serial_number?: string | null
           status: string
         }
         Update: {
+          Adapter?: string | null
+          "Battery Grip"?: string | null
+          body_serialno?: string | null
           camera_body?: string | null
           created_at?: string
           email?: string | null
+          Flash?: string | null
           id?: string
+          "Lens 16-35mm"?: string | null
+          "Lens 70-200mm"?: string | null
           Location?: string | null
           name?: string
           phone?: string | null
-          serial_number?: string | null
           status?: string
         }
         Relationships: []

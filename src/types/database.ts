@@ -6,7 +6,14 @@ export interface Photographer {
   phone: string | null;
   Location: string | null;
   camera_body: string | null;
-  serial_number: string | null;
+  body_serialno: string | null;
+  Adapter: string | null;
+  "Lens 24-105mm": string | null;
+  "Lens 70-200mm": string | null;
+  "Lens 16-75mm": string | null;
+  "Battery Grip": string | null;
+  Flash: string | null;
+  Drones: string | null;
   status: 'staff' | 'stringers' | 'staff_oc';
   created_at: string;
 }

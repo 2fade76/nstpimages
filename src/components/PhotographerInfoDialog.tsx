@@ -110,12 +110,12 @@ export const PhotographerInfoDialog = ({ photographer, isOpen, onClose }: Photog
             </div>
           )}
 
-          {photographer.serial_number && (
+          {photographer.body_serialno && (
             <div className="flex items-center gap-3">
               <Hash className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Serial Number</p>
-                <p className="text-sm text-muted-foreground">{photographer.serial_number}</p>
+                <p className="text-sm font-medium">Body Serial Number</p>
+                <p className="text-sm text-muted-foreground">{photographer.body_serialno}</p>
               </div>
             </div>
           )}

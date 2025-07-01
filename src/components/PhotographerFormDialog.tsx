@@ -38,7 +38,14 @@ export function PhotographerFormDialog({
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [cameraBody, setCameraBody] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
+  const [bodySerialNo, setBodySerialNo] = useState("");
+  const [adapter, setAdapter] = useState("");
+  const [lens2470, setLens2470] = useState("");
+  const [lens70200, setLens70200] = useState("");
+  const [lens1675, setLens1675] = useState("");
+  const [batteryGrip, setBatteryGrip] = useState("");
+  const [flash, setFlash] = useState("");
+  const [drones, setDrones] = useState("");
   const [status, setStatus] = useState<"staff" | "stringers" | "staff_oc">("staff");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +59,14 @@ export function PhotographerFormDialog({
       setPhone(photographer.phone || "");
       setLocation(photographer.Location || "");
       setCameraBody(photographer.camera_body || "");
-      setSerialNumber(photographer.serial_number || "");
+      setBodySerialNo(photographer.body_serialno || "");
+      setAdapter(photographer.Adapter || "");
+      setLens2470(photographer["Lens 24-105mm"] || "");
+      setLens70200(photographer["Lens 70-200mm"] || "");
+      setLens1675(photographer["Lens 16-75mm"] || "");
+      setBatteryGrip(photographer["Battery Grip"] || "");
+      setFlash(photographer.Flash || "");
+      setDrones(photographer.Drones || "");
       setStatus(photographer.status);
     } else {
       // Reset form when adding new photographer
@@ -61,7 +75,14 @@ export function PhotographerFormDialog({
       setPhone("");
       setLocation("");
       setCameraBody("");
-      setSerialNumber("");
+      setBodySerialNo("");
+      setAdapter("");
+      setLens2470("");
+      setLens70200("");
+      setLens1675("");
+      setBatteryGrip("");
+      setFlash("");
+      setDrones("");
       setStatus("staff");
     }
   }, [photographer]);
@@ -81,7 +102,14 @@ export function PhotographerFormDialog({
             phone: phone || null,
             Location: location || null,
             camera_body: cameraBody || null,
-            serial_number: serialNumber || null,
+            body_serialno: bodySerialNo || null,
+            Adapter: adapter || null,
+            "Lens 24-105mm": lens2470 || null,
+            "Lens 70-200mm": lens70200 || null,
+            "Lens 16-75mm": lens1675 || null,
+            "Battery Grip": batteryGrip || null,
+            Flash: flash || null,
+            Drones: drones || null,
             status,
           })
           .eq("id", photographer.id);
@@ -96,7 +124,14 @@ export function PhotographerFormDialog({
           phone: phone || null,
           Location: location || null,
           camera_body: cameraBody || null,
-          serial_number: serialNumber || null,
+          body_serialno: bodySerialNo || null,
+          Adapter: adapter || null,
+          "Lens 24-105mm": lens2470 || null,
+          "Lens 70-200mm": lens70200 || null,
+          "Lens 16-75mm": lens1675 || null,
+          "Battery Grip": batteryGrip || null,
+          Flash: flash || null,
+          Drones: drones || null,
           status,
         });
 
@@ -119,7 +154,7 @@ export function PhotographerFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Photographer" : "Add New Photographer"}
@@ -127,90 +162,169 @@ export function PhotographerFormDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="space-y-2">
-            <Label htmlFor="photographer-name">Name *</Label>
-            <Input
-              id="photographer-name"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Enter full name"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="photographer-name">Name *</Label>
+              <Input
+                id="photographer-name"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Enter full name"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="photographer-email">Email</Label>
-            <Input
-              id="photographer-email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@example.com"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="photographer-email">Email</Label>
+              <Input
+                id="photographer-email"
+                name="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@example.com"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="photographer-phone">Phone</Label>
-            <Input
-              id="photographer-phone"
-              name="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(123) 456-7890"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="photographer-phone">Phone</Label>
+              <Input
+                id="photographer-phone"
+                name="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(123) 456-7890"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="photographer-location">Location</Label>
-            <Input
-              id="photographer-location"
-              name="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="City, State or Region"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="photographer-location">Location</Label>
+              <Input
+                id="photographer-location"
+                name="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="City, State or Region"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="photographer-camera-body">Camera Body</Label>
-            <Input
-              id="photographer-camera-body"
-              name="camera_body"
-              value={cameraBody}
-              onChange={(e) => setCameraBody(e.target.value)}
-              placeholder="Canon EOS R5, Nikon D850, etc."
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="photographer-camera-body">Camera Body</Label>
+              <Input
+                id="photographer-camera-body"
+                name="camera_body"
+                value={cameraBody}
+                onChange={(e) => setCameraBody(e.target.value)}
+                placeholder="Canon EOS R5, Nikon D850, etc."
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="photographer-serial-number">Serial Number</Label>
-            <Input
-              id="photographer-serial-number"
-              name="serial_number"
-              value={serialNumber}
-              onChange={(e) => setSerialNumber(e.target.value)}
-              placeholder="Camera serial number"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="photographer-body-serialno">Body Serial Number</Label>
+              <Input
+                id="photographer-body-serialno"
+                name="body_serialno"
+                value={bodySerialNo}
+                onChange={(e) => setBodySerialNo(e.target.value)}
+                placeholder="Camera body serial number"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="photographer-status">Status</Label>
-            <Select
-              name="status"
-              value={status}
-              onValueChange={(value: "staff" | "stringers" | "staff_oc") => setStatus(value)}
-            >
-              <SelectTrigger id="photographer-status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="staff">Staff Photographer</SelectItem>
-                <SelectItem value="stringers">Stringer Photographer</SelectItem>
-                <SelectItem value="staff_oc">Staff OC</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label htmlFor="photographer-adapter">Adapter</Label>
+              <Input
+                id="photographer-adapter"
+                name="adapter"
+                value={adapter}
+                onChange={(e) => setAdapter(e.target.value)}
+                placeholder="Lens adapter"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-lens-2470">Lens 24-105mm</Label>
+              <Input
+                id="photographer-lens-2470"
+                name="lens_24_105"
+                value={lens2470}
+                onChange={(e) => setLens2470(e.target.value)}
+                placeholder="24-105mm lens details"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-lens-70200">Lens 70-200mm</Label>
+              <Input
+                id="photographer-lens-70200"
+                name="lens_70_200"
+                value={lens70200}
+                onChange={(e) => setLens70200(e.target.value)}
+                placeholder="70-200mm lens details"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-lens-1675">Lens 16-75mm</Label>
+              <Input
+                id="photographer-lens-1675"
+                name="lens_16_75"
+                value={lens1675}
+                onChange={(e) => setLens1675(e.target.value)}
+                placeholder="16-75mm lens details"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-battery-grip">Battery Grip</Label>
+              <Input
+                id="photographer-battery-grip"
+                name="battery_grip"
+                value={batteryGrip}
+                onChange={(e) => setBatteryGrip(e.target.value)}
+                placeholder="Battery grip model"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-flash">Flash</Label>
+              <Input
+                id="photographer-flash"
+                name="flash"
+                value={flash}
+                onChange={(e) => setFlash(e.target.value)}
+                placeholder="Flash unit details"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-drones">Drones</Label>
+              <Input
+                id="photographer-drones"
+                name="drones"
+                value={drones}
+                onChange={(e) => setDrones(e.target.value)}
+                placeholder="Drone equipment"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photographer-status">Status</Label>
+              <Select
+                name="status"
+                value={status}
+                onValueChange={(value: "staff" | "stringers" | "staff_oc") => setStatus(value)}
+              >
+                <SelectTrigger id="photographer-status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="staff">Staff Photographer</SelectItem>
+                  <SelectItem value="stringers">Stringer Photographer</SelectItem>
+                  <SelectItem value="staff_oc">Staff OC</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter className="pt-4">

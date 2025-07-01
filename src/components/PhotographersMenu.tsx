@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -54,7 +55,7 @@ export function PhotographersMenu() {
         status: photographer.status === 'staff' || photographer.status === 'stringers' || photographer.status === 'staff_oc' ? photographer.status as 'staff' | 'stringers' | 'staff_oc' : 'staff',
         // Default to 'staff' if status is not recognized
         camera_body: photographer.camera_body || null,
-        serial_number: photographer.serial_number || null
+        body_serialno: photographer.body_serialno || null
       })) as Photographer[];
     }
   });

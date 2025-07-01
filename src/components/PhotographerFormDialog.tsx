@@ -40,12 +40,10 @@ export function PhotographerFormDialog({
   const [cameraBody, setCameraBody] = useState("");
   const [bodySerialNo, setBodySerialNo] = useState("");
   const [adapter, setAdapter] = useState("");
-  const [lens2470, setLens2470] = useState("");
+  const [lens1635, setLens1635] = useState("");
   const [lens70200, setLens70200] = useState("");
-  const [lens1675, setLens1675] = useState("");
   const [batteryGrip, setBatteryGrip] = useState("");
   const [flash, setFlash] = useState("");
-  const [drones, setDrones] = useState("");
   const [status, setStatus] = useState<"staff" | "stringers" | "staff_oc">("staff");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,12 +59,10 @@ export function PhotographerFormDialog({
       setCameraBody(photographer.camera_body || "");
       setBodySerialNo(photographer.body_serialno || "");
       setAdapter(photographer.Adapter || "");
-      setLens2470(photographer["Lens 24-105mm"] || "");
+      setLens1635(photographer["Lens 16-35mm"] || "");
       setLens70200(photographer["Lens 70-200mm"] || "");
-      setLens1675(photographer["Lens 16-75mm"] || "");
       setBatteryGrip(photographer["Battery Grip"] || "");
       setFlash(photographer.Flash || "");
-      setDrones(photographer.Drones || "");
       setStatus(photographer.status);
     } else {
       // Reset form when adding new photographer
@@ -77,12 +73,10 @@ export function PhotographerFormDialog({
       setCameraBody("");
       setBodySerialNo("");
       setAdapter("");
-      setLens2470("");
+      setLens1635("");
       setLens70200("");
-      setLens1675("");
       setBatteryGrip("");
       setFlash("");
-      setDrones("");
       setStatus("staff");
     }
   }, [photographer]);
@@ -104,12 +98,10 @@ export function PhotographerFormDialog({
             camera_body: cameraBody || null,
             body_serialno: bodySerialNo || null,
             Adapter: adapter || null,
-            "Lens 24-105mm": lens2470 || null,
+            "Lens 16-35mm": lens1635 || null,
             "Lens 70-200mm": lens70200 || null,
-            "Lens 16-75mm": lens1675 || null,
             "Battery Grip": batteryGrip || null,
             Flash: flash || null,
-            Drones: drones || null,
             status,
           })
           .eq("id", photographer.id);
@@ -126,12 +118,10 @@ export function PhotographerFormDialog({
           camera_body: cameraBody || null,
           body_serialno: bodySerialNo || null,
           Adapter: adapter || null,
-          "Lens 24-105mm": lens2470 || null,
+          "Lens 16-35mm": lens1635 || null,
           "Lens 70-200mm": lens70200 || null,
-          "Lens 16-75mm": lens1675 || null,
           "Battery Grip": batteryGrip || null,
           Flash: flash || null,
-          Drones: drones || null,
           status,
         });
 
@@ -243,13 +233,13 @@ export function PhotographerFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="photographer-lens-2470">Lens 24-105mm</Label>
+              <Label htmlFor="photographer-lens-1635">Lens 16-35mm</Label>
               <Input
-                id="photographer-lens-2470"
-                name="lens_24_105"
-                value={lens2470}
-                onChange={(e) => setLens2470(e.target.value)}
-                placeholder="24-105mm lens details"
+                id="photographer-lens-1635"
+                name="lens_16_35"
+                value={lens1635}
+                onChange={(e) => setLens1635(e.target.value)}
+                placeholder="16-35mm lens details"
               />
             </div>
 
@@ -261,17 +251,6 @@ export function PhotographerFormDialog({
                 value={lens70200}
                 onChange={(e) => setLens70200(e.target.value)}
                 placeholder="70-200mm lens details"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="photographer-lens-1675">Lens 16-75mm</Label>
-              <Input
-                id="photographer-lens-1675"
-                name="lens_16_75"
-                value={lens1675}
-                onChange={(e) => setLens1675(e.target.value)}
-                placeholder="16-75mm lens details"
               />
             </div>
 
@@ -294,17 +273,6 @@ export function PhotographerFormDialog({
                 value={flash}
                 onChange={(e) => setFlash(e.target.value)}
                 placeholder="Flash unit details"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="photographer-drones">Drones</Label>
-              <Input
-                id="photographer-drones"
-                name="drones"
-                value={drones}
-                onChange={(e) => setDrones(e.target.value)}
-                placeholder="Drone equipment"
               />
             </div>
 

@@ -45,8 +45,21 @@ export const useAssignmentsData = ({
         `, { count: 'exact' });
         
       if (shouldSearch) {
-        const searchTerm = `%${searchQuery.trim().toLowerCase()}%`;
-        query = query.or(`title.ilike.${searchTerm},location.ilike.${searchTerm}`);
+        const searchTerm = searchQuery.trim().toLowerCase();
+        
+        // Create a comprehensive search that includes:
+        // - Assignment title
+        // - Assignment location
+        // - Assignment status
+        // - Assignment date (formatted)
+        // - Photographer name
+        query = query.or(`
+          title.ilike.%${searchTerm}%,
+          location.ilike.%${searchTerm}%,
+          status.ilike.%${searchTerm}%,
+          date::text.ilike.%${searchTerm}%,
+          photographers.name.ilike.%${searchTerm}%
+        `.replace(/\s+/g, ''));
       }
 
       if (selectedPhotographerFilter) {

@@ -233,10 +233,10 @@ const Index = () => {
           <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <Input
-              placeholder="Search assignments, photographers, status, dates..."
+              placeholder="Search title or location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-[320px]"
+              className="w-[280px]"
             />
             <Button type="submit" size="icon" variant="ghost" disabled={isSearching}>
               <Search className={`h-5 w-5 ${isSearching ? 'animate-spin' : ''}`} />

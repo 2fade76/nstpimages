@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
-
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
@@ -37,14 +36,12 @@ interface MonthlyCompletionsData {
 type AssignmentWithPhotographer = Assignment & {
   photographers?: Photographer;
 };
-
 interface TopPhotographer {
   id: string;
   name: string;
   completedCount: number;
   rank: number;
 }
-
 export const AnalyticsSection = () => {
   const {
     data: monthlyData,
@@ -160,38 +157,31 @@ export const AnalyticsSection = () => {
       const monthsToShow = 6;
       const startDate = startOfMonth(subMonths(today, monthsToShow - 1));
       const endDate = endOfMonth(today);
-      
       const {
         data,
         error
-      } = await supabase.from('assignments')
-        .select('date, status')
-        .eq('status', 'complete')
-        .gte('date', startDate.toISOString())
-        .lte('date', endDate.toISOString())
-        .order('date', { ascending: true });
-        
+      } = await supabase.from('assignments').select('date, status').eq('status', 'complete').gte('date', startDate.toISOString()).lte('date', endDate.toISOString()).order('date', {
+        ascending: true
+      });
       if (error) throw error;
-      
       if (!data || data.length === 0) {
         return {
-          chartData: [],
+          chartData: []
         };
       }
-      
       const months = Array.from({
         length: monthsToShow
       }, (_, i) => {
         const monthDate = subMonths(today, monthsToShow - 1 - i);
         return format(monthDate, 'MMM yyyy');
       });
-      
+
       // Initialize monthly counts with zeros
       const monthlyCounts = months.reduce<Record<string, number>>((acc, month) => {
         acc[month] = 0;
         return acc;
       }, {});
-      
+
       // Count completed assignments by month
       data.forEach(assignment => {
         if (assignment.status === 'complete') {
@@ -201,7 +191,7 @@ export const AnalyticsSection = () => {
           }
         }
       });
-      
+
       // Create chart data format
       const chartData = months.map(month => {
         return {
@@ -209,7 +199,6 @@ export const AnalyticsSection = () => {
           total: monthlyCounts[month]
         };
       });
-      
       return {
         chartData
       };
@@ -223,7 +212,6 @@ export const AnalyticsSection = () => {
     complete: '#4ade80',
     cancel: '#ef4444'
   };
-  
   const getColor = (index: number) => {
     const colorPalette = ['#4ade80', '#3b82f6', '#f97316', '#ef4444', '#9b87f5', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#06b6d4'];
     return colorPalette[index % colorPalette.length];
@@ -231,52 +219,47 @@ export const AnalyticsSection = () => {
 
   // Custom bar shape component for rounded bars
   const RoundedBar = (props: any) => {
-    const { fill, x, y, width, height } = props;
+    const {
+      fill,
+      x,
+      y,
+      width,
+      height
+    } = props;
     const radius = Math.min(width / 6, 8); // Limit radius to prevent overly rounded bars
-    
-    return (
-      <g>
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          fill={fill}
-          rx={radius}
-          ry={radius}
-        />
-      </g>
-    );
-  };
 
+    return <g>
+        <rect x={x} y={y} width={width} height={height} fill={fill} rx={radius} ry={radius} />
+      </g>;
+  };
   const {
     data: topPhotographersData,
     isLoading: isLoadingTopPhotographers
   } = useQuery<TopPhotographer[]>({
     queryKey: ['top-photographers'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('assignments').select(`
           photographer_id,
           photographers (id, name)
-        `)
-        .eq('status', 'complete');
-
+        `).eq('status', 'complete');
       if (error) throw error;
-
       if (!data || data.length === 0) {
         return [];
       }
 
       // Count completions by photographer
-      const photographerCounts: Record<string, { name: string; count: number; id: string }> = {};
-      
+      const photographerCounts: Record<string, {
+        name: string;
+        count: number;
+        id: string;
+      }> = {};
       (data as AssignmentWithPhotographer[]).forEach(assignment => {
         const photographerId = assignment.photographer_id;
         const photographerName = assignment.photographers?.name || 'Unknown';
         const photographerDbId = assignment.photographers?.id || photographerId;
-        
         if (!photographerCounts[photographerId]) {
           photographerCounts[photographerId] = {
             id: photographerDbId,
@@ -288,21 +271,17 @@ export const AnalyticsSection = () => {
       });
 
       // Convert to array and sort
-      const sortedPhotographers = Object.values(photographerCounts)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10) // Top 10
-        .map((photographer, index) => ({
-          id: photographer.id,
-          name: photographer.name,
-          completedCount: photographer.count,
-          rank: index + 1
-        }));
-
+      const sortedPhotographers = Object.values(photographerCounts).sort((a, b) => b.count - a.count).slice(0, 10) // Top 10
+      .map((photographer, index) => ({
+        id: photographer.id,
+        name: photographer.name,
+        completedCount: photographer.count,
+        rank: index + 1
+      }));
       return sortedPhotographers;
     },
     refetchInterval: 5000
   });
-
   return <div className="grid gap-6">
       <Card className="shadow-sm border-gray-100 dark:border-gray-800">
         <CardHeader className="pb-4">
@@ -319,54 +298,38 @@ export const AnalyticsSection = () => {
             bottom: 40
           }}>
                 <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" strokeOpacity={0.6} className="dark:stroke-gray-700" />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                  width={30}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${value}`, 'Assignments']} 
-                  labelFormatter={(label) => `${label}`}
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--popover))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px',
-                    color: 'hsl(var(--popover-foreground))',
-                    fontSize: '12px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Legend 
-                  wrapperStyle={{ fontSize: '12px', paddingTop: '10px', color: 'hsl(var(--foreground))' }}
-                  iconType="circle"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  name="Assignments" 
-                  stroke="#6366f1" 
-                  strokeWidth={2.5} 
-                  activeDot={{
-                    r: 5,
-                    fill: '#6366f1',
-                    stroke: 'hsl(var(--background))',
-                    strokeWidth: 2
-                  }}
-                  dot={{
-                    r: 3,
-                    fill: '#6366f1',
-                    stroke: 'hsl(var(--background))',
-                    strokeWidth: 1
-                  }}
-                />
+                <XAxis dataKey="formattedDate" axisLine={false} tickLine={false} tick={{
+              fontSize: 11,
+              fill: 'hsl(var(--muted-foreground))'
+            }} interval="preserveStartEnd" />
+                <YAxis axisLine={false} tickLine={false} tick={{
+              fontSize: 11,
+              fill: 'hsl(var(--muted-foreground))'
+            }} width={30} />
+                <Tooltip formatter={value => [`${value}`, 'Assignments']} labelFormatter={label => `${label}`} contentStyle={{
+              backgroundColor: 'hsl(var(--popover))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '6px',
+              color: 'hsl(var(--popover-foreground))',
+              fontSize: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }} />
+                <Legend wrapperStyle={{
+              fontSize: '12px',
+              paddingTop: '10px',
+              color: 'hsl(var(--foreground))'
+            }} iconType="circle" />
+                <Line type="monotone" dataKey="count" name="Assignments" stroke="#6366f1" strokeWidth={2.5} activeDot={{
+              r: 5,
+              fill: '#6366f1',
+              stroke: 'hsl(var(--background))',
+              strokeWidth: 2
+            }} dot={{
+              r: 3,
+              fill: '#6366f1',
+              stroke: 'hsl(var(--background))',
+              strokeWidth: 1
+            }} />
               </LineChart>
             </ResponsiveContainer>}
         </CardContent>
@@ -377,86 +340,56 @@ export const AnalyticsSection = () => {
           <CardTitle className="text-xl font-semibold">Monthly Completed Assignments</CardTitle>
         </CardHeader>
         <CardContent className="h-[450px] p-6">
-          {isLoadingMonthlyData ? (
-            <div className="flex items-center justify-center h-full">
+          {isLoadingMonthlyData ? <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">Loading monthly data...</p>
-            </div>
-          ) : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={monthlyCompletionsData.chartData} 
-                margin={{
-                  top: 40,
-                  right: 30,
-                  left: 20,
-                  bottom: 20
-                }}
-                barCategoryGap="20%"
-              >
+            </div> : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyCompletionsData.chartData} margin={{
+            top: 40,
+            right: 30,
+            left: 20,
+            bottom: 20
+          }} barCategoryGap="20%">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#64748b' }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#64748b' }}
-                />
-                <Tooltip 
-                  formatter={(value, name) => [`${value} assignments`, 'Completed']} 
-                  labelFormatter={label => `Month: ${label}`}
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '12px'
-                  }}
-                />
-                <Bar 
-                  dataKey="total" 
-                  fill={COLORS.total}
-                  radius={[6, 6, 0, 0]}
-                  shape={<RoundedBar />}
-                >
-                  <LabelList 
-                    dataKey="total" 
-                    position="top" 
-                    style={{ 
-                      fill: '#1e293b', 
-                      fontSize: '12px', 
-                      fontWeight: '600' 
-                    }}
-                    content={({ x, y, width, value }) => {
-                      if (value === 0) return null;
-                      return (
-                        <text 
-                          x={Number(x) + Number(width) / 2} 
-                          y={Number(y) - 8} 
-                          textAnchor="middle" 
-                          dominantBaseline="middle"
-                          style={{ 
-                            fill: '#1e293b', 
-                            fontSize: '12px', 
-                            fontWeight: '600' 
-                          }}
-                        >
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{
+              fontSize: 12,
+              fill: '#64748b'
+            }} />
+                <YAxis axisLine={false} tickLine={false} tick={{
+              fontSize: 12,
+              fill: '#64748b'
+            }} />
+                <Tooltip formatter={(value, name) => [`${value} assignments`, 'Completed']} labelFormatter={label => `Month: ${label}`} contentStyle={{
+              backgroundColor: '#1e293b',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+              fontSize: '12px'
+            }} />
+                <Bar dataKey="total" fill={COLORS.total} radius={[6, 6, 0, 0]} shape={<RoundedBar />}>
+                  <LabelList dataKey="total" position="top" style={{
+                fill: '#1e293b',
+                fontSize: '12px',
+                fontWeight: '600'
+              }} content={({
+                x,
+                y,
+                width,
+                value
+              }) => {
+                if (value === 0) return null;
+                return <text x={Number(x) + Number(width) / 2} y={Number(y) - 8} textAnchor="middle" dominantBaseline="middle" style={{
+                  fill: '#1e293b',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}>
                           {value}
-                        </text>
-                      );
-                    }}
-                  />
+                        </text>;
+              }} />
                 </Bar>
               </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full">
+            </ResponsiveContainer> : <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">No monthly completed assignments found</p>
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
 
@@ -466,12 +399,9 @@ export const AnalyticsSection = () => {
           <span className="text-sm text-muted-foreground">Ranked by completed assignments</span>
         </CardHeader>
         <CardContent className="p-6">
-          {isLoadingTopPhotographers ? (
-            <div className="flex items-center justify-center h-32">
+          {isLoadingTopPhotographers ? <div className="flex items-center justify-center h-32">
               <p className="text-muted-foreground">Loading top photographers...</p>
-            </div>
-          ) : topPhotographersData && topPhotographersData.length > 0 ? (
-            <Table>
+            </div> : topPhotographersData && topPhotographersData.length > 0 ? <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-16 text-center">Rank</TableHead>
@@ -480,38 +410,23 @@ export const AnalyticsSection = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {topPhotographersData.map((photographer) => (
-                  <TableRow key={photographer.id} className="hover:bg-muted/50">
+                {topPhotographersData.map(photographer => <TableRow key={photographer.id} className="hover:bg-muted/50">
                     <TableCell className="text-center font-bold">
-                      <div 
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
-                          photographer.rank === 1 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : photographer.rank === 2 
-                            ? 'bg-gray-100 text-gray-800'
-                            : photographer.rank === 3
-                            ? 'bg-orange-100 text-orange-800'
-                            : 'bg-blue-50 text-blue-700'
-                        }`}
-                      >
+                      <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${photographer.rank === 1 ? 'bg-yellow-100 text-yellow-800' : photographer.rank === 2 ? 'bg-gray-100 text-gray-800' : photographer.rank === 3 ? 'bg-orange-100 text-orange-800' : 'bg-blue-50 text-blue-700'}`}>
                         {photographer.rank}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{photographer.name}</TableCell>
                     <TableCell className="text-right">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-green-100 text-green-800 text-sm">
                         {photographer.completedCount}
                       </span>
                     </TableCell>
-                  </TableRow>
-                ))}
+                  </TableRow>)}
               </TableBody>
-            </Table>
-          ) : (
-            <div className="flex items-center justify-center h-32">
+            </Table> : <div className="flex items-center justify-center h-32">
               <p className="text-muted-foreground">No completed assignments found</p>
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
     </div>;

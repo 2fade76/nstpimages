@@ -1,14 +1,14 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Photographer } from "@/types/database";
-import { Loader2, UserPlus, Edit, Trash2 } from "lucide-react";
+import { Loader2, UserPlus, Edit, Trash2, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { PhotographerFormDialog } from "./PhotographerFormDialog";
 import { PhotographerStatsCard } from "./PhotographerStatsCard";
 import { PhotographerSearch } from "./PhotographerSearch";
+import { CameraSetsDialog } from "./CameraSetsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -41,6 +41,8 @@ export function PhotographersMenu() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPhotographer, setEditingPhotographer] = useState<Photographer | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cameraSetDialogOpen, setCameraSetDialogOpen] = useState(false);
+  const [selectedPhotographer, setSelectedPhotographer] = useState<{ id: string; name: string } | null>(null);
   const queryClient = useQueryClient();
 
   const {
@@ -132,6 +134,11 @@ export function PhotographersMenu() {
     }
   };
 
+  const handleViewCameraSets = (photographer: Photographer) => {
+    setSelectedPhotographer({ id: photographer.id, name: photographer.name });
+    setCameraSetDialogOpen(true);
+  };
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-full">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -192,6 +199,10 @@ export function PhotographersMenu() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
+                      <Button variant="outline" size="sm" onClick={() => handleViewCameraSets(photographer)}>
+                        <Camera className="h-4 w-4 mr-1" />
+                        Camera Sets
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEdit(photographer)}>
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
@@ -210,5 +221,17 @@ export function PhotographersMenu() {
       </div>
 
       <PhotographerFormDialog isOpen={isFormOpen} onClose={handleCloseForm} photographer={editingPhotographer} />
+      
+      {selectedPhotographer && (
+        <CameraSetsDialog
+          isOpen={cameraSetDialogOpen}
+          onClose={() => {
+            setCameraSetDialogOpen(false);
+            setSelectedPhotographer(null);
+          }}
+          photographerId={selectedPhotographer.id}
+          photographerName={selectedPhotographer.name}
+        />
+      )}
     </div>;
 }

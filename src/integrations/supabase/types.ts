@@ -50,6 +50,83 @@ export type Database = {
           },
         ]
       }
+      camera_sets: {
+        Row: {
+          adapter_serial: string | null
+          adapter_year_make: string | null
+          battery_grip_serial: string | null
+          battery_grip_year_make: string | null
+          camera_body_model: string | null
+          camera_body_serial: string | null
+          camera_year_make: string | null
+          created_at: string
+          date_received: string | null
+          flash_serial: string | null
+          flash_year_make: string | null
+          id: string
+          lens_16_35_serial: string | null
+          lens_16_35_year_make: string | null
+          lens_70_200_serial: string | null
+          lens_70_200_year_make: string | null
+          notes: string | null
+          photographer_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          adapter_serial?: string | null
+          adapter_year_make?: string | null
+          battery_grip_serial?: string | null
+          battery_grip_year_make?: string | null
+          camera_body_model?: string | null
+          camera_body_serial?: string | null
+          camera_year_make?: string | null
+          created_at?: string
+          date_received?: string | null
+          flash_serial?: string | null
+          flash_year_make?: string | null
+          id?: string
+          lens_16_35_serial?: string | null
+          lens_16_35_year_make?: string | null
+          lens_70_200_serial?: string | null
+          lens_70_200_year_make?: string | null
+          notes?: string | null
+          photographer_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          adapter_serial?: string | null
+          adapter_year_make?: string | null
+          battery_grip_serial?: string | null
+          battery_grip_year_make?: string | null
+          camera_body_model?: string | null
+          camera_body_serial?: string | null
+          camera_year_make?: string | null
+          created_at?: string
+          date_received?: string | null
+          flash_serial?: string | null
+          flash_year_make?: string | null
+          id?: string
+          lens_16_35_serial?: string | null
+          lens_16_35_year_make?: string | null
+          lens_70_200_serial?: string | null
+          lens_70_200_year_make?: string | null
+          notes?: string | null
+          photographer_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camera_sets_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "photographers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photographers: {
         Row: {
           Adapter: string | null

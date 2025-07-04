@@ -53,21 +53,16 @@ export type Database = {
       camera_sets: {
         Row: {
           adapter_serial: string | null
-          adapter_year_make: string | null
           battery_grip_serial: string | null
-          battery_grip_year_make: string | null
           camera_body_model: string | null
           camera_body_serial: string | null
           camera_year_make: string | null
           created_at: string
           date_received: string | null
           flash_serial: string | null
-          flash_year_make: string | null
           id: string
           lens_16_35_serial: string | null
-          lens_16_35_year_make: string | null
           lens_70_200_serial: string | null
-          lens_70_200_year_make: string | null
           notes: string | null
           photographer_id: string
           status: string
@@ -75,21 +70,16 @@ export type Database = {
         }
         Insert: {
           adapter_serial?: string | null
-          adapter_year_make?: string | null
           battery_grip_serial?: string | null
-          battery_grip_year_make?: string | null
           camera_body_model?: string | null
           camera_body_serial?: string | null
           camera_year_make?: string | null
           created_at?: string
           date_received?: string | null
           flash_serial?: string | null
-          flash_year_make?: string | null
           id?: string
           lens_16_35_serial?: string | null
-          lens_16_35_year_make?: string | null
           lens_70_200_serial?: string | null
-          lens_70_200_year_make?: string | null
           notes?: string | null
           photographer_id: string
           status?: string
@@ -97,21 +87,16 @@ export type Database = {
         }
         Update: {
           adapter_serial?: string | null
-          adapter_year_make?: string | null
           battery_grip_serial?: string | null
-          battery_grip_year_make?: string | null
           camera_body_model?: string | null
           camera_body_serial?: string | null
           camera_year_make?: string | null
           created_at?: string
           date_received?: string | null
           flash_serial?: string | null
-          flash_year_make?: string | null
           id?: string
           lens_16_35_serial?: string | null
-          lens_16_35_year_make?: string | null
           lens_70_200_serial?: string | null
-          lens_70_200_year_make?: string | null
           notes?: string | null
           photographer_id?: string
           status?: string

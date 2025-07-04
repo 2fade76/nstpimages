@@ -25,12 +25,14 @@ interface CameraSet {
   camera_body_model: string | null;
   camera_body_serial: string | null;
   lens_16_35_serial: string | null;
+  lens_24_105_serial: string | null;
   lens_70_200_serial: string | null;
   battery_grip_serial: string | null;
   flash_serial: string | null;
   adapter_serial: string | null;
   camera_year_make: string | null;
   lens_16_35_year_make: string | null;
+  lens_24_105_year_make: string | null;
   lens_70_200_year_make: string | null;
   battery_grip_year_make: string | null;
   flash_year_make: string | null;
@@ -65,12 +67,14 @@ export function CameraSetsDialog({
     camera_body_model: "",
     camera_body_serial: "",
     lens_16_35_serial: "",
+    lens_24_105_serial: "",
     lens_70_200_serial: "",
     battery_grip_serial: "",
     flash_serial: "",
     adapter_serial: "",
     camera_year_make: "",
     lens_16_35_year_make: "",
+    lens_24_105_year_make: "",
     lens_70_200_year_make: "",
     battery_grip_year_make: "",
     flash_year_make: "",
@@ -100,12 +104,14 @@ export function CameraSetsDialog({
       camera_body_model: "",
       camera_body_serial: "",
       lens_16_35_serial: "",
+      lens_24_105_serial: "",
       lens_70_200_serial: "",
       battery_grip_serial: "",
       flash_serial: "",
       adapter_serial: "",
       camera_year_make: "",
       lens_16_35_year_make: "",
+      lens_24_105_year_make: "",
       lens_70_200_year_make: "",
       battery_grip_year_make: "",
       flash_year_make: "",
@@ -127,12 +133,14 @@ export function CameraSetsDialog({
       camera_body_model: cameraSet.camera_body_model || "",
       camera_body_serial: cameraSet.camera_body_serial || "",
       lens_16_35_serial: cameraSet.lens_16_35_serial || "",
+      lens_24_105_serial: cameraSet.lens_24_105_serial || "",
       lens_70_200_serial: cameraSet.lens_70_200_serial || "",
       battery_grip_serial: cameraSet.battery_grip_serial || "",
       flash_serial: cameraSet.flash_serial || "",
       adapter_serial: cameraSet.adapter_serial || "",
       camera_year_make: cameraSet.camera_year_make || "",
       lens_16_35_year_make: cameraSet.lens_16_35_year_make || "",
+      lens_24_105_year_make: cameraSet.lens_24_105_year_make || "",
       lens_70_200_year_make: cameraSet.lens_70_200_year_make || "",
       battery_grip_year_make: cameraSet.battery_grip_year_make || "",
       flash_year_make: cameraSet.flash_year_make || "",
@@ -157,12 +165,14 @@ export function CameraSetsDialog({
         camera_body_model: formData.camera_body_model || null,
         camera_body_serial: formData.camera_body_serial || null,
         lens_16_35_serial: formData.lens_16_35_serial || null,
+        lens_24_105_serial: formData.lens_24_105_serial || null,
         lens_70_200_serial: formData.lens_70_200_serial || null,
         battery_grip_serial: formData.battery_grip_serial || null,
         flash_serial: formData.flash_serial || null,
         adapter_serial: formData.adapter_serial || null,
         camera_year_make: formData.camera_year_make || null,
         lens_16_35_year_make: formData.lens_16_35_year_make || null,
+        lens_24_105_year_make: formData.lens_24_105_year_make || null,
         lens_70_200_year_make: formData.lens_70_200_year_make || null,
         battery_grip_year_make: formData.battery_grip_year_make || null,
         flash_year_make: formData.flash_year_make || null,
@@ -283,6 +293,11 @@ export function CameraSetsDialog({
                             <span className="font-medium">16-35mm Lens:</span> {set.lens_16_35_serial}
                           </div>
                         )}
+                        {set.lens_24_105_serial && (
+                          <div>
+                            <span className="font-medium">24-105mm Lens:</span> {set.lens_24_105_serial}
+                          </div>
+                        )}
                         {set.lens_70_200_serial && (
                           <div>
                             <span className="font-medium">70-200mm Lens:</span> {set.lens_70_200_serial}
@@ -346,6 +361,16 @@ export function CameraSetsDialog({
                   id="lens_16_35_serial"
                   value={formData.lens_16_35_serial}
                   onChange={(e) => setFormData({ ...formData, lens_16_35_serial: e.target.value })}
+                  placeholder="Serial number"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lens_24_105_serial">24-105mm Lens Serial</Label>
+                <Input
+                  id="lens_24_105_serial"
+                  value={formData.lens_24_105_serial}
+                  onChange={(e) => setFormData({ ...formData, lens_24_105_serial: e.target.value })}
                   placeholder="Serial number"
                 />
               </div>

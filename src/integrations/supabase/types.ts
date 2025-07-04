@@ -62,6 +62,7 @@ export type Database = {
           flash_serial: string | null
           id: string
           lens_16_35_serial: string | null
+          lens_24_105_serial: string | null
           lens_70_200_serial: string | null
           notes: string | null
           photographer_id: string
@@ -79,6 +80,7 @@ export type Database = {
           flash_serial?: string | null
           id?: string
           lens_16_35_serial?: string | null
+          lens_24_105_serial?: string | null
           lens_70_200_serial?: string | null
           notes?: string | null
           photographer_id: string
@@ -96,6 +98,7 @@ export type Database = {
           flash_serial?: string | null
           id?: string
           lens_16_35_serial?: string | null
+          lens_24_105_serial?: string | null
           lens_70_200_serial?: string | null
           notes?: string | null
           photographer_id?: string

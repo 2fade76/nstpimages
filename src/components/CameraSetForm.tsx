@@ -28,6 +28,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
     camera_body_model: "",
     camera_body_serial: "",
     lens_16_35_serial: "",
+    lens_24_105_serial: "",
     lens_70_200_serial: "",
     battery_grip_serial: "",
     flash_serial: "",
@@ -44,6 +45,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
         camera_body_model: editingSet.camera_body_model || "",
         camera_body_serial: editingSet.camera_body_serial || "",
         lens_16_35_serial: editingSet.lens_16_35_serial || "",
+        lens_24_105_serial: editingSet.lens_24_105_serial || "",
         lens_70_200_serial: editingSet.lens_70_200_serial || "",
         battery_grip_serial: editingSet.battery_grip_serial || "",
         flash_serial: editingSet.flash_serial || "",
@@ -58,6 +60,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
         camera_body_model: "",
         camera_body_serial: "",
         lens_16_35_serial: "",
+        lens_24_105_serial: "",
         lens_70_200_serial: "",
         battery_grip_serial: "",
         flash_serial: "",
@@ -119,11 +122,31 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="lens_24_105_serial">24-105mm Lens Serial</Label>
+              <Input
+                id="lens_24_105_serial"
+                value={formData.lens_24_105_serial}
+                onChange={(e) => setFormData({ ...formData, lens_24_105_serial: e.target.value })}
+                placeholder="Serial number"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="lens_70_200_serial">70-200mm Lens Serial</Label>
               <Input
                 id="lens_70_200_serial"
                 value={formData.lens_70_200_serial}
                 onChange={(e) => setFormData({ ...formData, lens_70_200_serial: e.target.value })}
+                placeholder="Serial number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="battery_grip_serial">Battery Grip Serial</Label>
+              <Input
+                id="battery_grip_serial"
+                value={formData.battery_grip_serial}
+                onChange={(e) => setFormData({ ...formData, battery_grip_serial: e.target.value })}
                 placeholder="Serial number"
               />
             </div>

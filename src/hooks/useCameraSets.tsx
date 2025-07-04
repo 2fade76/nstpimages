@@ -10,6 +10,7 @@ interface CameraSet {
   camera_body_model: string | null;
   camera_body_serial: string | null;
   lens_16_35_serial: string | null;
+  lens_24_105_serial: string | null;
   lens_70_200_serial: string | null;
   battery_grip_serial: string | null;
   flash_serial: string | null;
@@ -56,6 +57,7 @@ export function useCameraSets(photographerId: string, isEnabled: boolean) {
         camera_body_model: formData.camera_body_model || null,
         camera_body_serial: formData.camera_body_serial || null,
         lens_16_35_serial: formData.lens_16_35_serial || null,
+        lens_24_105_serial: formData.lens_24_105_serial || null,
         lens_70_200_serial: formData.lens_70_200_serial || null,
         battery_grip_serial: formData.battery_grip_serial || null,
         flash_serial: formData.flash_serial || null,

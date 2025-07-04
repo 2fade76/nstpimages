@@ -53,9 +53,19 @@ export function CameraSetCard({ cameraSet, onEdit, onDelete }: CameraSetCardProp
               <span className="font-medium">16-35mm Lens:</span> {cameraSet.lens_16_35_serial}
             </div>
           )}
+          {cameraSet.lens_24_105_serial && (
+            <div>
+              <span className="font-medium">24-105mm Lens:</span> {cameraSet.lens_24_105_serial}
+            </div>
+          )}
           {cameraSet.lens_70_200_serial && (
             <div>
               <span className="font-medium">70-200mm Lens:</span> {cameraSet.lens_70_200_serial}
+            </div>
+          )}
+          {cameraSet.battery_grip_serial && (
+            <div>
+              <span className="font-medium">Battery Grip:</span> {cameraSet.battery_grip_serial}
             </div>
           )}
           {cameraSet.flash_serial && (

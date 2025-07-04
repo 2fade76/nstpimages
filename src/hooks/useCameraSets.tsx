@@ -10,14 +10,12 @@ interface CameraSet {
   camera_body_model: string | null;
   camera_body_serial: string | null;
   lens_16_35_serial: string | null;
-  lens_24_105_serial: string | null;
   lens_70_200_serial: string | null;
   battery_grip_serial: string | null;
   flash_serial: string | null;
   adapter_serial: string | null;
   camera_year_make: string | null;
   lens_16_35_year_make: string | null;
-  lens_24_105_year_make: string | null;
   lens_70_200_year_make: string | null;
   battery_grip_year_make: string | null;
   flash_year_make: string | null;
@@ -52,28 +50,23 @@ export function useCameraSets(photographerId: string, isEnabled: boolean) {
     setIsSubmitting(true);
 
     try {
+      // Only include fields that exist in the database table
       const dataToSubmit = {
-        ...formData,
         photographer_id: photographerId,
-        // Convert empty strings to null
         camera_body_model: formData.camera_body_model || null,
         camera_body_serial: formData.camera_body_serial || null,
         lens_16_35_serial: formData.lens_16_35_serial || null,
-        lens_24_105_serial: formData.lens_24_105_serial || null,
         lens_70_200_serial: formData.lens_70_200_serial || null,
         battery_grip_serial: formData.battery_grip_serial || null,
         flash_serial: formData.flash_serial || null,
         adapter_serial: formData.adapter_serial || null,
         camera_year_make: formData.camera_year_make || null,
-        lens_16_35_year_make: formData.lens_16_35_year_make || null,
-        lens_24_105_year_make: formData.lens_24_105_year_make || null,
-        lens_70_200_year_make: formData.lens_70_200_year_make || null,
-        battery_grip_year_make: formData.battery_grip_year_make || null,
-        flash_year_make: formData.flash_year_make || null,
-        adapter_year_make: formData.adapter_year_make || null,
         date_received: formData.date_received || null,
+        status: formData.status || 'active',
         notes: formData.notes || null,
       };
+
+      console.log('Submitting camera set data:', dataToSubmit);
 
       if (editingSet) {
         const { error } = await supabase
@@ -81,21 +74,27 @@ export function useCameraSets(photographerId: string, isEnabled: boolean) {
           .update(dataToSubmit)
           .eq('id', editingSet.id);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         toast.success("Camera set updated successfully");
       } else {
         const { error } = await supabase
           .from('camera_sets')
           .insert([dataToSubmit]);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         toast.success("Camera set added successfully");
       }
 
       queryClient.invalidateQueries({ queryKey: ['camera-sets', photographerId] });
     } catch (error) {
       console.error("Error saving camera set:", error);
-      toast.error("Failed to save camera set");
+      toast.error(`Failed to save camera set: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }

@@ -13,24 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-
-interface CameraSet {
-  id: string;
-  photographer_id: string;
-  camera_body_model: string | null;
-  camera_body_serial: string | null;
-  lens_16_35_serial: string | null;
-  lens_70_200_serial: string | null;
-  battery_grip_serial: string | null;
-  flash_serial: string | null;
-  adapter_serial: string | null;
-  camera_year_make: string | null;
-  date_received: string | null;
-  status: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { CameraSet } from "@/types/database";
 
 interface CameraSetFormProps {
   isOpen: boolean;

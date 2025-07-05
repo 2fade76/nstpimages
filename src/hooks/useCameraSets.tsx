@@ -3,30 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface CameraSet {
-  id: string;
-  photographer_id: string;
-  camera_body_model: string | null;
-  camera_body_serial: string | null;
-  lens_16_35_serial: string | null;
-  lens_24_105_serial: string | null;
-  lens_70_200_serial: string | null;
-  battery_grip_serial: string | null;
-  flash_serial: string | null;
-  adapter_serial: string | null;
-  camera_year_make: string | null;
-  lens_16_35_year_make: string | null;
-  lens_70_200_year_make: string | null;
-  battery_grip_year_make: string | null;
-  flash_year_make: string | null;
-  adapter_year_make: string | null;
-  date_received: string | null;
-  status: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { CameraSet } from "@/types/database";
 
 export function useCameraSets(photographerId: string, isEnabled: boolean) {
   const [isSubmitting, setIsSubmitting] = useState(false);

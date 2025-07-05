@@ -33,6 +33,7 @@ export interface CameraSet {
   camera_body_model: string | null;
   camera_body_serial: string | null;
   lens_16_35_serial: string | null;
+  lens_24_105_serial: string | null;
   lens_70_200_serial: string | null;
   battery_grip_serial: string | null;
   flash_serial: string | null;

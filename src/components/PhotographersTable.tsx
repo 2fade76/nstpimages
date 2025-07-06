@@ -1,10 +1,8 @@
-
 import { Photographer } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Camera, Edit, Trash2 } from "lucide-react";
-
 const getStatusDisplay = (status: string) => {
   switch (status) {
     case 'staff':
@@ -17,7 +15,6 @@ const getStatusDisplay = (status: string) => {
       return status;
   }
 };
-
 const getStatusVariant = (status: string) => {
   switch (status) {
     case 'staff':
@@ -29,7 +26,6 @@ const getStatusVariant = (status: string) => {
       return 'secondary' as const;
   }
 };
-
 interface PhotographersTableProps {
   photographers: Photographer[];
   searchQuery: string;
@@ -37,16 +33,14 @@ interface PhotographersTableProps {
   onDelete: (id: string) => void;
   onViewCameraSets: (photographer: Photographer) => void;
 }
-
 export function PhotographersTable({
   photographers,
   searchQuery,
   onEdit,
   onDelete,
-  onViewCameraSets,
+  onViewCameraSets
 }: PhotographersTableProps) {
-  return (
-    <div className="rounded-md border">
+  return <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -59,15 +53,11 @@ export function PhotographersTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {photographers?.length === 0 ? (
-            <TableRow>
+          {photographers?.length === 0 ? <TableRow>
               <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                 {searchQuery ? "No photographers found matching your search." : "No photographers found."}
               </TableCell>
-            </TableRow>
-          ) : (
-            photographers?.map(photographer => (
-              <TableRow key={photographer.id}>
+            </TableRow> : photographers?.map(photographer => <TableRow key={photographer.id}>
                 <TableCell className="font-medium">{photographer.name}</TableCell>
                 <TableCell>{photographer.Location || '-'}</TableCell>
                 <TableCell>{photographer.email || '-'}</TableCell>
@@ -79,7 +69,7 @@ export function PhotographersTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
-                    <Button variant="outline" size="sm" onClick={() => onViewCameraSets(photographer)}>
+                    <Button variant="outline" size="sm" onClick={() => onViewCameraSets(photographer)} className="text-amber-50 bg-green-950 hover:bg-green-800">
                       <Camera className="h-4 w-4 mr-1" />
                       Camera Sets
                     </Button>
@@ -93,11 +83,8 @@ export function PhotographersTable({
                     </Button>
                   </div>
                 </TableCell>
-              </TableRow>
-            ))
-          )}
+              </TableRow>)}
         </TableBody>
       </Table>
-    </div>
-  );
+    </div>;
 }

@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Assignment } from "@/types/database";
-import { format } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 
 const Calendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -61,13 +62,18 @@ const Calendar = () => {
   const selectedDateAssignments = assignments?.filter((assignment) => {
     if (!date) return false;
     
-    const assignmentDate = new Date(assignment.date);
-    return (
-      assignmentDate.getDate() === date.getDate() &&
-      assignmentDate.getMonth() === date.getMonth() &&
-      assignmentDate.getFullYear() === date.getFullYear()
-    );
+    // Parse the assignment date string (YYYY-MM-DD) and compare using date-fns
+    const assignmentDate = parseISO(assignment.date);
+    const isMatch = isSameDay(assignmentDate, date);
+    
+    console.log(`Comparing assignment ${assignment.title} (${assignment.date}) with selected date (${format(date, 'yyyy-MM-dd')}): ${isMatch}`);
+    
+    return isMatch;
   });
+
+  console.log('Selected date:', date ? format(date, 'yyyy-MM-dd') : 'none');
+  console.log('Total assignments:', assignments?.length || 0);
+  console.log('Filtered assignments for selected date:', selectedDateAssignments?.length || 0);
 
   return (
     <DashboardLayout>

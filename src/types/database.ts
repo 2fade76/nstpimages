@@ -1,17 +1,11 @@
 
+
 export interface Photographer {
   id: string;
   name: string;
   email: string | null;
   phone: string | null;
   Location: string | null;
-  camera_body: string | null;
-  body_serialno: string | null;
-  Adapter: string | null;
-  "Lens 16-35mm": string | null;
-  "Lens 70-200mm": string | null;
-  "Battery Grip": string | null;
-  Flash: string | null;
   status: 'staff' | 'stringers' | 'staff_oc';
   created_at: string;
 }
@@ -50,3 +44,4 @@ export interface CameraSet {
   created_at: string;
   updated_at: string;
 }
+

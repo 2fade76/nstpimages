@@ -13,7 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { PhotographerPersonalInfoSection } from "./PhotographerPersonalInfoSection";
-import { PhotographerEquipmentSection } from "./PhotographerEquipmentSection";
 import { PhotographerStatusSection } from "./PhotographerStatusSection";
 
 interface PhotographerFormDialogProps {
@@ -31,13 +30,6 @@ export function PhotographerFormDialog({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
-  const [cameraBody, setCameraBody] = useState("");
-  const [bodySerialNo, setBodySerialNo] = useState("");
-  const [adapter, setAdapter] = useState("");
-  const [lens1635, setLens1635] = useState("");
-  const [lens70200, setLens70200] = useState("");
-  const [batteryGrip, setBatteryGrip] = useState("");
-  const [flash, setFlash] = useState("");
   const [status, setStatus] = useState<"staff" | "stringers" | "staff_oc">("staff");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,13 +42,6 @@ export function PhotographerFormDialog({
       setEmail(photographer.email || "");
       setPhone(photographer.phone || "");
       setLocation(photographer.Location || "");
-      setCameraBody(photographer.camera_body || "");
-      setBodySerialNo(photographer.body_serialno || "");
-      setAdapter(photographer.Adapter || "");
-      setLens1635(photographer["Lens 16-35mm"] || "");
-      setLens70200(photographer["Lens 70-200mm"] || "");
-      setBatteryGrip(photographer["Battery Grip"] || "");
-      setFlash(photographer.Flash || "");
       setStatus(photographer.status);
     } else {
       // Reset form when adding new photographer
@@ -64,13 +49,6 @@ export function PhotographerFormDialog({
       setEmail("");
       setPhone("");
       setLocation("");
-      setCameraBody("");
-      setBodySerialNo("");
-      setAdapter("");
-      setLens1635("");
-      setLens70200("");
-      setBatteryGrip("");
-      setFlash("");
       setStatus("staff");
     }
   }, [photographer]);
@@ -89,13 +67,6 @@ export function PhotographerFormDialog({
             email: email || null,
             phone: phone || null,
             Location: location || null,
-            camera_body: cameraBody || null,
-            body_serialno: bodySerialNo || null,
-            Adapter: adapter || null,
-            "Lens 16-35mm": lens1635 || null,
-            "Lens 70-200mm": lens70200 || null,
-            "Battery Grip": batteryGrip || null,
-            Flash: flash || null,
             status,
           })
           .eq("id", photographer.id);
@@ -109,13 +80,6 @@ export function PhotographerFormDialog({
           email: email || null,
           phone: phone || null,
           Location: location || null,
-          camera_body: cameraBody || null,
-          body_serialno: bodySerialNo || null,
-          Adapter: adapter || null,
-          "Lens 16-35mm": lens1635 || null,
-          "Lens 70-200mm": lens70200 || null,
-          "Battery Grip": batteryGrip || null,
-          Flash: flash || null,
           status,
         });
 
@@ -138,7 +102,7 @@ export function PhotographerFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Photographer" : "Add New Photographer"}
@@ -146,7 +110,7 @@ export function PhotographerFormDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <PhotographerPersonalInfoSection
               name={name}
               setName={setName}
@@ -156,23 +120,6 @@ export function PhotographerFormDialog({
               setPhone={setPhone}
               location={location}
               setLocation={setLocation}
-            />
-
-            <PhotographerEquipmentSection
-              cameraBody={cameraBody}
-              setCameraBody={setCameraBody}
-              bodySerialNo={bodySerialNo}
-              setBodySerialNo={setBodySerialNo}
-              adapter={adapter}
-              setAdapter={setAdapter}
-              lens1635={lens1635}
-              setLens1635={setLens1635}
-              lens70200={lens70200}
-              setLens70200={setLens70200}
-              batteryGrip={batteryGrip}
-              setBatteryGrip={setBatteryGrip}
-              flash={flash}
-              setFlash={setFlash}
             />
 
             <PhotographerStatusSection

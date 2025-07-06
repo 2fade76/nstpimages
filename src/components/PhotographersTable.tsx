@@ -51,8 +51,9 @@ export function PhotographersTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead className="bg-blue-800">Location</TableHead>
-            <TableHead>Camera Body</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -60,7 +61,7 @@ export function PhotographersTable({
         <TableBody>
           {photographers?.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                 {searchQuery ? "No photographers found matching your search." : "No photographers found."}
               </TableCell>
             </TableRow>
@@ -68,10 +69,11 @@ export function PhotographersTable({
             photographers?.map(photographer => (
               <TableRow key={photographer.id}>
                 <TableCell className="font-medium">{photographer.name}</TableCell>
-                <TableCell className="bg-indigo-950">{photographer.Location || '-'}</TableCell>
-                <TableCell>{photographer.camera_body || '-'}</TableCell>
+                <TableCell>{photographer.Location || '-'}</TableCell>
+                <TableCell>{photographer.email || '-'}</TableCell>
+                <TableCell>{photographer.phone || '-'}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(photographer.status)} className="bg-slate-500">
+                  <Badge variant={getStatusVariant(photographer.status)}>
                     {getStatusDisplay(photographer.status)}
                   </Badge>
                 </TableCell>

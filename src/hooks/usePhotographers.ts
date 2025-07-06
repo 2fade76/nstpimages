@@ -21,13 +21,10 @@ export function usePhotographers() {
       } = await supabase.from('photographers').select('*').order('name');
       if (error) throw error;
 
-      // Ensure the status property is of the correct type and process other fields
+      // Ensure the status property is of the correct type
       return data.map(photographer => ({
         ...photographer,
         status: photographer.status === 'staff' || photographer.status === 'stringers' || photographer.status === 'staff_oc' ? photographer.status as 'staff' | 'stringers' | 'staff_oc' : 'staff',
-        // Default to 'staff' if status is not recognized
-        camera_body: photographer.camera_body || null,
-        body_serialno: photographer.body_serialno || null
       })) as Photographer[];
     }
   });
@@ -41,14 +38,7 @@ export function usePhotographers() {
       photographer.name.toLowerCase().includes(query) ||
       photographer.email?.toLowerCase().includes(query) ||
       photographer.phone?.toLowerCase().includes(query) ||
-      photographer.Location?.toLowerCase().includes(query) ||
-      photographer.camera_body?.toLowerCase().includes(query) ||
-      photographer.body_serialno?.toLowerCase().includes(query) ||
-      photographer.Adapter?.toLowerCase().includes(query) ||
-      photographer["Lens 16-35mm"]?.toLowerCase().includes(query) ||
-      photographer["Lens 70-200mm"]?.toLowerCase().includes(query) ||
-      photographer["Battery Grip"]?.toLowerCase().includes(query) ||
-      photographer.Flash?.toLowerCase().includes(query)
+      photographer.Location?.toLowerCase().includes(query)
     );
   });
 

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Mail, Phone, Camera, Hash, MapPin } from "lucide-react";
+import { User, Mail, Phone, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Photographer } from "@/types/database";
@@ -66,23 +66,9 @@ export function PhotographerCard({ photographer, onEdit, onDelete }: Photographe
         )}
 
         {photographer.Location && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <MapPin className="h-4 w-4" />
             <span>{photographer.Location}</span>
-          </div>
-        )}
-
-        {photographer.camera_body && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Camera className="h-4 w-4" />
-            <span>{photographer.camera_body}</span>
-          </div>
-        )}
-
-        {photographer.body_serialno && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <Hash className="h-4 w-4" />
-            <span>{photographer.body_serialno}</span>
           </div>
         )}
 

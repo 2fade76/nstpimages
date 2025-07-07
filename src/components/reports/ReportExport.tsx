@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FileText, Printer } from "lucide-react";
@@ -31,9 +30,22 @@ interface ReportData {
     id: string;
     camera_body_model: string;
     camera_body_serial: string;
+    lens_16_35_serial: string;
+    lens_24_105_serial: string;
+    lens_70_200_serial: string;
+    battery_grip_serial: string;
+    flash_serial: string;
+    adapter_serial: string;
+    camera_year_make: string;
+    lens_16_35_year_make: string;
+    lens_70_200_year_make: string;
+    battery_grip_year_make: string;
+    flash_year_make: string;
+    adapter_year_make: string;
     photographer_name: string;
     status: string;
     date_received: string;
+    notes: string;
   }>;
   summary: {
     totalPhotographers: number;
@@ -83,6 +95,7 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
               font-family: Arial, sans-serif;
               margin: 20px;
               color: #333;
+              font-size: 12px;
             }
             .header {
               text-align: center;
@@ -121,11 +134,13 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
               width: 100%;
               border-collapse: collapse;
               margin-bottom: 30px;
+              font-size: 10px;
             }
             th, td {
               border: 1px solid #ddd;
-              padding: 8px;
+              padding: 6px;
               text-align: left;
+              word-wrap: break-word;
             }
             th {
               background-color: #f5f5f5;
@@ -147,15 +162,32 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
               padding: 4px 8px;
               border-radius: 3px;
               color: white;
-              font-size: 12px;
+              font-size: 10px;
             }
             .status-complete { background-color: #22c55e; }
             .status-open { background-color: #3b82f6; }
             .status-cancelled { background-color: #ef4444; }
             .status-active { background-color: #22c55e; }
+            .equipment-table th {
+              font-size: 9px;
+              padding: 4px;
+            }
+            .equipment-table td {
+              font-size: 9px;
+              padding: 4px;
+            }
+            .serial-number {
+              font-family: monospace;
+              font-size: 8px;
+            }
             @media print {
-              body { margin: 0; }
+              body { margin: 0; font-size: 10px; }
               .no-print { display: none; }
+              table { font-size: 8px; }
+              .equipment-table th, .equipment-table td { 
+                font-size: 7px; 
+                padding: 2px;
+              }
             }
           </style>
         </head>
@@ -243,24 +275,50 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
           </table>
 
           <div class="section-title">Camera Equipment Details</div>
-          <table>
+          <table class="equipment-table">
             <thead>
               <tr>
-                <th>Model</th>
-                <th>Serial Number</th>
                 <th>Photographer</th>
+                <th>Camera Body</th>
+                <th>Body S/N</th>
+                <th>Body Year</th>
+                <th>16-35mm S/N</th>
+                <th>16-35 Year</th>
+                <th>24-105mm S/N</th>
+                <th>70-200mm S/N</th>
+                <th>70-200 Year</th>
+                <th>Battery Grip S/N</th>
+                <th>BG Year</th>
+                <th>Flash S/N</th>
+                <th>Flash Year</th>
+                <th>Adapter S/N</th>
+                <th>Adapter Year</th>
                 <th>Status</th>
                 <th>Date Received</th>
+                <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               ${data.cameraSets.map(c => `
                 <tr>
-                  <td>${c.camera_body_model}</td>
-                  <td>${c.camera_body_serial || '-'}</td>
                   <td>${c.photographer_name}</td>
+                  <td>${c.camera_body_model}</td>
+                  <td class="serial-number">${c.camera_body_serial}</td>
+                  <td>${c.camera_year_make}</td>
+                  <td class="serial-number">${c.lens_16_35_serial}</td>
+                  <td>${c.lens_16_35_year_make}</td>
+                  <td class="serial-number">${c.lens_24_105_serial}</td>
+                  <td class="serial-number">${c.lens_70_200_serial}</td>
+                  <td>${c.lens_70_200_year_make}</td>
+                  <td class="serial-number">${c.battery_grip_serial}</td>
+                  <td>${c.battery_grip_year_make}</td>
+                  <td class="serial-number">${c.flash_serial}</td>
+                  <td>${c.flash_year_make}</td>
+                  <td class="serial-number">${c.adapter_serial}</td>
+                  <td>${c.adapter_year_make}</td>
                   <td><span class="status-badge status-${c.status}">${c.status}</span></td>
                   <td>${c.date_received ? format(new Date(c.date_received), 'PPP') : '-'}</td>
+                  <td>${c.notes || '-'}</td>
                 </tr>
               `).join('')}
             </tbody>

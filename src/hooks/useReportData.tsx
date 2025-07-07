@@ -32,11 +32,6 @@ export function useReportData(filters: ReportFilters) {
             flash_serial,
             adapter_serial,
             camera_year_make,
-            lens_16_35_year_make,
-            lens_70_200_year_make,
-            battery_grip_year_make,
-            flash_year_make,
-            adapter_year_make,
             status,
             date_received,
             notes
@@ -86,7 +81,7 @@ export function useReportData(filters: ReportFilters) {
       const { data: assignments, error: assignmentsError } = await assignmentsQuery;
       if (assignmentsError) throw assignmentsError;
 
-      // Fetch camera sets with photographer info and all details
+      // Fetch camera sets with photographer info and all available details
       let cameraSetsQuery = supabase
         .from('camera_sets')
         .select(`
@@ -100,11 +95,6 @@ export function useReportData(filters: ReportFilters) {
           flash_serial,
           adapter_serial,
           camera_year_make,
-          lens_16_35_year_make,
-          lens_70_200_year_make,
-          battery_grip_year_make,
-          flash_year_make,
-          adapter_year_make,
           status,
           date_received,
           notes,
@@ -160,11 +150,11 @@ export function useReportData(filters: ReportFilters) {
         flash_serial: cameraSet.flash_serial || 'N/A',
         adapter_serial: cameraSet.adapter_serial || 'N/A',
         camera_year_make: cameraSet.camera_year_make || 'N/A',
-        lens_16_35_year_make: cameraSet.lens_16_35_year_make || 'N/A',
-        lens_70_200_year_make: cameraSet.lens_70_200_year_make || 'N/A',
-        battery_grip_year_make: cameraSet.battery_grip_year_make || 'N/A',
-        flash_year_make: cameraSet.flash_year_make || 'N/A',
-        adapter_year_make: cameraSet.adapter_year_make || 'N/A',
+        lens_16_35_year_make: 'N/A', // Not available in database
+        lens_70_200_year_make: 'N/A', // Not available in database
+        battery_grip_year_make: 'N/A', // Not available in database
+        flash_year_make: 'N/A', // Not available in database
+        adapter_year_make: 'N/A', // Not available in database
         photographer_name: cameraSet.photographers?.name || 'Unknown',
         status: cameraSet.status,
         date_received: cameraSet.date_received || '',

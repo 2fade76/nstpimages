@@ -7,6 +7,7 @@ import Calendar from "@/pages/Calendar";
 import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Photographers from "@/pages/Photographers";
+import Reports from "@/pages/Reports";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
@@ -51,6 +52,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <Photographers />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <Reports />
           </ProtectedRoute>
         }
       />

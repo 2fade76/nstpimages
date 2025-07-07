@@ -1,5 +1,4 @@
-
-import { Calendar, Home, Plus, BarChart2, Settings, Users, Moon, Sun } from "lucide-react";
+import { Calendar, Home, Plus, BarChart2, Settings, Users, FileText } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "@/components/UserMenu";
@@ -22,6 +21,10 @@ const menuItems = [{
   title: "Calendar",
   icon: Calendar,
   path: "/calendar"
+}, {
+  title: "Reports",
+  icon: FileText,
+  path: "/reports"
 }, {
   title: "Analytics",
   icon: BarChart2,

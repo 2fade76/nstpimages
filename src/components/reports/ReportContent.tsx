@@ -4,6 +4,7 @@ import { ReportFilters } from "@/pages/Reports";
 import { SummaryCards } from "./SummaryCards";
 import { PhotographerSummaryTable } from "./PhotographerSummaryTable";
 import { CameraEquipmentTable } from "./CameraEquipmentTable";
+import { CameraModelStats } from "./CameraModelStats";
 
 interface ReportData {
   photographers: Array<{
@@ -89,6 +90,7 @@ export function ReportContent({ reportData, isLoading, filters }: ReportContentP
     <div className="space-y-6">
       <SummaryCards summary={reportData.summary} />
       <PhotographerSummaryTable photographers={reportData.photographers} />
+      <CameraModelStats cameraSets={reportData.cameraSets} />
       <CameraEquipmentTable cameraSets={reportData.cameraSets} />
     </div>
   );

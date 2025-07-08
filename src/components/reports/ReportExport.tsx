@@ -276,6 +276,9 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
             </table>
           ` : ''}
 
+          <div class="section-title">Camera Model Statistics</div>
+          ${generateCameraModelStats(data.cameraSets)}
+
           <div class="section-title">Camera Equipment Details</div>
           <table class="equipment-table">
             <thead>
@@ -327,6 +330,62 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
           </table>
         </body>
       </html>
+    `;
+  };
+
+  const generateCameraModelStats = (cameraSets: ReportData['cameraSets']) => {
+    // Calculate stats by camera model
+    const modelStats = cameraSets.reduce((acc, cameraSet) => {
+      const model = cameraSet.camera_body_model || 'Unknown';
+      if (!acc[model]) {
+        acc[model] = {
+          total: 0,
+          active: 0,
+          inactive: 0,
+        };
+      }
+      acc[model].total++;
+      if (cameraSet.status === 'active') {
+        acc[model].active++;
+      } else {
+        acc[model].inactive++;
+      }
+      return acc;
+    }, {} as Record<string, { total: number; active: number; inactive: number }>);
+
+    const sortedModels = Object.entries(modelStats).sort(([, a], [, b]) => b.total - a.total);
+
+    return `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+        ${sortedModels.map(([model, stats]) => `
+          <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+            <h4 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;">${model}</h4>
+            <div style="font-size: 10px;">
+              <div>Total: <strong>${stats.total}</strong></div>
+              <div>Active: <strong style="color: #22c55e;">${stats.active}</strong></div>
+              <div>Inactive: <strong style="color: #ef4444;">${stats.inactive}</strong></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center; margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
+        <div>
+          <div style="font-size: 18px; font-weight: bold;">${cameraSets.length}</div>
+          <div style="font-size: 10px; color: #666;">Total Camera Sets</div>
+        </div>
+        <div>
+          <div style="font-size: 18px; font-weight: bold;">${Object.keys(modelStats).length}</div>
+          <div style="font-size: 10px; color: #666;">Unique Models</div>
+        </div>
+        <div>
+          <div style="font-size: 18px; font-weight: bold; color: #22c55e;">${cameraSets.filter(cs => cs.status === 'active').length}</div>
+          <div style="font-size: 10px; color: #666;">Active Sets</div>
+        </div>
+        <div>
+          <div style="font-size: 18px; font-weight: bold; color: #ef4444;">${cameraSets.filter(cs => cs.status !== 'active').length}</div>
+          <div style="font-size: 10px; color: #666;">Inactive Sets</div>
+        </div>
+      </div>
     `;
   };
 

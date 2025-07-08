@@ -155,24 +155,51 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
       {/* Camera Models Filter */}
       <div>
         <Label className="text-sm font-medium mb-3 block">Camera Models</Label>
-        <div className="space-y-2 max-h-40 overflow-y-auto">
-          {cameraModels?.map((model) => (
-            <div key={model} className="flex items-center space-x-2">
-              <Checkbox
-                id={`model-${model}`}
-                checked={filters.cameraModels.includes(model)}
-                onCheckedChange={(checked) => 
-                  handleCameraModelChange(model, checked as boolean)
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="select-all-cameras"
+              checked={cameraModels?.length === filters.cameraModels.length}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  onFiltersChange({
+                    ...filters,
+                    cameraModels: cameraModels || []
+                  });
+                } else {
+                  onFiltersChange({
+                    ...filters,
+                    cameraModels: []
+                  });
                 }
-              />
-              <Label 
-                htmlFor={`model-${model}`}
-                className="text-sm cursor-pointer"
-              >
-                {model}
-              </Label>
-            </div>
-          ))}
+              }}
+            />
+            <Label 
+              htmlFor="select-all-cameras"
+              className="text-sm cursor-pointer font-medium"
+            >
+              Select All Camera Models
+            </Label>
+          </div>
+          <div className="max-h-40 overflow-y-auto space-y-2">
+            {cameraModels?.map((model) => (
+              <div key={model} className="flex items-center space-x-2 ml-4">
+                <Checkbox
+                  id={`model-${model}`}
+                  checked={filters.cameraModels.includes(model)}
+                  onCheckedChange={(checked) => 
+                    handleCameraModelChange(model, checked as boolean)
+                  }
+                />
+                <Label 
+                  htmlFor={`model-${model}`}
+                  className="text-sm cursor-pointer"
+                >
+                  {model}
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

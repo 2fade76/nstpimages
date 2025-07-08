@@ -250,29 +250,31 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
             </tbody>
           </table>
 
-          <div class="section-title">Assignment Details</div>
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Location</th>
-                <th>Date</th>
-                <th>Photographer</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.assignments.map(a => `
+          ${filters.includeAssignmentDetails ? `
+            <div class="section-title">Assignment Details</div>
+            <table>
+              <thead>
                 <tr>
-                  <td>${a.title}</td>
-                  <td>${a.location}</td>
-                  <td>${format(new Date(a.date), 'PPP')}</td>
-                  <td>${a.photographer_name}</td>
-                  <td><span class="status-badge status-${a.status}">${a.status}</span></td>
+                  <th>Title</th>
+                  <th>Location</th>
+                  <th>Date</th>
+                  <th>Photographer</th>
+                  <th>Status</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${data.assignments.map(a => `
+                  <tr>
+                    <td>${a.title}</td>
+                    <td>${a.location}</td>
+                    <td>${format(new Date(a.date), 'PPP')}</td>
+                    <td>${a.photographer_name}</td>
+                    <td><span class="status-badge status-${a.status}">${a.status}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : ''}
 
           <div class="section-title">Camera Equipment Details</div>
           <table class="equipment-table">

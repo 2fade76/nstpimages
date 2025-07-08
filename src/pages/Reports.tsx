@@ -11,6 +11,7 @@ export interface ReportFilters {
   photographerIds: string[];
   assignmentStatuses: string[];
   cameraModels: string[];
+  includeAssignmentDetails: boolean;
   dateRange: {
     from?: Date;
     to?: Date;
@@ -22,6 +23,7 @@ const Reports = () => {
     photographerIds: [],
     assignmentStatuses: [],
     cameraModels: [],
+    includeAssignmentDetails: false,
     dateRange: {}
   });
 

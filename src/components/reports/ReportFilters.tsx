@@ -95,6 +95,7 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
       photographerIds: [],
       assignmentStatuses: [],
       cameraModels: [],
+      includeAssignmentDetails: false,
       dateRange: {}
     });
   };
@@ -175,64 +176,88 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
         </div>
       </div>
 
-      {/* Date Range Filter */}
+      {/* Include Assignment Details Filter */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">Date Range</Label>
-        <div className="space-y-2">
-          <div>
-            <Label className="text-xs text-muted-foreground">From</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !filters.dateRange.from && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {filters.dateRange.from ? format(filters.dateRange.from, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={filters.dateRange.from}
-                  onSelect={(date) => handleDateRangeChange('from', date)}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">To</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !filters.dateRange.to && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {filters.dateRange.to ? format(filters.dateRange.to, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={filters.dateRange.to}
-                  onSelect={(date) => handleDateRangeChange('to', date)}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="include-assignment-details"
+            checked={filters.includeAssignmentDetails}
+            onCheckedChange={(checked) => 
+              onFiltersChange({
+                ...filters,
+                includeAssignmentDetails: checked as boolean
+              })
+            }
+          />
+          <Label 
+            htmlFor="include-assignment-details"
+            className="text-sm cursor-pointer"
+          >
+            Include Assignment Details in Report
+          </Label>
         </div>
       </div>
+
+      {/* Date Range Filter - Only show when assignment details are included */}
+      {filters.includeAssignmentDetails && (
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Date Range (for Assignments)</Label>
+          <div className="space-y-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">From</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !filters.dateRange.from && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {filters.dateRange.from ? format(filters.dateRange.from, "PPP") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={filters.dateRange.from}
+                    onSelect={(date) => handleDateRangeChange('from', date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">To</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !filters.dateRange.to && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {filters.dateRange.to ? format(filters.dateRange.to, "PPP") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={filters.dateRange.to}
+                    onSelect={(date) => handleDateRangeChange('to', date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+                </Popover>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Button onClick={clearFilters} variant="outline" className="w-full">
         <X className="mr-2 h-4 w-4" />

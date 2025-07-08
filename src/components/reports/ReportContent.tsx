@@ -3,7 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReportFilters } from "@/pages/Reports";
 import { SummaryCards } from "./SummaryCards";
 import { PhotographerSummaryTable } from "./PhotographerSummaryTable";
-import { AssignmentDetailsTable } from "./AssignmentDetailsTable";
 import { CameraEquipmentTable } from "./CameraEquipmentTable";
 
 interface ReportData {
@@ -90,7 +89,6 @@ export function ReportContent({ reportData, isLoading, filters }: ReportContentP
     <div className="space-y-6">
       <SummaryCards summary={reportData.summary} />
       <PhotographerSummaryTable photographers={reportData.photographers} />
-      <AssignmentDetailsTable assignments={reportData.assignments} />
       <CameraEquipmentTable cameraSets={reportData.cameraSets} />
     </div>
   );

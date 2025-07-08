@@ -46,40 +46,44 @@ export function useReportData(filters: ReportFilters) {
       const { data: photographers, error: photographersError } = await photographersQuery;
       if (photographersError) throw photographersError;
 
-      // Fetch assignments with photographer info
-      let assignmentsQuery = supabase
-        .from('assignments')
-        .select(`
-          id,
-          title,
-          location,
-          date,
-          status,
-          photographers (
+      // Fetch assignments with photographer info (only if includeAssignmentDetails is true)
+      let assignments = [];
+      if (filters.includeAssignmentDetails) {
+        let assignmentsQuery = supabase
+          .from('assignments')
+          .select(`
             id,
-            name
-          )
-        `);
+            title,
+            location,
+            date,
+            status,
+            photographers (
+              id,
+              name
+            )
+          `);
 
-      // Apply assignment filters
-      if (filters.photographerIds.length > 0) {
-        assignmentsQuery = assignmentsQuery.in('photographer_id', filters.photographerIds);
+        // Apply assignment filters
+        if (filters.photographerIds.length > 0) {
+          assignmentsQuery = assignmentsQuery.in('photographer_id', filters.photographerIds);
+        }
+
+        if (filters.assignmentStatuses.length > 0) {
+          assignmentsQuery = assignmentsQuery.in('status', filters.assignmentStatuses);
+        }
+
+        if (filters.dateRange.from) {
+          assignmentsQuery = assignmentsQuery.gte('date', format(filters.dateRange.from, 'yyyy-MM-dd'));
+        }
+
+        if (filters.dateRange.to) {
+          assignmentsQuery = assignmentsQuery.lte('date', format(filters.dateRange.to, 'yyyy-MM-dd'));
+        }
+
+        const { data: assignmentsData, error: assignmentsError } = await assignmentsQuery;
+        if (assignmentsError) throw assignmentsError;
+        assignments = assignmentsData || [];
       }
-
-      if (filters.assignmentStatuses.length > 0) {
-        assignmentsQuery = assignmentsQuery.in('status', filters.assignmentStatuses);
-      }
-
-      if (filters.dateRange.from) {
-        assignmentsQuery = assignmentsQuery.gte('date', format(filters.dateRange.from, 'yyyy-MM-dd'));
-      }
-
-      if (filters.dateRange.to) {
-        assignmentsQuery = assignmentsQuery.lte('date', format(filters.dateRange.to, 'yyyy-MM-dd'));
-      }
-
-      const { data: assignments, error: assignmentsError } = await assignmentsQuery;
-      if (assignmentsError) throw assignmentsError;
 
       // Fetch camera sets with photographer info and all available details
       let cameraSetsQuery = supabase

@@ -153,14 +153,10 @@ export const AnalyticsSection = () => {
   } = useQuery({
     queryKey: ['monthly-completions-total'],
     queryFn: async () => {
-      const today = new Date();
-      const monthsToShow = 6;
-      const startDate = startOfMonth(subMonths(today, monthsToShow - 1));
-      const endDate = endOfMonth(today);
       const {
         data,
         error
-      } = await supabase.from('assignments').select('date, status').eq('status', 'complete').gte('date', startDate.toISOString()).lte('date', endDate.toISOString()).order('date', {
+      } = await supabase.from('assignments').select('date, status').eq('status', 'complete').order('date', {
         ascending: true
       });
       if (error) throw error;
@@ -169,36 +165,33 @@ export const AnalyticsSection = () => {
           chartData: []
         };
       }
-      const months = Array.from({
-        length: monthsToShow
-      }, (_, i) => {
-        const monthDate = subMonths(today, monthsToShow - 1 - i);
-        return format(monthDate, 'MMM yyyy');
-      });
 
-      // Initialize monthly counts with zeros
-      const monthlyCounts = months.reduce<Record<string, number>>((acc, month) => {
-        acc[month] = 0;
-        return acc;
-      }, {});
-
-      // Count completed assignments by month
+      // Group completed assignments by month
+      const monthlyCounts: Record<string, number> = {};
+      
       data.forEach(assignment => {
         if (assignment.status === 'complete') {
           const assignmentMonth = format(parseISO(assignment.date), 'MMM yyyy');
-          if (months.includes(assignmentMonth)) {
-            monthlyCounts[assignmentMonth]++;
+          if (!monthlyCounts[assignmentMonth]) {
+            monthlyCounts[assignmentMonth] = 0;
           }
+          monthlyCounts[assignmentMonth]++;
         }
       });
 
-      // Create chart data format
-      const chartData = months.map(month => {
-        return {
+      // Create chart data format sorted by date
+      const chartData = Object.entries(monthlyCounts)
+        .map(([month, total]) => ({
           month,
-          total: monthlyCounts[month]
-        };
-      });
+          total
+        }))
+        .sort((a, b) => {
+          // Parse the month strings for proper chronological sorting
+          const dateA = new Date(`01 ${a.month}`);
+          const dateB = new Date(`01 ${b.month}`);
+          return dateA.getTime() - dateB.getTime();
+        });
+
       return {
         chartData
       };

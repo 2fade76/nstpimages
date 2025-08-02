@@ -177,31 +177,38 @@ export const AnalyticsSection = () => {
         };
       }
 
-      // Group completed assignments by month
+      // First, create a map of counts by YYYY-MM
       const monthlyCounts: Record<string, number> = {};
-      
+
       data.forEach(assignment => {
         if (assignment.status === 'complete') {
-          const assignmentMonth = format(parseISO(assignment.date), 'MMM yyyy');
-          if (!monthlyCounts[assignmentMonth]) {
-            monthlyCounts[assignmentMonth] = 0;
+          const assignmentDate = parseISO(assignment.date);
+          const assignmentMonthKey = format(assignmentDate, 'yyyy-MM'); // e.g., '2025-08'
+          if (!monthlyCounts[assignmentMonthKey]) {
+            monthlyCounts[assignmentMonthKey] = 0;
           }
-          monthlyCounts[assignmentMonth]++;
+          monthlyCounts[assignmentMonthKey]++;
         }
       });
 
-      // Create chart data format sorted by date
-      const chartData = Object.entries(monthlyCounts)
-        .map(([month, total]) => ({
-          month,
-          total
-        }))
-        .sort((a, b) => {
-          // Parse the month strings for proper chronological sorting
-          const dateA = new Date(`01 ${a.month}`);
-          const dateB = new Date(`01 ${b.month}`);
-          return dateA.getTime() - dateB.getTime();
-        });
+      // Generate all months between Jan 2025 and current month
+      const endDate = new Date();
+      const months: string[] = [];
+      let current = startOfMonth(startDate);
+
+      while (current <= endDate) {
+        months.push(format(current, 'yyyy-MM'));
+        current = startOfMonth(new Date(current.setMonth(current.getMonth() + 1)));
+      }
+
+      // Build chart data with labels 'MMM yyyy'
+      const chartData = months.map(monthKey => {
+        const date = parseISO(`${monthKey}-01`);
+        return {
+          month: format(date, 'MMM yyyy'),
+          total: monthlyCounts[monthKey] || 0
+        };
+      });
 
       return {
         chartData

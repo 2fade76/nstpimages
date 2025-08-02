@@ -153,12 +153,23 @@ export const AnalyticsSection = () => {
   } = useQuery({
     queryKey: ['monthly-completions-total'],
     queryFn: async () => {
+      // Filter for January 2025 to current month
+      const startDate = new Date(2025, 0, 1); // January 2025
+      const currentDate = new Date();
+      
       const {
         data,
         error
-      } = await supabase.from('assignments').select('date, status').eq('status', 'complete').order('date', {
-        ascending: true
-      });
+      } = await supabase
+        .from('assignments')
+        .select('date, status')
+        .eq('status', 'complete')
+        .gte('date', startDate.toISOString())
+        .lte('date', currentDate.toISOString())
+        .order('date', {
+          ascending: true
+        });
+      
       if (error) throw error;
       if (!data || data.length === 0) {
         return {

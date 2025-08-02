@@ -4,22 +4,33 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+let globalRealtimeChannel: any = null;
+
 export const useAssignmentsRealtime = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   useEffect(() => {
+    // Prevent multiple subscriptions by checking if one already exists
+    if (globalRealtimeChannel) {
+      console.log("Real-time subscription already exists, skipping setup");
+      return;
+    }
+
     console.log("Setting up real-time subscription for assignments");
     
     const channel = supabase
-      .channel('assignments-realtime')
+      .channel('assignments-realtime-unique')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'assignments' }, 
         (payload) => {
           console.log("Received real-time update for assignments:", payload);
           
-          // Invalidate and refetch assignments queries
-          queryClient.invalidateQueries({ queryKey: ['assignments'] });
+          // Invalidate and refetch assignments queries with more specific targeting
+          queryClient.invalidateQueries({ 
+            queryKey: ['assignments'],
+            exact: false 
+          });
           
           // Also invalidate analytics queries
           queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
@@ -55,11 +66,15 @@ export const useAssignmentsRealtime = () => {
         }
       });
 
+    globalRealtimeChannel = channel;
     console.log("Subscribed to real-time updates for assignments");
 
     return () => {
       console.log("Unsubscribing from assignments real-time updates");
-      supabase.removeChannel(channel);
+      if (globalRealtimeChannel) {
+        supabase.removeChannel(globalRealtimeChannel);
+        globalRealtimeChannel = null;
+      }
     };
   }, [queryClient, toast]);
 };

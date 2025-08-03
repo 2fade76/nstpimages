@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Combobox } from "@/components/ui/combobox";
 import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -47,14 +48,10 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
     },
   });
 
-  const handlePhotographerChange = (photographerId: string, checked: boolean) => {
-    const updatedIds = checked 
-      ? [...filters.photographerIds, photographerId]
-      : filters.photographerIds.filter(id => id !== photographerId);
-    
+  const handlePhotographerChange = (photographerId: string | undefined) => {
     onFiltersChange({
       ...filters,
-      photographerIds: updatedIds
+      photographerId
     });
   };
 
@@ -92,7 +89,7 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
 
   const clearFilters = () => {
     onFiltersChange({
-      photographerIds: [],
+      photographerId: undefined,
       assignmentStatuses: [],
       cameraModels: [],
       includeAssignmentDetails: false,
@@ -106,26 +103,16 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
     <div className="space-y-6">
       {/* Photographers Filter */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">Photographers</Label>
-        <div className="space-y-2 max-h-40 overflow-y-auto">
-          {photographers?.map((photographer) => (
-            <div key={photographer.id} className="flex items-center space-x-2">
-              <Checkbox
-                id={`photographer-${photographer.id}`}
-                checked={filters.photographerIds.includes(photographer.id)}
-                onCheckedChange={(checked) => 
-                  handlePhotographerChange(photographer.id, checked as boolean)
-                }
-              />
-              <Label 
-                htmlFor={`photographer-${photographer.id}`}
-                className="text-sm cursor-pointer"
-              >
-                {photographer.name}
-              </Label>
-            </div>
-          ))}
-        </div>
+        <Label className="text-sm font-medium mb-3 block">Photographer</Label>
+        <Combobox
+          options={photographers?.map(p => ({ value: p.id, label: p.name })) || []}
+          value={filters.photographerId}
+          onSelect={handlePhotographerChange}
+          placeholder="Filter photographer..."
+          searchPlaceholder="Search photographers..."
+          emptyText="No photographers found."
+          className="w-full"
+        />
       </div>
 
       {/* Assignment Status Filter */}

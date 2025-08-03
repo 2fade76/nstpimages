@@ -39,8 +39,8 @@ export function useReportData(filters: ReportFilters) {
         `);
 
       // Apply photographer filter
-      if (filters.photographerIds.length > 0) {
-        photographersQuery = photographersQuery.in('id', filters.photographerIds);
+      if (filters.photographerId) {
+        photographersQuery = photographersQuery.eq('id', filters.photographerId);
       }
 
       const { data: photographers, error: photographersError } = await photographersQuery;
@@ -64,8 +64,8 @@ export function useReportData(filters: ReportFilters) {
           `);
 
         // Apply assignment filters
-        if (filters.photographerIds.length > 0) {
-          assignmentsQuery = assignmentsQuery.in('photographer_id', filters.photographerIds);
+        if (filters.photographerId) {
+          assignmentsQuery = assignmentsQuery.eq('photographer_id', filters.photographerId);
         }
 
         if (filters.assignmentStatuses.length > 0) {
@@ -109,8 +109,8 @@ export function useReportData(filters: ReportFilters) {
         `);
 
       // Apply camera set filters
-      if (filters.photographerIds.length > 0) {
-        cameraSetsQuery = cameraSetsQuery.in('photographer_id', filters.photographerIds);
+      if (filters.photographerId) {
+        cameraSetsQuery = cameraSetsQuery.eq('photographer_id', filters.photographerId);
       }
 
       if (filters.cameraModels.length > 0) {

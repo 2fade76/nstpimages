@@ -392,8 +392,8 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
   const generateFilterSummary = (filters: ReportFilters) => {
     const parts = [];
     
-    if (filters.photographerIds.length > 0) {
-      parts.push(`Photographers: ${filters.photographerIds.length} selected`);
+    if (filters.photographerId) {
+      parts.push(`Photographer: ${filters.photographerId}`);
     }
     
     if (filters.assignmentStatuses.length > 0) {

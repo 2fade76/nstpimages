@@ -52,7 +52,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("justify-between", className)}
+          className={cn("justify-between bg-background hover:bg-accent", className)}
         >
           {selectedOption ? (
             <span className="truncate">{selectedOption.label}</span>

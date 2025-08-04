@@ -1,12 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Filter, ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
+import { ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
 import { Photographer } from "@/types/database";
 
 type SortField = 'date' | 'status' | 'photographer';
@@ -46,36 +41,15 @@ export const AssignmentFilters = ({
 
   return (
     <div className="flex gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1"
-          >
-            <Filter className="h-4 w-4 mr-1" />
-            {selectedPhotographerFilter ? 
-              photographers?.find(p => p.id === selectedPhotographerFilter)?.name :
-              "Filter Photographer"
-            }
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[200px]">
-          {selectedPhotographerFilter && (
-            <DropdownMenuItem onClick={() => onPhotographerFilterChange(null)}>
-              Show All
-            </DropdownMenuItem>
-          )}
-          {photographers?.map((photographer) => (
-            <DropdownMenuItem
-              key={photographer.id}
-              onClick={() => onPhotographerFilterChange(photographer.id)}
-            >
-              {photographer.name}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Combobox
+        options={photographers?.map(p => ({ value: p.id, label: p.name })) || []}
+        value={selectedPhotographerFilter || undefined}
+        onSelect={(value) => onPhotographerFilterChange(value || null)}
+        placeholder="Filter photographer..."
+        searchPlaceholder="Search photographers..."
+        emptyText="No photographers found."
+        className="w-[200px]"
+      />
       
       <SortButton field="photographer">Photographer</SortButton>
       <SortButton field="status">Status</SortButton>

@@ -10,7 +10,6 @@ import { AssignmentDialogs } from "./AssignmentDialogs";
 import { useAssignmentMutations } from "./hooks/useAssignmentMutations";
 import { useAssignmentFilters } from "./hooks/useAssignmentFilters";
 import { useAssignmentsData } from "./hooks/useAssignmentsData";
-import { useAssignmentsRealtime } from "./hooks/useAssignmentsRealtime";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -73,8 +72,7 @@ export const AssignmentsList = ({
     onSearchComplete
   });
 
-  // Setup real-time subscriptions
-  useAssignmentsRealtime();
+  // Real-time updates are now handled by AssignmentsProvider
 
   const { data: photographers } = useQuery({
     queryKey: ['photographers'],

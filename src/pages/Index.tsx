@@ -3,9 +3,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
-import { useState, useEffect } from "react";
+import { AssignmentsProvider, useAssignments } from "@/providers/AssignmentsProvider";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase, verifySupabaseConnection, setupRealtimeSubscriptions } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw, Search } from "lucide-react";
@@ -14,9 +14,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 
-const Index = () => {
-  const [connectionError, setConnectionError] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
+const IndexContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'complete' | 'today-complete'>('all');
@@ -26,6 +24,9 @@ const Index = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const currentTab = urlParams.get("tab") || "overview";
+  
+  // Use the consolidated assignments context
+  const { isConnected, isReconnecting, reconnect } = useAssignments();
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(location.search);
@@ -47,106 +48,7 @@ const Index = () => {
     });
   };
 
-  const checkConnection = async () => {
-    setIsReconnecting(true);
-    const isConnected = await verifySupabaseConnection();
-    setConnectionError(!isConnected);
-    if (isConnected) {
-      queryClient.invalidateQueries();
-      toast({
-        title: "Connection restored",
-        description: "Successfully connected to Supabase",
-        duration: 3000
-      });
-    }
-    setIsReconnecting(false);
-  };
-
-  useEffect(() => {
-    checkConnection();
-    
-    // Setup realtime subscriptions
-    const cleanupSubscriptions = setupRealtimeSubscriptions();
-    
-    return () => {
-      cleanupSubscriptions();
-    };
-  }, []);
-
-  useEffect(() => {
-    console.log("Setting up real-time subscription on Index component");
-    const channel = supabase.channel('assignments-index-changes').on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'assignments'
-    }, payload => {
-      console.log("Index component received real-time update:", payload);
-      toast({
-        title: "Assignment data updated",
-        description: "Assignment data has been updated",
-        duration: 3000
-      });
-      console.log("Invalidating assignments queries");
-      queryClient.invalidateQueries({
-        queryKey: ['assignments']
-      });
-      console.log("Refetching assignments queries");
-      queryClient.refetchQueries({
-        queryKey: ['assignments'],
-        type: 'active'
-      });
-      console.log("Refreshing analytics data");
-      queryClient.invalidateQueries({
-        queryKey: ['assignments-last-7-days']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['completed-assignments']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['photographer-completed-assignments']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['total-assignments']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['open-assignments']
-      });
-    }).subscribe(status => {
-      console.log("Real-time subscription status:", status);
-      if (status === 'SUBSCRIBED') {
-        console.log("Successfully subscribed to assignment changes");
-        setConnectionError(false);
-      } else if (status === 'CHANNEL_ERROR') {
-        console.error("Error in real-time subscription");
-        setConnectionError(true);
-      } else if (status === 'TIMED_OUT') {
-        console.error("Real-time subscription timed out");
-        setConnectionError(true);
-      }
-    });
-    
-    // Also subscribe to photographer changes for search functionality
-    const photographerChannel = supabase.channel('photographers-index-changes').on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'photographers'
-    }, payload => {
-      console.log("Index component received photographer update:", payload);
-      queryClient.invalidateQueries({
-        queryKey: ['photographers']
-      });
-      // Also refresh assignments since they include photographer data
-      queryClient.invalidateQueries({
-        queryKey: ['assignments']
-      });
-    }).subscribe();
-    
-    return () => {
-      console.log("Cleaning up real-time subscription on Index component");
-      supabase.removeChannel(channel);
-      supabase.removeChannel(photographerChannel);
-    };
-  }, [queryClient, toast]);
+  // Real-time subscriptions are now handled by AssignmentsProvider
 
   const handleAssignmentStatusUpdate = () => {
     console.log("Assignment status updated in Index component, forcing refresh of all relevant queries");
@@ -217,12 +119,12 @@ const Index = () => {
 
   return <DashboardLayout>
       <div className="space-y-8">
-        {connectionError && <Alert variant="destructive" className="animate-pulse">
+        {!isConnected && <Alert variant="destructive" className="animate-pulse">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Connection Error</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
               <span>Unable to connect to Supabase. Some features may not work correctly.</span>
-              <Button variant="outline" size="sm" onClick={checkConnection} disabled={isReconnecting} className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={reconnect} disabled={isReconnecting} className="flex items-center gap-2">
                 {isReconnecting ? "Reconnecting..." : "Reconnect"}
                 <RefreshCw className={`h-4 w-4 ${isReconnecting ? 'animate-spin' : ''}`} />
               </Button>
@@ -269,6 +171,14 @@ const Index = () => {
         </Tabs>
       </div>
     </DashboardLayout>;
+};
+
+const Index = () => {
+  return (
+    <AssignmentsProvider>
+      <IndexContent />
+    </AssignmentsProvider>
+  );
 };
 
 export default Index;

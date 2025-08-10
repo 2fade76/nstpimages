@@ -161,65 +161,31 @@ export const AnalyticsSection = () => {
   } = useQuery({
     queryKey: ['monthly-completions-total'],
     queryFn: async () => {
-      // Filter for January 2025 to current month
-      const startDate = new Date(2025, 0, 1); // January 2025
-      const currentDate = new Date();
-      
-      const {
-        data,
-        error
-      } = await supabase
-        .from('assignments')
-        .select('date, status')
-        .eq('status', 'complete')
-        .gte('date', startDate.toISOString())
-        .lte('date', currentDate.toISOString())
-        .order('date', {
-          ascending: true
-        });
-      
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        return {
-          chartData: []
-        };
-      }
+      // Use RPC to fetch monthly grouped counts from Jan 2025 to current month (includes zero months)
+      const startDate = new Date(2025, 0, 1);
+      const endDate = new Date();
 
-      // First, create a map of counts by YYYY-MM
-      const monthlyCounts: Record<string, number> = {};
-
-      data.forEach(assignment => {
-        if (assignment.status === 'complete') {
-          const assignmentDate = parseISO(assignment.date);
-          const assignmentMonthKey = format(assignmentDate, 'yyyy-MM'); // e.g., '2025-08'
-          if (!monthlyCounts[assignmentMonthKey]) {
-            monthlyCounts[assignmentMonthKey] = 0;
-          }
-          monthlyCounts[assignmentMonthKey]++;
-        }
+      const { data, error } = await supabase.rpc('get_monthly_completed_assignments', {
+        start_date: startOfMonth(startDate).toISOString().slice(0, 10),
+        end_date: startOfMonth(endDate).toISOString().slice(0, 10),
       });
 
-      // Generate all months between Jan 2025 and current month
-      const endDate = new Date();
-      const months: string[] = [];
-      let current = startOfMonth(startDate);
-
-      while (current <= endDate) {
-        months.push(format(current, 'yyyy-MM'));
-        current = startOfMonth(new Date(current.setMonth(current.getMonth() + 1)));
+      if (error) throw error;
+      if (!data) {
+        return { chartData: [] };
       }
 
-      // Build chart data with labels 'MMM yyyy'
-      const chartData = months.map(monthKey => {
-        const date = parseISO(`${monthKey}-01`);
+      // Map RPC results to chart format with dynamic labels
+      const chartData = (data as { month_key: string; total: number }[]).map((row) => {
+        const date = parseISO(`${row.month_key}-01`);
         return {
           month: format(date, 'MMM yyyy'),
-          total: monthlyCounts[monthKey] || 0
+          total: row.total ?? 0,
         };
       });
 
       return {
-        chartData
+        chartData,
       };
     },
     staleTime: 0,

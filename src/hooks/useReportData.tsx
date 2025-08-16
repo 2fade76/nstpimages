@@ -80,6 +80,9 @@ export function useReportData(filters: ReportFilters) {
           assignmentsQuery = assignmentsQuery.lte('date', format(filters.dateRange.to, 'yyyy-MM-dd'));
         }
 
+        // Add ordering by date ascending
+        assignmentsQuery = assignmentsQuery.order('date', { ascending: true });
+
         const { data: assignmentsData, error: assignmentsError } = await assignmentsQuery;
         if (assignmentsError) throw assignmentsError;
         assignments = assignmentsData || [];
@@ -134,14 +137,14 @@ export function useReportData(filters: ReportFilters) {
         };
       }) || [];
 
-      const processedAssignments = assignments?.map(assignment => ({
+      const processedAssignments = (assignments?.map(assignment => ({
         id: assignment.id,
         title: assignment.title,
         location: assignment.location,
         date: assignment.date,
         status: assignment.status,
         photographer_name: assignment.photographers?.name || 'Unknown'
-      })) || [];
+      })) || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const processedCameraSets = cameraSets?.map(cameraSet => ({
         id: cameraSet.id,

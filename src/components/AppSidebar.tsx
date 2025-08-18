@@ -1,4 +1,4 @@
-import { Calendar, Home, Plus, BarChart2, Settings, Users, FileText } from "lucide-react";
+import { Calendar, Home, Plus, BarChart2, Settings, Users, FileText, ClipboardPaste } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "@/components/UserMenu";
@@ -13,6 +13,10 @@ const menuItems = [{
   title: "New Assignment",
   icon: Plus,
   path: "/?tab=new"
+}, {
+  title: "Quick Import",
+  icon: ClipboardPaste,
+  path: "/import"
 }, {
   title: "Photographers",
   icon: Users,

@@ -8,6 +8,7 @@ import { useReportData } from "@/hooks/useReportData";
 import { useState } from "react";
 
 export interface ReportFilters {
+  reportScope: 'both' | 'assignments' | 'cameras';
   photographerId?: string;
   assignmentStatuses: string[];
   cameraModels: string[];
@@ -20,6 +21,7 @@ export interface ReportFilters {
 
 const Reports = () => {
   const [filters, setFilters] = useState<ReportFilters>({
+    reportScope: 'both',
     photographerId: undefined,
     assignmentStatuses: [],
     cameraModels: [],

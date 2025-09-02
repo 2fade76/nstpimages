@@ -46,9 +46,9 @@ export function useReportData(filters: ReportFilters) {
       const { data: photographers, error: photographersError } = await photographersQuery;
       if (photographersError) throw photographersError;
 
-      // Fetch assignments with photographer info (only if includeAssignmentDetails is true)
+      // Fetch assignments with photographer info (only if includeAssignmentDetails is true and scope includes assignments)
       let assignments = [];
-      if (filters.includeAssignmentDetails) {
+      if (filters.includeAssignmentDetails && (filters.reportScope === 'assignments' || filters.reportScope === 'both')) {
         let assignmentsQuery = supabase
           .from('assignments')
           .select(`
@@ -88,40 +88,44 @@ export function useReportData(filters: ReportFilters) {
         assignments = assignmentsData || [];
       }
 
-      // Fetch camera sets with photographer info and all available details
-      let cameraSetsQuery = supabase
-        .from('camera_sets')
-        .select(`
-          id,
-          camera_body_model,
-          camera_body_serial,
-          lens_16_35_serial,
-          lens_24_105_serial,
-          lens_70_200_serial,
-          battery_grip_serial,
-          flash_serial,
-          adapter_serial,
-          camera_year_make,
-          status,
-          date_received,
-          notes,
-          photographers (
+      // Fetch camera sets with photographer info (only if scope includes cameras)
+      let cameraSets = [];
+      if (filters.reportScope === 'cameras' || filters.reportScope === 'both') {
+        let cameraSetsQuery = supabase
+          .from('camera_sets')
+          .select(`
             id,
-            name
-          )
-        `);
+            camera_body_model,
+            camera_body_serial,
+            lens_16_35_serial,
+            lens_24_105_serial,
+            lens_70_200_serial,
+            battery_grip_serial,
+            flash_serial,
+            adapter_serial,
+            camera_year_make,
+            status,
+            date_received,
+            notes,
+            photographers (
+              id,
+              name
+            )
+          `);
 
-      // Apply camera set filters
-      if (filters.photographerId) {
-        cameraSetsQuery = cameraSetsQuery.eq('photographer_id', filters.photographerId);
+        // Apply camera set filters
+        if (filters.photographerId) {
+          cameraSetsQuery = cameraSetsQuery.eq('photographer_id', filters.photographerId);
+        }
+
+        if (filters.cameraModels.length > 0) {
+          cameraSetsQuery = cameraSetsQuery.in('camera_body_model', filters.cameraModels);
+        }
+
+        const { data: cameraSetsData, error: cameraSetsError } = await cameraSetsQuery;
+        if (cameraSetsError) throw cameraSetsError;
+        cameraSets = cameraSetsData || [];
       }
-
-      if (filters.cameraModels.length > 0) {
-        cameraSetsQuery = cameraSetsQuery.in('camera_body_model', filters.cameraModels);
-      }
-
-      const { data: cameraSets, error: cameraSetsError } = await cameraSetsQuery;
-      if (cameraSetsError) throw cameraSetsError;
 
       // Process the data
       const processedPhotographers = photographers?.map(photographer => {

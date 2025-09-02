@@ -5,6 +5,7 @@ import { SummaryCards } from "./SummaryCards";
 import { PhotographerSummaryTable } from "./PhotographerSummaryTable";
 import { CameraEquipmentTable } from "./CameraEquipmentTable";
 import { CameraModelStats } from "./CameraModelStats";
+import { AssignmentDetailsTable } from "./AssignmentDetailsTable";
 
 interface ReportData {
   photographers: Array<{
@@ -90,8 +91,19 @@ export function ReportContent({ reportData, isLoading, filters }: ReportContentP
     <div className="space-y-6">
       <SummaryCards summary={reportData.summary} />
       <PhotographerSummaryTable photographers={reportData.photographers} />
-      <CameraModelStats cameraSets={reportData.cameraSets} />
-      <CameraEquipmentTable cameraSets={reportData.cameraSets} />
+      
+      {/* Only show camera sections if scope includes cameras */}
+      {(filters.reportScope === 'cameras' || filters.reportScope === 'both') && (
+        <>
+          <CameraModelStats cameraSets={reportData.cameraSets} />
+          <CameraEquipmentTable cameraSets={reportData.cameraSets} />
+        </>
+      )}
+      
+      {/* Only show assignment details if scope includes assignments and details are enabled */}
+      {filters.includeAssignmentDetails && (filters.reportScope === 'assignments' || filters.reportScope === 'both') && reportData.assignments && reportData.assignments.length > 0 && (
+        <AssignmentDetailsTable assignments={reportData.assignments} />
+      )}
     </div>
   );
 }

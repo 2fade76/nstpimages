@@ -89,6 +89,7 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
 
   const clearFilters = () => {
     onFiltersChange({
+      reportScope: 'both',
       photographerId: undefined,
       assignmentStatuses: [],
       cameraModels: [],
@@ -101,6 +102,26 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
 
   return (
     <div className="space-y-6">
+      {/* Report Scope Filter */}
+      <div>
+        <Label className="text-sm font-medium mb-3 block">Report Content</Label>
+        <Select
+          value={filters.reportScope}
+          onValueChange={(value: 'both' | 'assignments' | 'cameras') =>
+            onFiltersChange({ ...filters, reportScope: value })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="both">Both Assignments & Cameras</SelectItem>
+            <SelectItem value="assignments">Assignments Only</SelectItem>
+            <SelectItem value="cameras">Cameras Only</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Photographers Filter */}
       <div>
         <Label className="text-sm font-medium mb-3 block">Photographer</Label>
@@ -115,105 +136,111 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
         />
       </div>
 
-      {/* Assignment Status Filter */}
-      <div>
-        <Label className="text-sm font-medium mb-3 block">Assignment Status</Label>
-        <div className="space-y-2">
-          {assignmentStatuses.map((status) => (
-            <div key={status} className="flex items-center space-x-2">
-              <Checkbox
-                id={`status-${status}`}
-                checked={filters.assignmentStatuses.includes(status)}
-                onCheckedChange={(checked) => 
-                  handleStatusChange(status, checked as boolean)
-                }
-              />
-              <Label 
-                htmlFor={`status-${status}`}
-                className="text-sm cursor-pointer capitalize"
-              >
-                {status}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Camera Models Filter */}
-      <div>
-        <Label className="text-sm font-medium mb-3 block">Camera Models</Label>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="select-all-cameras"
-              checked={cameraModels?.length === filters.cameraModels.length}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  onFiltersChange({
-                    ...filters,
-                    cameraModels: cameraModels || []
-                  });
-                } else {
-                  onFiltersChange({
-                    ...filters,
-                    cameraModels: []
-                  });
-                }
-              }}
-            />
-            <Label 
-              htmlFor="select-all-cameras"
-              className="text-sm cursor-pointer font-medium"
-            >
-              Select All Camera Models
-            </Label>
-          </div>
-          <div className="max-h-40 overflow-y-auto space-y-2">
-            {cameraModels?.map((model) => (
-              <div key={model} className="flex items-center space-x-2 ml-4">
+      {/* Assignment Status Filter - Only show for assignments or both */}
+      {(filters.reportScope === 'assignments' || filters.reportScope === 'both') && (
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Assignment Status</Label>
+          <div className="space-y-2">
+            {assignmentStatuses.map((status) => (
+              <div key={status} className="flex items-center space-x-2">
                 <Checkbox
-                  id={`model-${model}`}
-                  checked={filters.cameraModels.includes(model)}
+                  id={`status-${status}`}
+                  checked={filters.assignmentStatuses.includes(status)}
                   onCheckedChange={(checked) => 
-                    handleCameraModelChange(model, checked as boolean)
+                    handleStatusChange(status, checked as boolean)
                   }
                 />
                 <Label 
-                  htmlFor={`model-${model}`}
-                  className="text-sm cursor-pointer"
+                  htmlFor={`status-${status}`}
+                  className="text-sm cursor-pointer capitalize"
                 >
-                  {model}
+                  {status}
                 </Label>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Include Assignment Details Filter */}
-      <div>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="include-assignment-details"
-            checked={filters.includeAssignmentDetails}
-            onCheckedChange={(checked) => 
-              onFiltersChange({
-                ...filters,
-                includeAssignmentDetails: checked as boolean
-              })
-            }
-          />
-          <Label 
-            htmlFor="include-assignment-details"
-            className="text-sm cursor-pointer"
-          >
-            Include Assignment Details in Report
-          </Label>
+      {/* Camera Models Filter - Only show for cameras or both */}
+      {(filters.reportScope === 'cameras' || filters.reportScope === 'both') && (
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Camera Models</Label>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="select-all-cameras"
+                checked={cameraModels?.length === filters.cameraModels.length}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onFiltersChange({
+                      ...filters,
+                      cameraModels: cameraModels || []
+                    });
+                  } else {
+                    onFiltersChange({
+                      ...filters,
+                      cameraModels: []
+                    });
+                  }
+                }}
+              />
+              <Label 
+                htmlFor="select-all-cameras"
+                className="text-sm cursor-pointer font-medium"
+              >
+                Select All Camera Models
+              </Label>
+            </div>
+            <div className="max-h-40 overflow-y-auto space-y-2">
+              {cameraModels?.map((model) => (
+                <div key={model} className="flex items-center space-x-2 ml-4">
+                  <Checkbox
+                    id={`model-${model}`}
+                    checked={filters.cameraModels.includes(model)}
+                    onCheckedChange={(checked) => 
+                      handleCameraModelChange(model, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`model-${model}`}
+                    className="text-sm cursor-pointer"
+                  >
+                    {model}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Date Range Filter - Only show when assignment details are included */}
-      {filters.includeAssignmentDetails && (
+      {/* Include Assignment Details Filter - Only show for assignments or both */}
+      {(filters.reportScope === 'assignments' || filters.reportScope === 'both') && (
+        <div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-assignment-details"
+              checked={filters.includeAssignmentDetails}
+              onCheckedChange={(checked) => 
+                onFiltersChange({
+                  ...filters,
+                  includeAssignmentDetails: checked as boolean
+                })
+              }
+            />
+            <Label 
+              htmlFor="include-assignment-details"
+              className="text-sm cursor-pointer"
+            >
+              Include Assignment Details in Report
+            </Label>
+          </div>
+        </div>
+      )}
+
+      {/* Date Range Filter - Only show when assignment details are included and scope includes assignments */}
+      {filters.includeAssignmentDetails && (filters.reportScope === 'assignments' || filters.reportScope === 'both') && (
         <div>
           <Label className="text-sm font-medium mb-3 block">Date Range (for Assignments)</Label>
           <div className="space-y-2">

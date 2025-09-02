@@ -250,7 +250,7 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
             </tbody>
           </table>
 
-          ${filters.includeAssignmentDetails ? `
+          ${filters.includeAssignmentDetails && (filters.reportScope === 'assignments' || filters.reportScope === 'both') ? `
             <div class="section-title">Assignment Details</div>
             <table>
               <thead>
@@ -276,58 +276,60 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
             </table>
           ` : ''}
 
-          <div class="section-title">Camera Model Statistics</div>
-          ${generateCameraModelStats(data.cameraSets)}
+          ${(filters.reportScope === 'cameras' || filters.reportScope === 'both') ? `
+            <div class="section-title">Camera Model Statistics</div>
+            ${generateCameraModelStats(data.cameraSets)}
 
-          <div class="section-title">Camera Equipment Details</div>
-          <table class="equipment-table">
-            <thead>
-              <tr>
-                <th>Photographer</th>
-                <th>Camera Body</th>
-                <th>Body S/N</th>
-                <th>Body Year</th>
-                <th>16-35mm S/N</th>
-                <th>16-35 Year</th>
-                <th>24-105mm S/N</th>
-                <th>70-200mm S/N</th>
-                <th>70-200 Year</th>
-                <th>Battery Grip S/N</th>
-                <th>BG Year</th>
-                <th>Flash S/N</th>
-                <th>Flash Year</th>
-                <th>Adapter S/N</th>
-                <th>Adapter Year</th>
-                <th>Status</th>
-                <th>Date Received</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.cameraSets.map(c => `
+            <div class="section-title">Camera Equipment Details</div>
+            <table class="equipment-table">
+              <thead>
                 <tr>
-                  <td>${c.photographer_name}</td>
-                  <td>${c.camera_body_model}</td>
-                  <td class="serial-number">${c.camera_body_serial}</td>
-                  <td>${c.camera_year_make}</td>
-                  <td class="serial-number">${c.lens_16_35_serial}</td>
-                  <td>${c.lens_16_35_year_make}</td>
-                  <td class="serial-number">${c.lens_24_105_serial}</td>
-                  <td class="serial-number">${c.lens_70_200_serial}</td>
-                  <td>${c.lens_70_200_year_make}</td>
-                  <td class="serial-number">${c.battery_grip_serial}</td>
-                  <td>${c.battery_grip_year_make}</td>
-                  <td class="serial-number">${c.flash_serial}</td>
-                  <td>${c.flash_year_make}</td>
-                  <td class="serial-number">${c.adapter_serial}</td>
-                  <td>${c.adapter_year_make}</td>
-                  <td><span class="status-badge status-${c.status}">${c.status}</span></td>
-                  <td>${c.date_received ? format(new Date(c.date_received), 'PPP') : '-'}</td>
-                  <td>${c.notes || '-'}</td>
+                  <th>Photographer</th>
+                  <th>Camera Body</th>
+                  <th>Body S/N</th>
+                  <th>Body Year</th>
+                  <th>16-35mm S/N</th>
+                  <th>16-35 Year</th>
+                  <th>24-105mm S/N</th>
+                  <th>70-200mm S/N</th>
+                  <th>70-200 Year</th>
+                  <th>Battery Grip S/N</th>
+                  <th>BG Year</th>
+                  <th>Flash S/N</th>
+                  <th>Flash Year</th>
+                  <th>Adapter S/N</th>
+                  <th>Adapter Year</th>
+                  <th>Status</th>
+                  <th>Date Received</th>
+                  <th>Notes</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${data.cameraSets.map(c => `
+                  <tr>
+                    <td>${c.photographer_name}</td>
+                    <td>${c.camera_body_model}</td>
+                    <td class="serial-number">${c.camera_body_serial}</td>
+                    <td>${c.camera_year_make}</td>
+                    <td class="serial-number">${c.lens_16_35_serial}</td>
+                    <td>${c.lens_16_35_year_make}</td>
+                    <td class="serial-number">${c.lens_24_105_serial}</td>
+                    <td class="serial-number">${c.lens_70_200_serial}</td>
+                    <td>${c.lens_70_200_year_make}</td>
+                    <td class="serial-number">${c.battery_grip_serial}</td>
+                    <td>${c.battery_grip_year_make}</td>
+                    <td class="serial-number">${c.flash_serial}</td>
+                    <td>${c.flash_year_make}</td>
+                    <td class="serial-number">${c.adapter_serial}</td>
+                    <td>${c.adapter_year_make}</td>
+                    <td><span class="status-badge status-${c.status}">${c.status}</span></td>
+                    <td>${c.date_received ? format(new Date(c.date_received), 'PPP') : '-'}</td>
+                    <td>${c.notes || '-'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : ''}
         </body>
       </html>
     `;
@@ -391,6 +393,14 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
 
   const generateFilterSummary = (filters: ReportFilters) => {
     const parts = [];
+    
+    // Add report scope
+    const scopeMap = {
+      'both': 'Both Assignments & Cameras',
+      'assignments': 'Assignments Only',
+      'cameras': 'Cameras Only'
+    };
+    parts.push(`Report Content: ${scopeMap[filters.reportScope]}`);
     
     if (filters.photographerId) {
       parts.push(`Photographer: ${filters.photographerId}`);

@@ -73,6 +73,9 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
           queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
           queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
           queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
+          queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
+          queryClient.invalidateQueries({ queryKey: ['monthly-completions-total'] });
+          queryClient.invalidateQueries({ queryKey: ['assignments-this-month'] });
           
           // Show toast notification based on event type
           const eventType = payload.eventType;
@@ -114,6 +117,7 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
           // Invalidate photographer and assignment queries
           queryClient.invalidateQueries({ queryKey: ['photographers'] });
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
           
           toast({
             title: "Photographer Data Updated",

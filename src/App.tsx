@@ -10,6 +10,7 @@ import { CommandDialog } from "@/components/CommandDialog";
 import { AppRoutes } from "@/components/AppRoutes";
 import { SupabaseDashboardAccess } from "@/components/SupabaseDashboardAccess";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { AssignmentsProvider } from "@/providers/AssignmentsProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,16 +46,18 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <SidebarProvider defaultOpen={true}>
-          <TooltipProvider delayDuration={300}>
-            <BrowserRouter>
-              <CommandDialog isOpen={isSearchOpen} setIsOpen={setIsSearchOpen} />
-              <AppRoutes />
-              <Toaster />
-              <Sonner position="top-center" />
-            </BrowserRouter>
-          </TooltipProvider>
-        </SidebarProvider>
+        <AssignmentsProvider>
+          <SidebarProvider defaultOpen={true}>
+            <TooltipProvider delayDuration={300}>
+              <BrowserRouter>
+                <CommandDialog isOpen={isSearchOpen} setIsOpen={setIsSearchOpen} />
+                <AppRoutes />
+                <Toaster />
+                <Sonner position="top-center" />
+              </BrowserRouter>
+            </TooltipProvider>
+          </SidebarProvider>
+        </AssignmentsProvider>
       </ThemeProvider>
       <SupabaseDashboardAccess />
     </QueryClientProvider>

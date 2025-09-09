@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
+import { PhotographerRanking } from "@/components/PhotographerRanking";
 import { AssignmentsProvider, useAssignments } from "@/providers/AssignmentsProvider";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -76,6 +77,13 @@ const IndexContent = () => {
     });
     queryClient.invalidateQueries({
       queryKey: ['open-assignments']
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['photographer-ranking']
+    });
+    queryClient.refetchQueries({
+      queryKey: ['photographer-ranking'],
+      type: 'active'
     });
     toast({
       title: "Success",
@@ -156,6 +164,7 @@ const IndexContent = () => {
               onFilterChange={handleFilterChange}
               activeFilter={statusFilter}
             />
+            <PhotographerRanking />
             <AssignmentsList 
               onStatusUpdate={handleAssignmentStatusUpdate} 
               searchQuery={searchQuery}

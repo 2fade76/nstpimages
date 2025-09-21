@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, CheckCircle, Clock, BarChart2 } from "lucide-react";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { ClipboardList, CheckCircle, Clock, BarChart2, TrendingUp, TrendingDown } from "lucide-react";
+import { format, startOfDay, endOfDay, subDays } from "date-fns";
 interface AnalyticsSummaryCardProps {
   onFilterChange?: (filter: 'all' | 'open' | 'complete' | 'today-complete') => void;
   activeFilter?: 'all' | 'open' | 'complete' | 'today-complete';
@@ -72,6 +72,81 @@ export const AnalyticsSummaryCard = ({
       return count || 0;
     }
   });
+
+  // Yesterday's data for trend comparison
+  const { data: yesterdayTotalAssignments } = useQuery({
+    queryKey: ['yesterday-total-assignments'],
+    queryFn: async () => {
+      const yesterday = subDays(new Date(), 1);
+      const startOfYesterday = startOfDay(yesterday).toISOString();
+      const { count } = await supabase
+        .from('assignments')
+        .select('*', { count: 'exact' })
+        .lte('created_at', startOfYesterday);
+      return count || 0;
+    }
+  });
+
+  const { data: yesterdayOpenAssignments } = useQuery({
+    queryKey: ['yesterday-open-assignments'],
+    queryFn: async () => {
+      const yesterday = subDays(new Date(), 1);
+      const startOfYesterday = startOfDay(yesterday).toISOString();
+      const { count } = await supabase
+        .from('assignments')
+        .select('*', { count: 'exact' })
+        .eq('status', 'open')
+        .lte('created_at', startOfYesterday);
+      return count || 0;
+    }
+  });
+
+  const { data: yesterdayCompletedAssignments } = useQuery({
+    queryKey: ['yesterday-completed-assignments'],
+    queryFn: async () => {
+      const yesterday = subDays(new Date(), 1);
+      const startOfYesterday = startOfDay(yesterday).toISOString();
+      const { count } = await supabase
+        .from('assignments')
+        .select('*', { count: 'exact' })
+        .eq('status', 'complete')
+        .lte('created_at', startOfYesterday);
+      return count || 0;
+    }
+  });
+
+  const { data: yesterdayCompletedDaily } = useQuery({
+    queryKey: ['yesterday-completed-daily'],
+    queryFn: async () => {
+      const yesterday = subDays(new Date(), 1);
+      const startOfYesterday = startOfDay(yesterday).toISOString();
+      const endOfYesterday = endOfDay(yesterday).toISOString();
+      const { count } = await supabase
+        .from('assignments')
+        .select('*', { count: 'exact' })
+        .gte('date', startOfYesterday)
+        .lte('date', endOfYesterday)
+        .eq('status', 'complete');
+      return count || 0;
+    }
+  });
+
+  // Trend calculations
+  const getTrendData = (current: number, previous: number) => {
+    const change = current - previous;
+    const percentage = previous > 0 ? ((change / previous) * 100) : 0;
+    return {
+      change,
+      percentage: Math.abs(percentage),
+      isPositive: change >= 0
+    };
+  };
+
+  const totalTrend = getTrendData(totalAssignments || 0, yesterdayTotalAssignments || 0);
+  const openTrend = getTrendData(openAssignments || 0, yesterdayOpenAssignments || 0);
+  const completedTrend = getTrendData(completedAssignments || 0, yesterdayCompletedAssignments || 0);
+  const todayTrend = getTrendData(todayCompletedAssignments || 0, yesterdayCompletedDaily || 0);
+
   const isLoading = loadingTotal || loadingOpen || loadingCompleted || loadingToday;
   const currentDate = format(new Date(), 'MMMM d, yyyy');
   const handleCardClick = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
@@ -90,7 +165,16 @@ export const AnalyticsSummaryCard = ({
             <p className="text-xs md:text-sm text-muted-foreground mb-1 text-center leading-tight">Total Assignments</p>
             {isLoading ? <div className="h-6 md:h-8 w-8 md:w-12 bg-slate-200 animate-pulse rounded"></div> : <>
                 <p className="text-xl md:text-3xl font-bold text-[#ea384c]">{totalAssignments}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1 hidden md:block">{currentDate}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {totalTrend.isPositive ? (
+                    <TrendingUp className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 text-red-500" />
+                  )}
+                  <span className={`text-xs font-medium ${totalTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {totalTrend.percentage.toFixed(1)}%
+                  </span>
+                </div>
               </>}
           </div>
 
@@ -102,7 +186,16 @@ export const AnalyticsSummaryCard = ({
             <p className="text-xs md:text-sm text-muted-foreground mb-1 text-center">Open</p>
             {isLoading ? <div className="h-6 md:h-8 w-8 md:w-12 bg-slate-200 animate-pulse rounded"></div> : <>
                 <p className="text-xl md:text-3xl font-bold text-status-open">{openAssignments}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1 hidden md:block">{currentDate}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {openTrend.isPositive ? (
+                    <TrendingUp className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 text-red-500" />
+                  )}
+                  <span className={`text-xs font-medium ${openTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {openTrend.percentage.toFixed(1)}%
+                  </span>
+                </div>
               </>}
           </div>
 
@@ -114,7 +207,16 @@ export const AnalyticsSummaryCard = ({
             <p className="text-xs md:text-sm text-muted-foreground mb-1 text-center">Completed</p>
             {isLoading ? <div className="h-6 md:h-8 w-8 md:w-12 bg-slate-200 animate-pulse rounded"></div> : <>
                 <p className="text-xl md:text-3xl font-bold text-status-complete">{completedAssignments}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1 hidden md:block">{currentDate}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {completedTrend.isPositive ? (
+                    <TrendingUp className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 text-red-500" />
+                  )}
+                  <span className={`text-xs font-medium ${completedTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {completedTrend.percentage.toFixed(1)}%
+                  </span>
+                </div>
               </>}
           </div>
 
@@ -126,7 +228,16 @@ export const AnalyticsSummaryCard = ({
             <p className="text-muted-foreground mb-1 text-[10px] md:text-xs text-center leading-tight font-bold">Today's Completed</p>
             {isLoading ? <div className="h-6 md:h-8 w-8 md:w-12 bg-slate-200 animate-pulse rounded"></div> : <>
                 <p className="text-xl font-bold text-blue-500 md:text-4xl">{todayCompletedAssignments}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1 hidden md:block">{currentDate}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {todayTrend.isPositive ? (
+                    <TrendingUp className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 text-red-500" />
+                  )}
+                  <span className={`text-xs font-medium ${todayTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {todayTrend.percentage.toFixed(1)}%
+                  </span>
+                </div>
               </>}
           </div>
         </div>

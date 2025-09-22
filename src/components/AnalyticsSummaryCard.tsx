@@ -171,9 +171,9 @@ export const AnalyticsSummaryCard = ({
                   ) : (
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
-                  <span className={`text-xs font-medium ${totalTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                    {totalTrend.percentage.toFixed(1)}%
-                  </span>
+                   <span className={`text-sm font-medium ${totalTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                     {totalTrend.percentage.toFixed(1)}%
+                   </span>
                 </div>
               </>}
           </div>
@@ -192,9 +192,9 @@ export const AnalyticsSummaryCard = ({
                   ) : (
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
-                  <span className={`text-xs font-medium ${openTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                    {openTrend.percentage.toFixed(1)}%
-                  </span>
+                   <span className={`text-sm font-medium ${openTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                     {openTrend.percentage.toFixed(1)}%
+                   </span>
                 </div>
               </>}
           </div>
@@ -213,9 +213,9 @@ export const AnalyticsSummaryCard = ({
                   ) : (
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
-                  <span className={`text-xs font-medium ${completedTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                    {completedTrend.percentage.toFixed(1)}%
-                  </span>
+                   <span className={`text-sm font-medium ${completedTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                     {completedTrend.percentage.toFixed(1)}%
+                   </span>
                 </div>
               </>}
           </div>
@@ -234,9 +234,9 @@ export const AnalyticsSummaryCard = ({
                   ) : (
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
-                  <span className={`text-xs font-medium ${todayTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                    {todayTrend.percentage.toFixed(1)}%
-                  </span>
+                   <span className={`text-sm font-medium ${todayTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                     {todayTrend.percentage.toFixed(1)}%
+                   </span>
                 </div>
               </>}
           </div>

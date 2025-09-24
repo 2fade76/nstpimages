@@ -17,7 +17,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm md:hidden border-b dark:border-slate-800">
           <MobileHeader />
         </div>
-        <div className="container py-3 md:py-6 px-3 md:px-4 max-w-full overflow-x-hidden">
+        <div className="py-3 md:py-6 pl-2 pr-3 md:pr-4 max-w-full overflow-x-hidden">
           {children}
         </div>
       </div>

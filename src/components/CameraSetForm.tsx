@@ -200,6 +200,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="stored">Stored</SelectItem>
                   <SelectItem value="retired">Retired</SelectItem>
                 </SelectContent>
               </Select>

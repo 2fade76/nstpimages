@@ -64,22 +64,35 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
         (payload) => {
           console.log("Received real-time update for assignments:", payload);
           
-          // Invalidate all assignment-related queries
+          // Selective query invalidation based on event type
+          const eventType = payload.eventType;
+          
+          // Always invalidate the main assignments list
           queryClient.invalidateQueries({ queryKey: ['assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['today-completed-assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
-          queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
-          queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
-          queryClient.invalidateQueries({ queryKey: ['monthly-completions-total'] });
-          queryClient.invalidateQueries({ queryKey: ['assignments-this-month'] });
+          
+          // Invalidate dashboard trends for all events
+          queryClient.invalidateQueries({ queryKey: ['dashboard-trends'] });
+          
+          if (eventType === 'INSERT' || eventType === 'DELETE') {
+            // New or deleted assignment affects totals and analytics
+            queryClient.invalidateQueries({ queryKey: ['assignments-this-month'] });
+            queryClient.invalidateQueries({ queryKey: ['monthly-completions-total'] });
+          }
+          
+          if (eventType === 'UPDATE') {
+            // Status changes affect completion data
+            const oldStatus = payload.old?.status;
+            const newStatus = payload.new?.status;
+            
+            if (oldStatus !== newStatus) {
+              queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
+              queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
+              queryClient.invalidateQueries({ queryKey: ['monthly-completions-total'] });
+            }
+          }
           
           // Show toast notification based on event type
-          const eventType = payload.eventType;
-          let message = "Assignment data has been updated";
+          let message = "Assignment data updated";
           
           if (eventType === 'INSERT') {
             message = "New assignment created";
@@ -92,7 +105,7 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
           toast({
             title: "Real-time Update",
             description: message,
-            duration: 3000
+            duration: 2000
           });
         }
       )
@@ -114,15 +127,20 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
         (payload) => {
           console.log("Received real-time update for photographers:", payload);
           
-          // Invalidate photographer and assignment queries
+          // Only invalidate relevant queries
           queryClient.invalidateQueries({ queryKey: ['photographers'] });
-          queryClient.invalidateQueries({ queryKey: ['assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
           
+          // Only invalidate assignments if photographer data affects it
+          if (payload.eventType === 'DELETE') {
+            queryClient.invalidateQueries({ queryKey: ['assignments'] });
+            queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
+          }
+          
+          // Show notification for photographer changes
           toast({
-            title: "Photographer Data Updated",
-            description: "Photographer information has been updated",
-            duration: 2000
+            title: "Photographer Updated",
+            description: "Photographer information changed",
+            duration: 1500
           });
         }
       )

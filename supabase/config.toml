@@ -1,1 +1,4 @@
 project_id = "ynbwhrvvpcgoowwtnpbp"
+
+[functions.get-dashboard-trends]
+verify_jwt = false

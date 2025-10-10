@@ -81,11 +81,9 @@ export const AnalyticsSection = () => {
       }
       return daysInCurrentMonth;
     },
-      staleTime: 0,
-      refetchOnMount: true,
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true,
-      refetchInterval: 5000
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const {
     data: completedAssignmentsData,
@@ -149,11 +147,9 @@ export const AnalyticsSection = () => {
         photographers: Array.from(uniquePhotographers)
       };
     },
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const {
     data: monthlyCompletionsData,
@@ -188,11 +184,9 @@ export const AnalyticsSection = () => {
         chartData,
       };
     },
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const COLORS = {
     total: '#6366f1',
@@ -269,11 +263,9 @@ export const AnalyticsSection = () => {
       }));
       return sortedPhotographers;
     },
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   return <div className="grid gap-6">
       <Card className="shadow-sm border-gray-100 dark:border-gray-800">

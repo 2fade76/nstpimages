@@ -4,19 +4,20 @@ import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
 import { AssignmentsProvider, useAssignments } from "@/providers/AssignmentsProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, RefreshCw, Search } from "lucide-react";
+import { AlertCircle, RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const IndexContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'complete' | 'today-complete'>('all');
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -41,11 +42,7 @@ const IndexContent = () => {
   const handleFilterChange = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
     console.log("Filter changed to:", filter);
     setStatusFilter(filter);
-    toast({
-      title: "Filter Applied",
-      description: `Showing ${filter === 'all' ? 'all' : filter === 'today-complete' ? "today's completed" : filter} assignments`,
-      duration: 2000
-    });
+    // Removed toast - visual feedback is sufficient
   };
 
   // Real-time subscriptions are now handled by AssignmentsProvider
@@ -86,35 +83,11 @@ const IndexContent = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSearching(true);
-    
-    console.log("Searching for:", searchQuery);
-    
-    if (searchQuery.trim() === "") {
-      // If search is empty, clear search state
-      setIsSearching(false);
-      queryClient.invalidateQueries({
-        queryKey: ['assignments']
-      });
-      toast({
-        title: "Search cleared",
-        description: "Showing all assignments",
-        duration: 2000
-      });
-      return;
-    }
-    
-    // Update the URL to include the search parameter
-    const newParams = new URLSearchParams(location.search);
-    newParams.set("search", searchQuery);
-    navigate({ search: newParams.toString() });
-    
-    // We'll pass the search query to the AssignmentsList component
-    toast({
-      title: "Search",
-      description: `Searching for: ${searchQuery}`,
-      duration: 2000
-    });
+    // Search is now automatic via debouncing - no action needed
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
   };
 
   return <DashboardLayout>
@@ -134,15 +107,26 @@ const IndexContent = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
           <form onSubmit={handleSearch} className="flex items-center gap-2">
-            <Input
-              placeholder="Search title or location..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-[280px]"
-            />
-            <Button type="submit" size="icon" variant="ghost" disabled={isSearching}>
-              <Search className={`h-5 w-5 ${isSearching ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="relative">
+              <Input
+                placeholder="Search title or location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-[280px] pr-8"
+              />
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearSearch}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </form>
         </div>
         
@@ -158,9 +142,9 @@ const IndexContent = () => {
             />
             <AssignmentsList 
               onStatusUpdate={handleAssignmentStatusUpdate} 
-              searchQuery={searchQuery}
-              isSearchActive={isSearching}
-              onSearchComplete={() => setIsSearching(false)}
+              searchQuery={debouncedSearchQuery}
+              isSearchActive={false}
+              onSearchComplete={() => {}}
               statusFilter={statusFilter}
             />
           </TabsContent>

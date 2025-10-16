@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { notificationManager } from "@/lib/notificationManager";
 
 interface AssignmentsContextType {
   isConnected: boolean;
@@ -91,22 +92,24 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
             }
           }
           
-          // Show toast notification based on event type
-          let message = "Assignment data updated";
-          
-          if (eventType === 'INSERT') {
-            message = "New assignment created";
-          } else if (eventType === 'UPDATE') {
-            message = "Assignment updated";
-          } else if (eventType === 'DELETE') {
-            message = "Assignment deleted";
+          // Throttled toast notifications - only show user-initiated actions
+          if (notificationManager.canShow('assignment-realtime')) {
+            let message = "Assignment data updated";
+            
+            if (eventType === 'INSERT') {
+              message = "New assignment created";
+            } else if (eventType === 'UPDATE') {
+              message = "Assignment updated";
+            } else if (eventType === 'DELETE') {
+              message = "Assignment deleted";
+            }
+            
+            toast({
+              title: "Real-time Update",
+              description: message,
+              duration: 2000
+            });
           }
-          
-          toast({
-            title: "Real-time Update",
-            description: message,
-            duration: 2000
-          });
         }
       )
       .subscribe((status) => {
@@ -136,12 +139,14 @@ export const AssignmentsProvider = ({ children }: AssignmentsProviderProps) => {
             queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
           }
           
-          // Show notification for photographer changes
-          toast({
-            title: "Photographer Updated",
-            description: "Photographer information changed",
-            duration: 1500
-          });
+          // Throttled notifications for photographer changes
+          if (notificationManager.canShow('photographer-realtime')) {
+            toast({
+              title: "Photographer Updated",
+              description: "Photographer information changed",
+              duration: 1500
+            });
+          }
         }
       )
       .subscribe((status) => {

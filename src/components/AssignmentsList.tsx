@@ -10,6 +10,7 @@ import { AssignmentDialogs } from "./AssignmentDialogs";
 import { useAssignmentMutations } from "./hooks/useAssignmentMutations";
 import { useAssignmentFilters } from "./hooks/useAssignmentFilters";
 import { useAssignmentsData } from "./hooks/useAssignmentsData";
+import { AssignmentCardSkeleton } from "./ui/skeleton-loaders";
 
 interface AssignmentsListProps {
   onStatusUpdate?: () => void;
@@ -188,7 +189,13 @@ export const AssignmentsList = ({
   };
 
   if (isLoading) {
-    return <div className="p-4 text-center">Loading assignments...</div>;
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <AssignmentCardSkeleton key={i} />
+        ))}
+      </div>
+    );
   }
 
   return (

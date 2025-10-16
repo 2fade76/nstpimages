@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
+import { AnalyticsCardSkeleton } from "./ui/skeleton-loaders";
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
@@ -273,9 +274,18 @@ export const AnalyticsSection = () => {
           <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">Assignments Volume - This Month</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] p-4">
-          {isLoading ? <div className="flex items-center justify-center h-full">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Loading data...</p>
-            </div> : <ResponsiveContainer width="100%" height="100%">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="space-y-4 w-full px-8">
+                <div className="h-8 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-3/4 bg-muted animate-pulse rounded" />
+                <div className="h-8 w-5/6 bg-muted animate-pulse rounded" />
+                <div className="h-8 w-full bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyData} margin={{
             top: 20,
             right: 20,
@@ -316,7 +326,8 @@ export const AnalyticsSection = () => {
               strokeWidth: 1
             }} />
               </LineChart>
-            </ResponsiveContainer>}
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -325,9 +336,18 @@ export const AnalyticsSection = () => {
           <CardTitle className="text-xl font-semibold">Monthly Completed Assignments</CardTitle>
         </CardHeader>
         <CardContent className="h-[450px] p-6">
-          {isLoadingMonthlyData ? <div className="flex items-center justify-center h-full">
-              <p className="text-muted-foreground">Loading monthly data...</p>
-            </div> : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? <ResponsiveContainer width="100%" height="100%">
+          {isLoadingMonthlyData ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="space-y-4 w-full px-8">
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-10 w-3/4 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-5/6 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+          ) : monthlyCompletionsData && monthlyCompletionsData.chartData && monthlyCompletionsData.chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyCompletionsData.chartData} margin={{
             top: 40,
             right: 30,
@@ -372,9 +392,12 @@ export const AnalyticsSection = () => {
               }} />
                 </Bar>
               </BarChart>
-            </ResponsiveContainer> : <div className="flex items-center justify-center h-full">
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">No monthly completed assignments found</p>
-            </div>}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -384,9 +407,16 @@ export const AnalyticsSection = () => {
           <span className="text-sm text-muted-foreground">Ranked by completed assignments</span>
         </CardHeader>
         <CardContent className="p-6">
-          {isLoadingTopPhotographers ? <div className="flex items-center justify-center h-32">
-              <p className="text-muted-foreground">Loading top photographers...</p>
-            </div> : topPhotographersData && topPhotographersData.length > 0 ? <Table>
+          {isLoadingTopPhotographers ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="space-y-3 w-full">
+                <div className="h-12 w-full bg-muted animate-pulse rounded" />
+                <div className="h-12 w-full bg-muted animate-pulse rounded" />
+                <div className="h-12 w-full bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+          ) : topPhotographersData && topPhotographersData.length > 0 ? (
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-16 text-center">Rank</TableHead>
@@ -407,11 +437,15 @@ export const AnalyticsSection = () => {
                         {photographer.completedCount}
                       </span>
                     </TableCell>
-                  </TableRow>)}
+                  </TableRow>
+                )}
               </TableBody>
-            </Table> : <div className="flex items-center justify-center h-32">
+            </Table>
+          ) : (
+            <div className="flex items-center justify-center h-32">
               <p className="text-muted-foreground">No completed assignments found</p>
-            </div>}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>;

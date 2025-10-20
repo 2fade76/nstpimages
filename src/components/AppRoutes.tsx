@@ -3,7 +3,6 @@ import React from 'react';
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import Index from "@/pages/Index";
-import Calendar from "@/pages/Calendar";
 import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Photographers from "@/pages/Photographers";
@@ -21,14 +20,6 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <Index />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/calendar"
-        element={
-          <ProtectedRoute>
-            <Calendar />
           </ProtectedRoute>
         }
       />

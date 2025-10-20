@@ -22,10 +22,6 @@ const menuItems = [{
   icon: Users,
   path: "/photographers"
 }, {
-  title: "Calendar",
-  icon: Calendar,
-  path: "/calendar"
-}, {
   title: "Reports",
   icon: FileText,
   path: "/reports"

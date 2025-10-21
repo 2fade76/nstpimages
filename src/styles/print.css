@@ -1,0 +1,229 @@
+@media print {
+  /* Hide non-essential UI elements */
+  .sidebar,
+  .app-sidebar,
+  .mobile-header,
+  .filter-panel,
+  .export-button,
+  .action-buttons,
+  nav,
+  .theme-toggle,
+  button,
+  .no-print,
+  [data-sidebar],
+  header {
+    display: none !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4 landscape;
+    margin: 15mm 10mm;
+  }
+
+  body {
+    font-size: 10pt;
+    color: #000;
+    background: white;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Main content area */
+  main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Report header */
+  .report-header {
+    display: block;
+    text-align: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10mm;
+    margin-bottom: 10mm;
+    page-break-after: avoid;
+  }
+
+  .report-title {
+    font-size: 18pt;
+    font-weight: bold;
+  }
+
+  .report-date {
+    font-size: 10pt;
+    color: #666;
+  }
+
+  /* Summary cards - print in single row */
+  .summary-cards {
+    display: flex !important;
+    justify-content: space-around;
+    page-break-inside: avoid;
+    margin-bottom: 15mm;
+    border: 1px solid #ddd;
+    padding: 5mm;
+  }
+
+  /* Cards */
+  .card,
+  [class*="card"] {
+    border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+    margin-bottom: 5mm;
+    box-shadow: none !important;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: auto;
+    font-size: 8pt;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tbody {
+    display: table-row-group;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  th {
+    background-color: #f5f5f5 !important;
+    border: 1px solid #333 !important;
+    padding: 2mm !important;
+    font-weight: bold;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  td {
+    border: 1px solid #ddd !important;
+    padding: 2mm !important;
+  }
+
+  /* Zebra striping for tables */
+  tbody tr:nth-child(even) {
+    background-color: #f9f9f9 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Section titles */
+  .section-title,
+  h2,
+  h3 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 10mm;
+    margin-bottom: 5mm;
+    page-break-after: avoid;
+  }
+
+  /* Equipment table - smaller font for many columns */
+  .equipment-table {
+    font-size: 7pt;
+  }
+
+  .equipment-table th,
+  .equipment-table td {
+    padding: 1mm !important;
+  }
+
+  /* Serial numbers - monospace for clarity */
+  .serial-number,
+  .font-mono {
+    font-family: 'Courier New', monospace;
+    font-size: 8pt;
+  }
+
+  /* Status badges */
+  .badge,
+  [class*="badge"] {
+    border: 1px solid #333 !important;
+    padding: 1mm 2mm !important;
+    border-radius: 2mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Badge colors */
+  .bg-green-500,
+  .bg-green-600 {
+    background-color: #22c55e !important;
+    color: white !important;
+  }
+
+  .bg-blue-500,
+  .bg-blue-600 {
+    background-color: #3b82f6 !important;
+    color: white !important;
+  }
+
+  .bg-red-500,
+  .bg-red-600 {
+    background-color: #ef4444 !important;
+    color: white !important;
+  }
+
+  /* Force page breaks before major sections */
+  .camera-model-stats,
+  .equipment-table-section {
+    page-break-before: always;
+  }
+
+  /* Hide scroll indicators */
+  .overflow-x-auto,
+  .overflow-auto {
+    overflow: visible !important;
+  }
+
+  /* Ensure proper spacing */
+  .space-y-6 > * {
+    margin-top: 5mm !important;
+  }
+
+  /* Filter badges in active filters */
+  .active-filters {
+    page-break-inside: avoid;
+    margin-bottom: 10mm;
+  }
+
+  /* Expandable content - show all when printing */
+  [data-state="closed"] {
+    display: block !important;
+  }
+
+  /* Remove interactive states */
+  *:hover {
+    background-color: inherit !important;
+  }
+
+  /* Optimize link appearance */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Page numbers */
+  @page {
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+    }
+  }
+
+  /* Prevent widow/orphan lines */
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+}

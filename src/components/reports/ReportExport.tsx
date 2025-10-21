@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { FileText, Printer } from "lucide-react";
+import { FileText, Printer, Loader2 } from "lucide-react";
 import { ReportFilters } from "@/pages/Reports";
 import { format } from "date-fns";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface ReportData {
   photographers: Array<{
@@ -60,25 +62,66 @@ interface ReportData {
 interface ReportExportProps {
   reportData: ReportData | undefined;
   filters: ReportFilters;
+  isLoading?: boolean;
 }
 
-export function ReportExport({ reportData, filters }: ReportExportProps) {
+export function ReportExport({ reportData, filters, isLoading }: ReportExportProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const generatePDF = async () => {
-    if (!reportData) return;
+    if (!reportData) {
+      toast({
+        title: "No data to export",
+        description: "Please wait for the report to load before exporting.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Create a new window for the PDF content
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    setIsGenerating(true);
+    toast({
+      title: "Generating PDF...",
+      description: "Please wait while we prepare your report.",
+    });
 
-    const htmlContent = generatePrintableHTML(reportData, filters);
-    
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    
-    // Wait for content to load, then trigger print
-    printWindow.onload = () => {
-      printWindow.print();
-    };
+    try {
+      // Small delay to show the loading state
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Create a new window for the PDF content
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast({
+          title: "Pop-up blocked",
+          description: "Please allow pop-ups for this site to export the report.",
+          variant: "destructive",
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      const htmlContent = generatePrintableHTML(reportData, filters);
+      
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // Wait for content to load, then trigger print
+      printWindow.onload = () => {
+        printWindow.print();
+        toast({
+          title: "PDF ready",
+          description: "Your report has been generated successfully.",
+        });
+      };
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "There was an error generating your report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const generatePrintableHTML = (data: ReportData, filters: ReportFilters) => {
@@ -432,17 +475,26 @@ export function ReportExport({ reportData, filters }: ReportExportProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button>
-          <FileText className="mr-2 h-4 w-4" />
-          Export Report
+        <Button disabled={isLoading || isGenerating} className="no-print">
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <FileText className="mr-2 h-4 w-4" />
+              Export Report
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={generatePDF}>
+        <DropdownMenuItem onClick={generatePDF} disabled={isGenerating || !reportData}>
           <FileText className="mr-2 h-4 w-4" />
           Export as PDF
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handlePrint}>
+        <DropdownMenuItem onClick={handlePrint} disabled={isGenerating}>
           <Printer className="mr-2 h-4 w-4" />
           Print Report
         </DropdownMenuItem>

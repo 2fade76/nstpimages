@@ -3,9 +3,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { ReportFilters } from "@/components/reports/ReportFilters";
 import { ReportContent } from "@/components/reports/ReportContent";
 import { ReportExport } from "@/components/reports/ReportExport";
+import { ActiveFilters } from "@/components/reports/ActiveFilters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { useReportData } from "@/hooks/useReportData";
 import { useState } from "react";
+import { Filter } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface ReportFilters {
   reportScope: 'both' | 'assignments' | 'cameras';
@@ -28,33 +33,74 @@ const Reports = () => {
     includeAssignmentDetails: false,
     dateRange: {}
   });
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const { reportData, isLoading } = useReportData(filters);
 
+  const clearFilters = () => {
+    setFilters({
+      reportScope: 'both',
+      photographerId: undefined,
+      assignmentStatuses: [],
+      cameraModels: [],
+      includeAssignmentDetails: false,
+      dateRange: {}
+    });
+  };
+
+  const FiltersPanel = (
+    <ReportFilters 
+      filters={filters} 
+      onFiltersChange={setFilters} 
+    />
+  );
+
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-3xl font-semibold tracking-tight">
             Reports
           </h1>
-          <ReportExport reportData={reportData} filters={filters} />
+          <div className="flex gap-2 items-center">
+            {isMobile && (
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="no-print">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Report Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    {FiltersPanel}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+            <ReportExport reportData={reportData} filters={filters} isLoading={isLoading} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ReportFilters 
-                filters={filters} 
-                onFiltersChange={setFilters} 
-              />
-            </CardContent>
-          </Card>
+        <ActiveFilters filters={filters} onClearFilters={clearFilters} />
 
-          <Card className="lg:col-span-3">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {!isMobile && (
+            <Card className="lg:col-span-1 filter-panel no-print">
+              <CardHeader>
+                <CardTitle>Filters</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {FiltersPanel}
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className={isMobile ? "lg:col-span-4" : "lg:col-span-3"}>
             <CardHeader>
               <CardTitle>Report Results</CardTitle>
             </CardHeader>

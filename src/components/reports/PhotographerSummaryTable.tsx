@@ -38,8 +38,13 @@ export function PhotographerSummaryTable({ photographers }: PhotographerSummaryT
             </TableRow>
           </TableHeader>
           <TableBody>
-            {photographers.map((photographer) => (
-              <TableRow key={photographer.id}>
+            {photographers.map((photographer, index) => (
+              <TableRow 
+                key={photographer.id}
+                className={`hover:bg-muted/50 transition-colors ${
+                  index % 2 === 0 ? 'bg-muted/20' : ''
+                }`}
+              >
                 <TableCell className="font-medium">{photographer.name}</TableCell>
                 <TableCell>{photographer.assignmentCount}</TableCell>
                 <TableCell>

@@ -82,8 +82,8 @@ export const AnalyticsSection = () => {
       }
       return daysInCurrentMonth;
     },
-    staleTime: 300000, // 5 minutes
-    refetchOnMount: false,
+    staleTime: 60000, // 1 minute
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
   const {
@@ -148,8 +148,8 @@ export const AnalyticsSection = () => {
         photographers: Array.from(uniquePhotographers)
       };
     },
-    staleTime: 300000, // 5 minutes
-    refetchOnMount: false,
+    staleTime: 60000, // 1 minute
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
   const {
@@ -185,8 +185,8 @@ export const AnalyticsSection = () => {
         chartData,
       };
     },
-    staleTime: 300000, // 5 minutes
-    refetchOnMount: false,
+    staleTime: 60000, // 1 minute
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
   const COLORS = {
@@ -264,8 +264,8 @@ export const AnalyticsSection = () => {
       }));
       return sortedPhotographers;
     },
-    staleTime: 300000, // 5 minutes
-    refetchOnMount: false,
+    staleTime: 60000, // 1 minute
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
   return <div className="grid gap-6">

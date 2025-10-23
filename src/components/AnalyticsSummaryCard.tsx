@@ -37,8 +37,8 @@ export const AnalyticsSummaryCard = ({
       if (error) throw error;
       return data as DashboardTrends;
     },
-    staleTime: 300000, // 5 minutes
-    refetchOnMount: false,
+    staleTime: 60000, // 1 minute
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 

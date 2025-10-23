@@ -8,11 +8,12 @@ const Analytics = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Force fresh data whenever Analytics page is opened
-    queryClient.refetchQueries({ queryKey: ['assignments-this-month'] });
-    queryClient.refetchQueries({ queryKey: ['completed-assignments-by-date'] });
-    queryClient.refetchQueries({ queryKey: ['monthly-completions-total'] });
-    queryClient.refetchQueries({ queryKey: ['top-photographers'] });
+    // Invalidate and refetch all analytics queries to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: ['assignments-this-month'] });
+    queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
+    queryClient.invalidateQueries({ queryKey: ['monthly-completions-total'] });
+    queryClient.invalidateQueries({ queryKey: ['top-photographers'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-trends'] });
   }, [queryClient]);
 
   return (

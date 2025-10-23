@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
 import { AnalyticsCardSkeleton } from "./ui/skeleton-loaders";
+import { useTopPhotographers } from "@/hooks/useTopPhotographers";
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
@@ -219,55 +220,7 @@ export const AnalyticsSection = () => {
   const {
     data: topPhotographersData,
     isLoading: isLoadingTopPhotographers
-  } = useQuery<TopPhotographer[]>({
-    queryKey: ['top-photographers'],
-    queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('assignments').select(`
-          photographer_id,
-          photographers (id, name)
-        `).eq('status', 'complete');
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        return [];
-      }
-
-      // Count completions by photographer
-      const photographerCounts: Record<string, {
-        name: string;
-        count: number;
-        id: string;
-      }> = {};
-      (data as AssignmentWithPhotographer[]).forEach(assignment => {
-        const photographerId = assignment.photographer_id;
-        const photographerName = assignment.photographers?.name || 'Unknown';
-        const photographerDbId = assignment.photographers?.id || photographerId;
-        if (!photographerCounts[photographerId]) {
-          photographerCounts[photographerId] = {
-            id: photographerDbId,
-            name: photographerName,
-            count: 0
-          };
-        }
-        photographerCounts[photographerId].count += 1;
-      });
-
-      // Convert to array and sort
-      const sortedPhotographers = Object.values(photographerCounts).sort((a, b) => b.count - a.count).slice(0, 10) // Top 10
-      .map((photographer, index) => ({
-        id: photographer.id,
-        name: photographer.name,
-        completedCount: photographer.count,
-        rank: index + 1
-      }));
-      return sortedPhotographers;
-    },
-    staleTime: 60000, // 1 minute
-    refetchOnMount: true,
-    refetchOnWindowFocus: false
-  });
+  } = useTopPhotographers();
   return <div className="grid gap-6">
       <Card className="shadow-sm border-gray-100 dark:border-gray-800">
         <CardHeader className="pb-4">

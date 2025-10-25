@@ -29,9 +29,9 @@ export function PhotographerStatusSection({
           <SelectValue placeholder="Select status" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="staff">Staff Photographer</SelectItem>
-          <SelectItem value="stringers">Stringer Photographer</SelectItem>
-          <SelectItem value="staff_oc">Staff OC</SelectItem>
+          <SelectItem value="staff">Staff</SelectItem>
+          <SelectItem value="stringers">Stringer</SelectItem>
+          <SelectItem value="staff_oc">OC</SelectItem>
         </SelectContent>
       </Select>
     </div>

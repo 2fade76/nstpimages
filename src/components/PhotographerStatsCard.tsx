@@ -11,17 +11,17 @@ export function PhotographerStatsCard({
   const staffOcCount = photographers?.filter(p => p.status === 'staff_oc').length || 0;
   const stringersCount = photographers?.filter(p => p.status === 'stringers').length || 0;
   const stats = [{
-    title: "Staff Photographers",
+    title: "Staff",
     count: staffCount,
     icon: Users,
     description: "Active staff photographers"
   }, {
-    title: "Photo OCs",
+    title: "OC",
     count: staffOcCount,
     icon: UserCheck,
     description: "Staff photo coordinators"
   }, {
-    title: "Stringer Photographers",
+    title: "Stringers",
     count: stringersCount,
     icon: Camera,
     description: "Freelance photographers"

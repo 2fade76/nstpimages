@@ -7,11 +7,11 @@ import { PhotographerTableRowSkeleton } from "./ui/skeleton-loaders";
 const getStatusDisplay = (status: string) => {
   switch (status) {
     case 'staff':
-      return 'Staff Photographer';
+      return 'Staff';
     case 'stringers':
-      return 'Stringer Photographer';
+      return 'Stringer';
     case 'staff_oc':
-      return 'Staff OC';
+      return 'OC';
     default:
       return status;
   }

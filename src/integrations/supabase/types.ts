@@ -210,6 +210,15 @@ export type Database = {
           total: number
         }[]
       }
+      get_top_photographers: {
+        Args: { limit_count?: number }
+        Returns: {
+          completed_count: number
+          id: string
+          name: string
+          rank: number
+        }[]
+      }
       has_role: {
         Args: { role: Database["public"]["Enums"]["app_role"]; user_id: string }
         Returns: boolean

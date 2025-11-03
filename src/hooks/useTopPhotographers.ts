@@ -8,67 +8,30 @@ interface TopPhotographer {
   rank: number;
 }
 
-interface AssignmentWithPhotographer {
-  id: string;
-  status: string;
-  photographer_id: string;
-  photographers: {
-    id: string;
-    name: string;
-  } | null;
-}
 
 export function useTopPhotographers() {
   return useQuery({
     queryKey: ["top-photographers"],
     queryFn: async () => {
-      // Fetch completed assignments with photographer info
+      // Use the database function for efficient aggregation
       const { data, error } = await supabase
-        .from("assignments")
-        .select("id, status, photographer_id, photographers(id, name)")
-        .eq("status", "complete");
+        .rpc("get_top_photographers", { limit_count: 10 });
 
       if (error) throw error;
 
-      // Count completions by photographer
-      const photographerCounts: Record<
-        string,
-        { id: string; name: string; count: number }
-      > = {};
-
-      (data as AssignmentWithPhotographer[]).forEach((assignment) => {
-        const photographerId = assignment.photographer_id;
-        const photographerName = assignment.photographers?.name || "Unknown";
-        const photographerDbId = assignment.photographers?.id || photographerId;
-
-        if (!photographerCounts[photographerId]) {
-          photographerCounts[photographerId] = {
-            id: photographerDbId,
-            name: photographerName,
-            count: 0,
-          };
-        }
-        photographerCounts[photographerId].count += 1;
-      });
-
-      // Sort and rank
-      const sortedPhotographers = Object.values(photographerCounts)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
-        .map((p, index) => ({
-          id: p.id,
-          name: p.name,
-          completedCount: p.count,
-          rank: index + 1,
-        }));
-
-      return sortedPhotographers as TopPhotographer[];
+      // Map the database result to our interface
+      return (data || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        completedCount: Number(p.completed_count),
+        rank: Number(p.rank),
+      })) as TopPhotographer[];
     },
 
-    // React Query behavior
-    staleTime: 0, // always fresh
-    gcTime: 1000 * 60 * 5, // keep cached briefly
-    refetchOnMount: true,
+    // React Query behavior with better caching
+    staleTime: 1000 * 60 * 2, // 2 minutes - reduce unnecessary refetches
+    gcTime: 1000 * 60 * 10, // 10 minutes cache
+    refetchOnMount: "always",
     refetchOnWindowFocus: true,
   });
 }

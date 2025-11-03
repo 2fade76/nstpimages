@@ -28,14 +28,15 @@ export const AnalyticsSummaryCard = ({
   onFilterChange,
   activeFilter
 }: AnalyticsSummaryCardProps) => {
-  // Single optimized query for all dashboard trends
+  // Single optimized query using database function
   const { data: trends, isLoading } = useQuery<DashboardTrends>({
     queryKey: ['dashboard-trends'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-dashboard-trends');
+      const { data, error } = await supabase.rpc('get_dashboard_trends');
       
       if (error) throw error;
-      return data as DashboardTrends;
+      // Parse the JSONB response from the database function
+      return data as unknown as DashboardTrends;
     },
     staleTime: 60000, // 1 minute
     refetchOnMount: true,

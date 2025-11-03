@@ -203,6 +203,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_dashboard_trends: { Args: never; Returns: Json }
       get_monthly_completed_assignments: {
         Args: { end_date?: string; start_date?: string }
         Returns: {

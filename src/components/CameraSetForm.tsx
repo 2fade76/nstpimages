@@ -36,6 +36,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
     camera_year_make: "",
     date_received: "",
     status: "active",
+    ownership: "own",
     notes: "",
   });
 
@@ -53,6 +54,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
         camera_year_make: editingSet.camera_year_make || "",
         date_received: editingSet.date_received || "",
         status: editingSet.status,
+        ownership: editingSet.ownership,
         notes: editingSet.notes || "",
       });
     } else {
@@ -68,6 +70,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
         camera_year_make: "",
         date_received: "",
         status: "active",
+        ownership: "own",
         notes: "",
       });
     }
@@ -191,7 +194,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
               />
             </div>
 
-            <div className="space-y-2 col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
                 <SelectTrigger>
@@ -202,6 +205,19 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
                   <SelectItem value="maintenance">Maintenance</SelectItem>
                   <SelectItem value="stored">Stored</SelectItem>
                   <SelectItem value="retired">Retired</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ownership">Ownership</Label>
+              <Select value={formData.ownership} onValueChange={(value) => setFormData({ ...formData, ownership: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="own">Own</SelectItem>
+                  <SelectItem value="loan">Loan</SelectItem>
                 </SelectContent>
               </Select>
             </div>

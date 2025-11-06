@@ -70,6 +70,7 @@ export type Database = {
           lens_24_105_serial: string | null
           lens_70_200_serial: string | null
           notes: string | null
+          ownership: string
           photographer_id: string
           status: string
           updated_at: string
@@ -88,6 +89,7 @@ export type Database = {
           lens_24_105_serial?: string | null
           lens_70_200_serial?: string | null
           notes?: string | null
+          ownership?: string
           photographer_id: string
           status?: string
           updated_at?: string
@@ -106,6 +108,7 @@ export type Database = {
           lens_24_105_serial?: string | null
           lens_70_200_serial?: string | null
           notes?: string | null
+          ownership?: string
           photographer_id?: string
           status?: string
           updated_at?: string

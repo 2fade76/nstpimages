@@ -40,6 +40,7 @@ export interface CameraSet {
   adapter_year_make: string | null;
   date_received: string | null;
   status: string;
+  ownership: 'loan' | 'own';
   notes: string | null;
   created_at: string;
   updated_at: string;

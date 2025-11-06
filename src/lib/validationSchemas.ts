@@ -61,6 +61,9 @@ export const cameraSetSchema = z.object({
   status: z.enum(['active', 'maintenance', 'stored', 'retired'], {
     required_error: "Please select a status"
   }),
+  ownership: z.enum(['loan', 'own'], {
+    required_error: "Please select ownership type"
+  }),
   notes: z.string().max(500, "Notes must be less than 500 characters").optional()
 });
 

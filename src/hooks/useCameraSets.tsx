@@ -42,6 +42,7 @@ export function useCameraSets(photographerId: string, isEnabled: boolean) {
         camera_year_make: formData.camera_year_make || null,
         date_received: formData.date_received || null,
         status: formData.status || 'active',
+        ownership: formData.ownership || 'own',
         notes: formData.notes || null,
       };
 

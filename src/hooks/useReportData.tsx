@@ -33,6 +33,7 @@ export function useReportData(filters: ReportFilters) {
             adapter_serial,
             camera_year_make,
             status,
+            ownership,
             date_received,
             notes
           )
@@ -105,6 +106,7 @@ export function useReportData(filters: ReportFilters) {
             adapter_serial,
             camera_year_make,
             status,
+            ownership,
             date_received,
             notes,
             photographers (
@@ -168,6 +170,7 @@ export function useReportData(filters: ReportFilters) {
         adapter_year_make: 'N/A', // Not available in database
         photographer_name: cameraSet.photographers?.name || 'Unknown',
         status: cameraSet.status,
+        ownership: cameraSet.ownership,
         date_received: cameraSet.date_received || '',
         notes: cameraSet.notes || ''
       })) || [];
@@ -177,6 +180,8 @@ export function useReportData(filters: ReportFilters) {
         totalPhotographers: processedPhotographers.length,
         totalAssignments: processedAssignments.length,
         totalCameraSets: processedCameraSets.length,
+        loanSets: processedCameraSets.filter(cs => cs.ownership === 'loan').length,
+        ownSets: processedCameraSets.filter(cs => cs.ownership === 'own').length,
         completedAssignments: processedAssignments.filter(a => a.status === 'complete').length,
         openAssignments: processedAssignments.filter(a => a.status === 'open').length,
         cancelledAssignments: processedAssignments.filter(a => a.status === 'cancelled').length,

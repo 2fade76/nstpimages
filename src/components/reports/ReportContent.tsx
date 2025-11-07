@@ -60,6 +60,8 @@ interface ReportData {
     totalPhotographers: number;
     totalAssignments: number;
     totalCameraSets: number;
+    loanSets: number;
+    ownSets: number;
     completedAssignments: number;
     openAssignments: number;
     cancelledAssignments: number;

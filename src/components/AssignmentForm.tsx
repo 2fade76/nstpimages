@@ -125,7 +125,7 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md mx-auto px-2 sm:px-0">
       <div className="space-y-2">
         <label htmlFor="assignment-title" className="text-sm font-medium">Assignment Title</label>
         <Input
@@ -152,7 +152,7 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label htmlFor="assignment-date" className="text-sm font-medium">Date</label>
           <Popover>

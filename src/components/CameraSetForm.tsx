@@ -85,7 +85,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {editingSet ? "Edit Camera Set" : "Add Camera Set"}
@@ -93,7 +93,7 @@ export function CameraSetForm({ isOpen, onClose, editingSet, onSubmit, isSubmitt
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="camera_body_model">Camera Body Model</Label>
               <Input

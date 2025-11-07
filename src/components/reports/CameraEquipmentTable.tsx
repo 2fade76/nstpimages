@@ -100,7 +100,7 @@ export function CameraEquipmentTable({ cameraSets }: CameraEquipmentTableProps) 
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
           <Table className="equipment-table">
             <TableHeader>
               <TableRow>

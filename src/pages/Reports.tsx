@@ -59,8 +59,8 @@ const Reports = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-semibold tracking-tight">
             Reports
           </h1>
           <div className="flex gap-2 items-center">

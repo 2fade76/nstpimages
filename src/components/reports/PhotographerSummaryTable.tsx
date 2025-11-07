@@ -26,7 +26,8 @@ export function PhotographerSummaryTable({ photographers }: PhotographerSummaryT
         <CardTitle>Photographer Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
+        <div className="w-full overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
@@ -67,6 +68,7 @@ export function PhotographerSummaryTable({ photographers }: PhotographerSummaryT
             ))}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

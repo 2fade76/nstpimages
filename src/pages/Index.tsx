@@ -104,15 +104,15 @@ const IndexContent = () => {
             </AlertDescription>
           </Alert>}
       
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-semibold tracking-tight px-[10px] text-slate-950">Photo HQ Assignment Tracker Dashboard</h1>
-          <form onSubmit={handleSearch} className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-semibold tracking-tight px-2 sm:px-[10px]">Photo HQ Assignment Tracker Dashboard</h1>
+          <form onSubmit={handleSearch} className="w-full sm:w-auto px-2 sm:px-0">
             <div className="relative">
               <Input
                 placeholder="Search title or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-[280px] pr-8"
+                className="w-full sm:w-[280px] pr-8"
               />
               {searchQuery && (
                 <Button

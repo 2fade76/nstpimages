@@ -26,6 +26,7 @@ interface CameraEquipmentTableProps {
     adapter_year_make: string;
     photographer_name: string;
     status: string;
+    ownership: 'loan' | 'own';
     date_received: string;
     notes: string;
   }>;
@@ -48,6 +49,10 @@ export function CameraEquipmentTable({ cameraSets }: CameraEquipmentTableProps) 
       default:
         return 'bg-gray-500';
     }
+  };
+
+  const getOwnershipVariant = (ownership: 'loan' | 'own') => {
+    return ownership === 'loan' ? 'default' : 'secondary';
   };
 
   const toggleRow = (id: string) => {
@@ -101,6 +106,7 @@ export function CameraEquipmentTable({ cameraSets }: CameraEquipmentTableProps) 
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Photographer</TableHead>
+                <TableHead>Ownership</TableHead>
                 <TableHead>Camera Model</TableHead>
                 <TableHead>Body Serial</TableHead>
                 <TableHead>Status</TableHead>
@@ -133,6 +139,11 @@ export function CameraEquipmentTable({ cameraSets }: CameraEquipmentTableProps) 
                         </CollapsibleTrigger>
                       </TableCell>
                       <TableCell className="font-medium">{cameraSet.photographer_name}</TableCell>
+                      <TableCell>
+                        <Badge variant={getOwnershipVariant(cameraSet.ownership)}>
+                          {cameraSet.ownership === 'loan' ? 'Loan' : 'Own'}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{cameraSet.camera_body_model}</TableCell>
                       <TableCell className="font-mono text-sm serial-number">
                         {cameraSet.camera_body_serial}
@@ -148,7 +159,7 @@ export function CameraEquipmentTable({ cameraSets }: CameraEquipmentTableProps) 
                     </TableRow>
                     <CollapsibleContent asChild>
                       <TableRow className={index % 2 === 0 ? 'bg-muted/20' : ''}>
-                        <TableCell colSpan={6} className="p-0">
+                        <TableCell colSpan={7} className="p-0">
                           <div className="p-4 bg-muted/30 border-t">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                               <div>

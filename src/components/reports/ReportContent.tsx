@@ -53,6 +53,7 @@ interface ReportData {
     adapter_year_make: string;
     photographer_name: string;
     status: string;
+    ownership: 'loan' | 'own';
     date_received: string;
     notes: string;
   }>;

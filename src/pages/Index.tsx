@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
@@ -14,21 +13,25 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
-
 const IndexContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'complete' | 'today-complete'>('all');
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const currentTab = urlParams.get("tab") || "overview";
-  
-  // Use the consolidated assignments context
-  const { isConnected, isReconnecting, reconnect } = useAssignments();
 
+  // Use the consolidated assignments context
+  const {
+    isConnected,
+    isReconnecting,
+    reconnect
+  } = useAssignments();
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(location.search);
     if (value === "overview") {
@@ -36,9 +39,10 @@ const IndexContent = () => {
     } else {
       newParams.set("tab", value);
     }
-    navigate({ search: newParams.toString() });
+    navigate({
+      search: newParams.toString()
+    });
   };
-
   const handleFilterChange = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
     console.log("Filter changed to:", filter);
     setStatusFilter(filter);
@@ -80,16 +84,13 @@ const IndexContent = () => {
       duration: 3000
     });
   };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Search is now automatic via debouncing - no action needed
   };
-
   const handleClearSearch = () => {
     setSearchQuery("");
   };
-
   return <DashboardLayout>
       <div className="space-y-8">
         {!isConnected && <Alert variant="destructive" className="animate-pulse">
@@ -105,27 +106,13 @@ const IndexContent = () => {
           </Alert>}
       
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <h1 className="text-lg sm:text-2xl md:text-3xl font-semibold tracking-tight px-2 sm:px-[10px]">Photo HQ Assignment Tracker Dashboard</h1>
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-semibold tracking-tight px-2 sm:px-[10px]">SnapTrack </h1>
           <form onSubmit={handleSearch} className="w-full sm:w-auto px-2 sm:px-0">
             <div className="relative">
-              <Input
-                placeholder="Search title or location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-[280px] pr-8"
-              />
-              {searchQuery && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearSearch}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                  aria-label="Clear search"
-                >
+              <Input placeholder="Search title or location..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full sm:w-[280px] pr-8" />
+              {searchQuery && <Button type="button" variant="ghost" size="sm" onClick={handleClearSearch} className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0" aria-label="Clear search">
                   <X className="h-4 w-4" />
-                </Button>
-              )}
+                </Button>}
             </div>
           </form>
         </div>
@@ -136,17 +123,8 @@ const IndexContent = () => {
             <TabsTrigger value="new">New Assignment</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-8">
-            <AnalyticsSummaryCard 
-              onFilterChange={handleFilterChange}
-              activeFilter={statusFilter}
-            />
-            <AssignmentsList 
-              onStatusUpdate={handleAssignmentStatusUpdate} 
-              searchQuery={debouncedSearchQuery}
-              isSearchActive={false}
-              onSearchComplete={() => {}}
-              statusFilter={statusFilter}
-            />
+            <AnalyticsSummaryCard onFilterChange={handleFilterChange} activeFilter={statusFilter} />
+            <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} searchQuery={debouncedSearchQuery} isSearchActive={false} onSearchComplete={() => {}} statusFilter={statusFilter} />
           </TabsContent>
           <TabsContent value="new" className="space-y-4">
             <h2 className="text-2xl font-semibold">Create New Assignment</h2>
@@ -156,13 +134,9 @@ const IndexContent = () => {
       </div>
     </DashboardLayout>;
 };
-
 const Index = () => {
-  return (
-    <AssignmentsProvider>
+  return <AssignmentsProvider>
       <IndexContent />
-    </AssignmentsProvider>
-  );
+    </AssignmentsProvider>;
 };
-
 export default Index;

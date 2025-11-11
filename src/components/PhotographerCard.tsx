@@ -27,11 +27,12 @@ const getStatusDisplay = (status: string) => {
 
 const getStatusVariant = (status: string) => {
   switch (status) {
-    case 'staff':
     case 'staff_oc':
-      return 'default' as const;
+      return 'success' as const;
+    case 'staff':
+      return 'warning' as const;
     case 'stringers':
-      return 'secondary' as const;
+      return 'danger' as const;
     default:
       return 'secondary' as const;
   }

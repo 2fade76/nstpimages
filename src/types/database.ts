@@ -7,6 +7,7 @@ export interface Photographer {
   phone: string | null;
   Location: string | null;
   status: 'staff' | 'stringers' | 'staff_oc';
+  awards: string | null;
   created_at: string;
 }
 

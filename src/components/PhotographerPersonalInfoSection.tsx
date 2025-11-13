@@ -1,6 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PhotographerPersonalInfoSectionProps {
   name: string;
@@ -11,6 +12,8 @@ interface PhotographerPersonalInfoSectionProps {
   setPhone: (value: string) => void;
   location: string;
   setLocation: (value: string) => void;
+  awards: string;
+  setAwards: (value: string) => void;
 }
 
 export function PhotographerPersonalInfoSection({
@@ -22,6 +25,8 @@ export function PhotographerPersonalInfoSection({
   setPhone,
   location,
   setLocation,
+  awards,
+  setAwards,
 }: PhotographerPersonalInfoSectionProps) {
   return (
     <>
@@ -68,6 +73,18 @@ export function PhotographerPersonalInfoSection({
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           placeholder="City, State or Region"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="photographer-awards">Awards & Recognition</Label>
+        <Textarea
+          id="photographer-awards"
+          name="awards"
+          value={awards}
+          onChange={(e) => setAwards(e.target.value)}
+          placeholder="List any awards, certifications, or recognition"
+          className="min-h-[100px]"
         />
       </div>
     </>

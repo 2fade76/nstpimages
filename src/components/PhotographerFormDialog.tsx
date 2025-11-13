@@ -30,6 +30,7 @@ export function PhotographerFormDialog({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
+  const [awards, setAwards] = useState("");
   const [status, setStatus] = useState<"staff" | "stringers" | "staff_oc">("staff");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,6 +43,7 @@ export function PhotographerFormDialog({
       setEmail(photographer.email || "");
       setPhone(photographer.phone || "");
       setLocation(photographer.Location || "");
+      setAwards(photographer.awards || "");
       setStatus(photographer.status);
     } else {
       // Reset form when adding new photographer
@@ -49,6 +51,7 @@ export function PhotographerFormDialog({
       setEmail("");
       setPhone("");
       setLocation("");
+      setAwards("");
       setStatus("staff");
     }
   }, [photographer]);
@@ -67,6 +70,7 @@ export function PhotographerFormDialog({
             email: email || null,
             phone: phone || null,
             Location: location || null,
+            awards: awards || null,
             status,
           })
           .eq("id", photographer.id);
@@ -80,6 +84,7 @@ export function PhotographerFormDialog({
           email: email || null,
           phone: phone || null,
           Location: location || null,
+          awards: awards || null,
           status,
         });
 
@@ -120,6 +125,8 @@ export function PhotographerFormDialog({
               setPhone={setPhone}
               location={location}
               setLocation={setLocation}
+              awards={awards}
+              setAwards={setAwards}
             />
 
             <PhotographerStatusSection

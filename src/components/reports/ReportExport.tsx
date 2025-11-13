@@ -10,6 +10,7 @@ interface ReportData {
   photographers: Array<{
     id: string;
     name: string;
+    awards: string | null;
     assignmentCount: number;
     completedAssignments: number;
     openAssignments: number;
@@ -272,6 +273,7 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Awards & Recognition</th>
                 <th>Total Assignments</th>
                 <th>Completed</th>
                 <th>Open</th>
@@ -283,6 +285,7 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
               ${data.photographers.map(p => `
                 <tr>
                   <td>${p.name}</td>
+                  <td style="font-size: 9px; max-width: 200px;">${p.awards || 'N/A'}</td>
                   <td>${p.assignmentCount}</td>
                   <td>${p.completedAssignments}</td>
                   <td>${p.openAssignments}</td>

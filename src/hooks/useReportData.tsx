@@ -14,6 +14,7 @@ export function useReportData(filters: ReportFilters) {
         .select(`
           id,
           name,
+          awards,
           assignments (
             id,
             title,
@@ -135,6 +136,7 @@ export function useReportData(filters: ReportFilters) {
         return {
           id: photographer.id,
           name: photographer.name,
+          awards: photographer.awards,
           assignmentCount: photographerAssignments.length,
           completedAssignments: photographerAssignments.filter(a => a.status === 'complete').length,
           openAssignments: photographerAssignments.filter(a => a.status === 'open').length,

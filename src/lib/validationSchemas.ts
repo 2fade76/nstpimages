@@ -42,6 +42,10 @@ export const photographerSchema = z.object({
     .max(200, "Location must be less than 200 characters")
     .optional()
     .or(z.literal('')),
+  awards: z.string()
+    .max(500, "Awards must be less than 500 characters")
+    .optional()
+    .or(z.literal('')),
   status: z.enum(['staff', 'stringers', 'staff_oc'], {
     required_error: "Please select a status"
   })

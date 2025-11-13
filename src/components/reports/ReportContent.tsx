@@ -17,6 +17,7 @@ interface ReportData {
   photographers: Array<{
     id: string;
     name: string;
+    awards: string | null;
     assignmentCount: number;
     completedAssignments: number;
     openAssignments: number;

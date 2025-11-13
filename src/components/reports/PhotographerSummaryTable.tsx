@@ -7,6 +7,7 @@ interface PhotographerSummaryTableProps {
   photographers: Array<{
     id: string;
     name: string;
+    awards: string | null;
     assignmentCount: number;
     completedAssignments: number;
     openAssignments: number;
@@ -31,6 +32,7 @@ export function PhotographerSummaryTable({ photographers }: PhotographerSummaryT
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Awards & Recognition</TableHead>
               <TableHead>Total Assignments</TableHead>
               <TableHead>Completed</TableHead>
               <TableHead>Open</TableHead>
@@ -47,6 +49,9 @@ export function PhotographerSummaryTable({ photographers }: PhotographerSummaryT
                 }`}
               >
                 <TableCell className="font-medium">{photographer.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                  {photographer.awards || 'N/A'}
+                </TableCell>
                 <TableCell>{photographer.assignmentCount}</TableCell>
                 <TableCell>
                   <Badge className="bg-green-500 text-white">

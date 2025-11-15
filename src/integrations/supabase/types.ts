@@ -125,6 +125,7 @@ export type Database = {
       }
       photographers: {
         Row: {
+          awards: string | null
           created_at: string
           email: string | null
           id: string
@@ -134,6 +135,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          awards?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -143,6 +145,7 @@ export type Database = {
           status: string
         }
         Update: {
+          awards?: string | null
           created_at?: string
           email?: string | null
           id?: string

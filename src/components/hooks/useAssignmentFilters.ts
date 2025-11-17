@@ -9,6 +9,7 @@ export const useAssignmentFilters = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPhotographerFilter, setSelectedPhotographerFilter] = useState<string | null>(null);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -34,14 +35,23 @@ export const useAssignmentFilters = () => {
     console.log(`Photographer filter state updated to: ${photographerId}`);
   };
 
+  const handleCategoryFilterChange = (category: string | null) => {
+    console.log(`Category filter changing from: ${selectedCategoryFilter} to: ${category}`);
+    setSelectedCategoryFilter(category);
+    setCurrentPage(1);
+    console.log(`Category filter state updated to: ${category}`);
+  };
+
   return {
     sortField,
     sortDirection,
     currentPage,
     selectedPhotographerFilter,
+    selectedCategoryFilter,
     handleSort,
     handlePageChange,
     handlePhotographerFilterChange,
+    handleCategoryFilterChange,
     setCurrentPage
   };
 };

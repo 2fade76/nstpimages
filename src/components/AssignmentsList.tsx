@@ -49,9 +49,11 @@ export const AssignmentsList = ({
     sortDirection,
     currentPage,
     selectedPhotographerFilter,
+    selectedCategoryFilter,
     handleSort,
     handlePageChange,
     handlePhotographerFilterChange,
+    handleCategoryFilterChange,
     setCurrentPage
   } = useAssignmentFilters();
 
@@ -69,6 +71,7 @@ export const AssignmentsList = ({
     sortField,
     sortDirection,
     selectedPhotographerFilter,
+    selectedCategoryFilter,
     statusFilter,
     isSearchActive,
     onSearchComplete
@@ -207,9 +210,11 @@ export const AssignmentsList = ({
           <AssignmentFilters
             photographers={photographers}
             selectedPhotographerFilter={selectedPhotographerFilter}
+            selectedCategoryFilter={selectedCategoryFilter}
             sortField={sortField}
             sortDirection={sortDirection}
             onPhotographerFilterChange={handlePhotographerFilterChange}
+            onCategoryFilterChange={handleCategoryFilterChange}
             onSort={handleSort}
           />
         </div>

@@ -10,6 +10,7 @@ interface UseAssignmentsDataProps {
   sortField: 'date' | 'status' | 'photographer';
   sortDirection: 'asc' | 'desc';
   selectedPhotographerFilter: string | null;
+  selectedCategoryFilter: string | null;
   statusFilter: 'all' | 'open' | 'complete' | 'today-complete';
   isSearchActive: boolean;
   onSearchComplete?: () => void;
@@ -23,6 +24,7 @@ export const useAssignmentsData = ({
   sortField,
   sortDirection,
   selectedPhotographerFilter,
+  selectedCategoryFilter,
   statusFilter,
   isSearchActive,
   onSearchComplete
@@ -30,7 +32,7 @@ export const useAssignmentsData = ({
   const shouldSearch = Boolean(searchQuery?.trim());
 
   const { data: assignmentsData, isLoading, refetch } = useQuery({
-    queryKey: ['assignments', searchQuery, currentPage, sortField, sortDirection, selectedPhotographerFilter, statusFilter],
+    queryKey: ['assignments', searchQuery, currentPage, sortField, sortDirection, selectedPhotographerFilter, selectedCategoryFilter, statusFilter],
     queryFn: async () => {
       console.log("Fetching assignments data", shouldSearch ? `with search: ${searchQuery}` : "without search", `with status filter: ${statusFilter}`, `page: ${currentPage}`);
       
@@ -51,6 +53,10 @@ export const useAssignmentsData = ({
 
       if (selectedPhotographerFilter) {
         query = query.eq('photographer_id', selectedPhotographerFilter);
+      }
+
+      if (selectedCategoryFilter) {
+        query = query.eq('category', selectedCategoryFilter as 'News' | 'Sports' | 'Entertainment');
       }
 
       // Apply status filter

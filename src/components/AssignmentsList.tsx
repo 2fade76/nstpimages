@@ -38,6 +38,7 @@ export const AssignmentsList = ({
     time: "",
     photographer_id: "",
     status: "" as Assignment['status'],
+    category: "News" as Assignment['category'],
   });
 
   const { toast } = useToast();
@@ -142,6 +143,7 @@ export const AssignmentsList = ({
       time: timeValue,
       photographer_id: assignment.photographer_id,
       status: assignment.status,
+      category: assignment.category,
     });
     
     setIsEditDialogOpen(true);

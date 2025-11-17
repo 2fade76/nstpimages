@@ -18,6 +18,7 @@ interface EditAssignmentDialogProps {
     time: string;
     photographer_id: string;
     status: Assignment['status'];
+    category: Assignment['category'];
   };
   onFormChange: (field: string, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -138,6 +139,23 @@ export const EditAssignmentDialog = ({
                       Cancelled
                     </span>
                   </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-category">Category</Label>
+              <Select
+                name="category"
+                value={editForm.category}
+                onValueChange={(value) => onFormChange('category', value)}
+              >
+                <SelectTrigger id="edit-category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="News">News</SelectItem>
+                  <SelectItem value="Sports">Sports</SelectItem>
+                  <SelectItem value="Entertainment">Entertainment</SelectItem>
                 </SelectContent>
               </Select>
             </div>

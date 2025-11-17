@@ -33,6 +33,7 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
   const [time, setTime] = useState("12:00");
   const [photographer, setPhotographer] = useState("");
   const [status, setStatus] = useState<Assignment['status']>("open");
+  const [category, setCategory] = useState<Assignment['category']>("News");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -83,7 +84,8 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
           date: formattedDate,
           time: timeValue,
           photographer_id: photographer,
-          status
+          status,
+          category
         })
         .select();
 
@@ -112,6 +114,7 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
       setTime("12:00");
       setPhotographer("");
       setStatus("open");
+      setCategory("News");
     } catch (error) {
       console.error("Exception creating assignment:", error);
       toast({
@@ -256,6 +259,20 @@ export const AssignmentForm = ({ onAssignmentCreated }: AssignmentFormProps) => 
                 Cancelled
               </span>
             </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Category</label>
+        <Select value={category} onValueChange={(value) => setCategory(value as Assignment['category'])}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="News">News</SelectItem>
+            <SelectItem value="Sports">Sports</SelectItem>
+            <SelectItem value="Entertainment">Entertainment</SelectItem>
           </SelectContent>
         </Select>
       </div>

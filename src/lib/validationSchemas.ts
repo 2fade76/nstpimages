@@ -20,6 +20,9 @@ export const assignmentSchema = z.object({
     .uuid("Invalid photographer selection"),
   status: z.enum(['open', 'complete', 'cancelled'], {
     required_error: "Please select a status"
+  }),
+  category: z.enum(['News', 'Sports', 'Entertainment'], {
+    required_error: "Please select a category"
   })
 });
 

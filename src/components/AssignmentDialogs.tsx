@@ -19,6 +19,7 @@ interface AssignmentDialogsProps {
     time: string;
     photographer_id: string;
     status: Assignment['status'];
+    category: Assignment['category'];
   };
   assignments: (Assignment & { photographers: Pick<Photographer, 'id' | 'name'> })[];
   isSubmitting: boolean;

@@ -19,6 +19,7 @@ export interface Assignment {
   time: string; // Separate time field, HH:MM:SS
   photographer_id: string;
   status: 'open' | 'complete' | 'cancelled';
+  category: 'News' | 'Sports' | 'Entertainment';
   created_at: string;
 }
 

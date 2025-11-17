@@ -10,18 +10,22 @@ type SortDirection = 'asc' | 'desc';
 interface AssignmentFiltersProps {
   photographers?: Photographer[];
   selectedPhotographerFilter: string | null;
+  selectedCategoryFilter: string | null;
   sortField: SortField;
   sortDirection: SortDirection;
   onPhotographerFilterChange: (photographerId: string | null) => void;
+  onCategoryFilterChange: (category: string | null) => void;
   onSort: (field: SortField) => void;
 }
 
 export const AssignmentFilters = ({
   photographers,
   selectedPhotographerFilter,
+  selectedCategoryFilter,
   sortField,
   sortDirection,
   onPhotographerFilterChange,
+  onCategoryFilterChange,
   onSort
 }: AssignmentFiltersProps) => {
   const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
@@ -39,8 +43,14 @@ export const AssignmentFilters = ({
     </Button>
   );
 
+  const categoryOptions = [
+    { value: 'News', label: 'News' },
+    { value: 'Sports', label: 'Sports' },
+    { value: 'Entertainment', label: 'Entertainment' }
+  ];
+
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-wrap">
       <Combobox
         options={photographers?.map(p => ({ value: p.id, label: p.name })) || []}
         value={selectedPhotographerFilter || undefined}
@@ -49,6 +59,16 @@ export const AssignmentFilters = ({
         searchPlaceholder="Search photographers..."
         emptyText="No photographers found."
         className="w-[200px]"
+      />
+      
+      <Combobox
+        options={categoryOptions}
+        value={selectedCategoryFilter || undefined}
+        onSelect={(value) => onCategoryFilterChange(value || null)}
+        placeholder="Filter category..."
+        searchPlaceholder="Search categories..."
+        emptyText="No categories found."
+        className="w-[180px]"
       />
       
       <SortButton field="photographer">Photographer</SortButton>

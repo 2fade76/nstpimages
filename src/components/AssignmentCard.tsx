@@ -1,6 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, User, Edit, Trash2, Clock } from "lucide-react";
 import { Assignment, Photographer } from "@/types/database";
 import { format } from "date-fns";
@@ -64,9 +65,14 @@ export const AssignmentCard = ({ assignment, onEdit, onDelete, onPhotographerCli
       <div className="p-3 md:p-4 flex flex-col md:flex-row md:items-start justify-between gap-3">
         <div className="space-y-2 flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className={`text-base md:text-lg font-semibold ${statusTextColors[assignment.status]} leading-tight`}>
-              {assignment.title}
-            </h3>
+            <div className="flex flex-col gap-1.5">
+              <h3 className={`text-base md:text-lg font-semibold ${statusTextColors[assignment.status]} leading-tight`}>
+                {assignment.title}
+              </h3>
+              <Badge variant="outline" className="text-xs w-fit">
+                {assignment.category}
+              </Badge>
+            </div>
             <div className="flex items-center space-x-2 flex-shrink-0">
               <div className="flex items-center">
                 <span

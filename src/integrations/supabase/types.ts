@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       assignments: {
         Row: {
+          category: Database["public"]["Enums"]["assignment_category"]
           created_at: string
           date: string
           id: string
@@ -26,6 +27,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          category?: Database["public"]["Enums"]["assignment_category"]
           created_at?: string
           date: string
           id?: string
@@ -36,6 +38,7 @@ export type Database = {
           title: string
         }
         Update: {
+          category?: Database["public"]["Enums"]["assignment_category"]
           created_at?: string
           date?: string
           id?: string
@@ -233,6 +236,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "user"
+      assignment_category: "News" | "Sports" | "Entertainment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -361,6 +365,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "user"],
+      assignment_category: ["News", "Sports", "Entertainment"],
     },
   },
 } as const

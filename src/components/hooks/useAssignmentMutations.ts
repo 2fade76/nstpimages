@@ -43,7 +43,8 @@ export const useAssignmentMutations = ({
           date: assignmentData.date,
           time: assignmentData.time,
           photographer_id: assignmentData.photographer_id,
-          status: assignmentData.status
+          status: assignmentData.status,
+          category: assignmentData.category
         })
         .eq('id', currentAssignment.id)
         .select();

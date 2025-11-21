@@ -172,7 +172,8 @@ export const AssignmentsList = ({
       date: editForm.date,
       time: editForm.time + ':00',
       photographer_id: editForm.photographer_id,
-      status: editForm.status as Assignment['status']
+      status: editForm.status as Assignment['status'],
+      category: editForm.category
     };
     
     console.log("Sending updated assignment to mutation:", updatedAssignment);

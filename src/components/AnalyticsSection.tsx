@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar, LabelList } from "recharts";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar, LabelList, Sector } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
 import { AnalyticsCardSkeleton } from "./ui/skeleton-loaders";
 import { useTopPhotographers } from "@/hooks/useTopPhotographers";
+
 interface DailyAssignmentData {
   date: Date;
   formattedDate: string;
@@ -44,7 +46,51 @@ interface TopPhotographer {
   completedCount: number;
   rank: number;
 }
+
+interface CategoryData {
+  name: string;
+  value: number;
+  fill: string;
+}
+
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+
+  return (
+    <g>
+      <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill="hsl(var(--foreground))" className="text-lg font-semibold">
+        {payload.name}
+      </text>
+      <text x={cx} y={cy + 15} dy={8} textAnchor="middle" fill="hsl(var(--muted-foreground))" className="text-sm">
+        {value} ({(percent * 100).toFixed(0)}%)
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 10}
+        outerRadius={outerRadius + 14}
+        fill={fill}
+      />
+    </g>
+  );
+};
 export const AnalyticsSection = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const onPieEnter = (_: any, index: number) => {
+    setActiveIndex(index);
+  };
   const {
     data: monthlyData,
     isLoading
@@ -221,6 +267,48 @@ export const AnalyticsSection = () => {
     data: topPhotographersData,
     isLoading: isLoadingTopPhotographers
   } = useTopPhotographers();
+
+  const CATEGORY_COLORS: Record<string, string> = {
+    News: '#3b82f6',
+    Sports: '#22c55e', 
+    Entertainment: '#f59e0b'
+  };
+
+  const {
+    data: categoryData,
+    isLoading: isLoadingCategoryData
+  } = useQuery({
+    queryKey: ['category-distribution'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('category');
+      
+      if (error) throw error;
+      
+      const counts: Record<string, number> = {
+        News: 0,
+        Sports: 0,
+        Entertainment: 0
+      };
+      
+      data?.forEach((item) => {
+        const cat = item.category as string;
+        if (counts[cat] !== undefined) {
+          counts[cat]++;
+        }
+      });
+      
+      return Object.entries(counts).map(([name, value]) => ({
+        name,
+        value,
+        fill: CATEGORY_COLORS[name]
+      })) as CategoryData[];
+    },
+    staleTime: 60000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false
+  });
   return <div className="grid gap-6">
       <Card className="shadow-sm border-gray-100 dark:border-gray-800">
         <CardHeader className="pb-4">
@@ -397,6 +485,44 @@ export const AnalyticsSection = () => {
           ) : (
             <div className="flex items-center justify-center h-32">
               <p className="text-muted-foreground">No completed assignments found</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl font-semibold">Category Distribution</CardTitle>
+          <span className="text-sm text-muted-foreground">Assignments by category</span>
+        </CardHeader>
+        <CardContent className="h-[350px] p-6">
+          {isLoadingCategoryData ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-48 h-48 bg-muted animate-pulse rounded-full" />
+            </div>
+          ) : categoryData && categoryData.some(d => d.value > 0) ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape}
+                  data={categoryData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  dataKey="value"
+                  onMouseEnter={onPieEnter}
+                >
+                  {categoryData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground">No category data available</p>
             </div>
           )}
         </CardContent>

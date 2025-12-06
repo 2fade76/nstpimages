@@ -4,9 +4,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, BarChart, Bar, LabelList, Sector } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, parseISO, subMonths, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid, startOfWeek, endOfWeek, startOfYear, endOfYear, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval } from "date-fns";
 import { Assignment, Photographer } from "@/types/database";
 import { AnalyticsCardSkeleton } from "./ui/skeleton-loaders";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+type TimePeriod = 'weekly' | 'monthly' | 'yearly';
 import { useTopPhotographers } from "@/hooks/useTopPhotographers";
 
 interface DailyAssignmentData {
@@ -87,49 +90,97 @@ const renderActiveShape = (props: any) => {
 };
 export const AnalyticsSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('monthly');
 
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
   };
+
+  const getTimePeriodLabel = () => {
+    switch (timePeriod) {
+      case 'weekly': return 'This Week';
+      case 'monthly': return 'This Month';
+      case 'yearly': return 'This Year';
+    }
+  };
+
   const {
-    data: monthlyData,
+    data: volumeData,
     isLoading
   } = useQuery({
-    queryKey: ['assignments-this-month'],
+    queryKey: ['assignments-volume', timePeriod],
     queryFn: async () => {
       const today = new Date();
-      const startOfCurrentMonth = startOfMonth(today);
-      const endOfCurrentMonth = endOfMonth(today);
-      const daysInMonth = getDaysInMonth(today);
-      const daysInCurrentMonth = Array.from({
-        length: daysInMonth
-      }, (_, i) => {
-        const date = new Date(today.getFullYear(), today.getMonth(), i + 1);
-        return {
+      let startDate: Date;
+      let endDate: Date;
+      let dataPoints: { date: Date; formattedDate: string; count: number }[] = [];
+
+      if (timePeriod === 'weekly') {
+        startDate = startOfWeek(today, { weekStartsOn: 1 });
+        endDate = endOfWeek(today, { weekStartsOn: 1 });
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        dataPoints = days.map(date => ({
           date,
-          formattedDate: format(date, 'MMM dd'),
+          formattedDate: format(date, 'EEE'),
           count: 0
-        };
-      });
-      const {
-        data,
-        error
-      } = await supabase.from('assignments').select('date').gte('date', startOfCurrentMonth.toISOString()).lte('date', endOfCurrentMonth.toISOString());
+        }));
+      } else if (timePeriod === 'monthly') {
+        startDate = startOfMonth(today);
+        endDate = endOfMonth(today);
+        const daysInMonth = getDaysInMonth(today);
+        dataPoints = Array.from({ length: daysInMonth }, (_, i) => {
+          const date = new Date(today.getFullYear(), today.getMonth(), i + 1);
+          return {
+            date,
+            formattedDate: format(date, 'MMM dd'),
+            count: 0
+          };
+        });
+      } else {
+        startDate = startOfYear(today);
+        endDate = endOfYear(today);
+        const months = eachMonthOfInterval({ start: startDate, end: endDate });
+        dataPoints = months.map(date => ({
+          date,
+          formattedDate: format(date, 'MMM'),
+          count: 0
+        }));
+      }
+
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('date')
+        .gte('date', startDate.toISOString())
+        .lte('date', endDate.toISOString());
+
       if (error) throw error;
+
       if (data) {
         data.forEach(assignment => {
           const assignmentDate = new Date(assignment.date);
           if (isValid(assignmentDate)) {
-            const dayOfMonth = getDate(assignmentDate) - 1;
-            if (dayOfMonth >= 0 && dayOfMonth < daysInCurrentMonth.length) {
-              daysInCurrentMonth[dayOfMonth].count += 1;
+            if (timePeriod === 'weekly') {
+              const dayIndex = dataPoints.findIndex(dp => 
+                format(dp.date, 'yyyy-MM-dd') === format(assignmentDate, 'yyyy-MM-dd')
+              );
+              if (dayIndex >= 0) dataPoints[dayIndex].count += 1;
+            } else if (timePeriod === 'monthly') {
+              const dayOfMonth = getDate(assignmentDate) - 1;
+              if (dayOfMonth >= 0 && dayOfMonth < dataPoints.length) {
+                dataPoints[dayOfMonth].count += 1;
+              }
+            } else {
+              const monthIndex = assignmentDate.getMonth();
+              if (monthIndex >= 0 && monthIndex < dataPoints.length) {
+                dataPoints[monthIndex].count += 1;
+              }
             }
           }
         });
       }
-      return daysInCurrentMonth;
+      return dataPoints;
     },
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
     refetchOnMount: true,
     refetchOnWindowFocus: false
   });
@@ -312,7 +363,27 @@ export const AnalyticsSection = () => {
   return <div className="grid gap-6">
       <Card className="shadow-sm border-gray-100 dark:border-gray-800">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">Assignments Volume - This Month</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
+              Assignments Volume - {getTimePeriodLabel()}
+            </CardTitle>
+            <ToggleGroup 
+              type="single" 
+              value={timePeriod} 
+              onValueChange={(value) => value && setTimePeriod(value as TimePeriod)}
+              className="justify-start"
+            >
+              <ToggleGroupItem value="weekly" aria-label="Weekly" className="text-xs px-3">
+                Weekly
+              </ToggleGroupItem>
+              <ToggleGroupItem value="monthly" aria-label="Monthly" className="text-xs px-3">
+                Monthly
+              </ToggleGroupItem>
+              <ToggleGroupItem value="yearly" aria-label="Yearly" className="text-xs px-3">
+                Yearly
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </CardHeader>
         <CardContent className="h-[350px] p-4">
           {isLoading ? (
@@ -327,45 +398,48 @@ export const AnalyticsSection = () => {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyData} margin={{
-            top: 20,
-            right: 20,
-            left: 10,
-            bottom: 40
-          }}>
+              <LineChart data={volumeData} margin={{
+                top: 20,
+                right: 20,
+                left: 10,
+                bottom: 40
+              }}>
                 <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" strokeOpacity={0.6} className="dark:stroke-gray-700" />
-                <XAxis dataKey="formattedDate" axisLine={false} tickLine={false} tick={{
-              fontSize: 11,
-              fill: 'hsl(var(--muted-foreground))'
-            }} interval="preserveStartEnd" />
+                <XAxis 
+                  dataKey="formattedDate" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} 
+                  interval={timePeriod === 'monthly' ? 'preserveStartEnd' : 0} 
+                />
                 <YAxis axisLine={false} tickLine={false} tick={{
-              fontSize: 11,
-              fill: 'hsl(var(--muted-foreground))'
-            }} width={30} />
+                  fontSize: 11,
+                  fill: 'hsl(var(--muted-foreground))'
+                }} width={30} />
                 <Tooltip formatter={value => [`${value}`, 'Assignments']} labelFormatter={label => `${label}`} contentStyle={{
-              backgroundColor: 'hsl(var(--popover))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '6px',
-              color: 'hsl(var(--popover-foreground))',
-              fontSize: '12px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-            }} />
+                  backgroundColor: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '6px',
+                  color: 'hsl(var(--popover-foreground))',
+                  fontSize: '12px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }} />
                 <Legend wrapperStyle={{
-              fontSize: '12px',
-              paddingTop: '10px',
-              color: 'hsl(var(--foreground))'
-            }} iconType="circle" />
+                  fontSize: '12px',
+                  paddingTop: '10px',
+                  color: 'hsl(var(--foreground))'
+                }} iconType="circle" />
                 <Line type="monotone" dataKey="count" name="Assignments" stroke="#6366f1" strokeWidth={2.5} activeDot={{
-              r: 5,
-              fill: '#6366f1',
-              stroke: 'hsl(var(--background))',
-              strokeWidth: 2
-            }} dot={{
-              r: 3,
-              fill: '#6366f1',
-              stroke: 'hsl(var(--background))',
-              strokeWidth: 1
-            }} />
+                  r: 5,
+                  fill: '#6366f1',
+                  stroke: 'hsl(var(--background))',
+                  strokeWidth: 2
+                }} dot={{
+                  r: 3,
+                  fill: '#6366f1',
+                  stroke: 'hsl(var(--background))',
+                  strokeWidth: 1
+                }} />
               </LineChart>
             </ResponsiveContainer>
           )}

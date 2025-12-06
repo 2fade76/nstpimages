@@ -1,37 +1,34 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
-import { AnalyticsSummaryCard } from "@/components/AnalyticsSummaryCard";
+import { DashboardStatsCards } from "@/components/DashboardStatsCards";
+import { DashboardVolumeChart } from "@/components/DashboardVolumeChart";
+import { DashboardRankingCard } from "@/components/DashboardRankingCard";
 import { AssignmentsProvider, useAssignments } from "@/providers/AssignmentsProvider";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, RefreshCw, Search, X } from "lucide-react";
+import { AlertCircle, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
+
 const IndexContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'complete' | 'today-complete'>('all');
   const queryClient = useQueryClient();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const currentTab = urlParams.get("tab") || "overview";
 
-  // Use the consolidated assignments context
-  const {
-    isConnected,
-    isReconnecting,
-    reconnect
-  } = useAssignments();
+  const { isConnected, isReconnecting, reconnect } = useAssignments();
+
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(location.search);
     if (value === "overview") {
@@ -39,61 +36,42 @@ const IndexContent = () => {
     } else {
       newParams.set("tab", value);
     }
-    navigate({
-      search: newParams.toString()
-    });
-  };
-  const handleFilterChange = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
-    console.log("Filter changed to:", filter);
-    setStatusFilter(filter);
-    // Removed toast - visual feedback is sufficient
+    navigate({ search: newParams.toString() });
   };
 
-  // Real-time subscriptions are now handled by AssignmentsProvider
+  const handleFilterChange = (filter: 'all' | 'open' | 'complete' | 'today-complete') => {
+    setStatusFilter(filter);
+  };
 
   const handleAssignmentStatusUpdate = () => {
-    console.log("Assignment status updated in Index component, forcing refresh of all relevant queries");
-    queryClient.invalidateQueries({
-      queryKey: ['assignments']
-    });
-    queryClient.refetchQueries({
-      queryKey: ['assignments'],
-      type: 'active'
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['assignments-last-7-days']
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['completed-assignments']
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['photographer-completed-assignments']
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['completed-assignments-by-date']
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['total-assignments']
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['open-assignments']
-    });
+    queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    queryClient.refetchQueries({ queryKey: ['assignments'], type: 'active' });
+    queryClient.invalidateQueries({ queryKey: ['assignments-last-7-days'] });
+    queryClient.invalidateQueries({ queryKey: ['completed-assignments'] });
+    queryClient.invalidateQueries({ queryKey: ['photographer-completed-assignments'] });
+    queryClient.invalidateQueries({ queryKey: ['completed-assignments-by-date'] });
+    queryClient.invalidateQueries({ queryKey: ['total-assignments'] });
+    queryClient.invalidateQueries({ queryKey: ['open-assignments'] });
     toast({
       title: "Success",
       description: "Assignment status updated. All data has been refreshed",
       duration: 3000
     });
   };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is now automatic via debouncing - no action needed
   };
+
   const handleClearSearch = () => {
     setSearchQuery("");
   };
-  return <DashboardLayout>
-      <div className="space-y-8">
-        {!isConnected && <Alert variant="destructive" className="animate-pulse">
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {!isConnected && (
+          <Alert variant="destructive" className="animate-pulse">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Connection Error</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
@@ -103,40 +81,84 @@ const IndexContent = () => {
                 <RefreshCw className={`h-4 w-4 ${isReconnecting ? 'animate-spin' : ''}`} />
               </Button>
             </AlertDescription>
-          </Alert>}
+          </Alert>
+        )}
       
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <h1 className="text-lg sm:text-2xl md:text-3xl font-semibold tracking-tight px-2 sm:px-[10px]">SnapTrack </h1>
-          <form onSubmit={handleSearch} className="w-full sm:w-auto px-2 sm:px-0">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Assignment Tracker</h1>
+          <form onSubmit={handleSearch} className="w-full sm:w-auto">
             <div className="relative">
-              <Input placeholder="Search title or location..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full sm:w-[280px] pr-8" />
-              {searchQuery && <Button type="button" variant="ghost" size="sm" onClick={handleClearSearch} className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0" aria-label="Clear search">
+              <Input 
+                placeholder="Search assignments..." 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)} 
+                className="w-full sm:w-[280px] pr-8 bg-card border-border/50" 
+              />
+              {searchQuery && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleClearSearch} 
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0" 
+                  aria-label="Clear search"
+                >
                   <X className="h-4 w-4" />
-                </Button>}
+                </Button>
+              )}
             </div>
           </form>
         </div>
         
         <Tabs defaultValue={currentTab} onValueChange={handleTabChange} value={currentTab} className="w-full">
-          <TabsList>
+          <TabsList className="bg-muted/50">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="new">New Assignment</TabsTrigger>
           </TabsList>
-          <TabsContent value="overview" className="space-y-8">
-            <AnalyticsSummaryCard onFilterChange={handleFilterChange} activeFilter={statusFilter} />
-            <AssignmentsList onStatusUpdate={handleAssignmentStatusUpdate} searchQuery={debouncedSearchQuery} isSearchActive={false} onSearchComplete={() => {}} statusFilter={statusFilter} />
+          
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            {/* Stats Cards Row */}
+            <DashboardStatsCards onFilterChange={handleFilterChange} activeFilter={statusFilter} />
+            
+            {/* Chart and Ranking Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <DashboardVolumeChart />
+              </div>
+              <div className="lg:col-span-1">
+                <DashboardRankingCard />
+              </div>
+            </div>
+            
+            {/* Current Assignments */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">Current Assignments</h2>
+              <AssignmentsList 
+                onStatusUpdate={handleAssignmentStatusUpdate} 
+                searchQuery={debouncedSearchQuery} 
+                isSearchActive={false} 
+                onSearchComplete={() => {}} 
+                statusFilter={statusFilter} 
+              />
+            </div>
           </TabsContent>
-          <TabsContent value="new" className="space-y-4">
-            <h2 className="text-2xl font-semibold">Create New Assignment</h2>
+          
+          <TabsContent value="new" className="space-y-4 mt-6">
+            <h2 className="text-xl font-semibold text-foreground">Create New Assignment</h2>
             <AssignmentForm />
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>;
+    </DashboardLayout>
+  );
 };
+
 const Index = () => {
-  return <AssignmentsProvider>
+  return (
+    <AssignmentsProvider>
       <IndexContent />
-    </AssignmentsProvider>;
+    </AssignmentsProvider>
+  );
 };
+
 export default Index;

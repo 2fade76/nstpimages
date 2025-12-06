@@ -18,27 +18,21 @@ export default {
         "2xl": "1400px",
       },
     },
-    screens: {
-      'xs': '480px',
-      'sm': '640px',
-      'md': '768px',
-      'lg': '1024px',
-      'xl': '1280px',
-      '2xl': '1536px',
-    },
     extend: {
+      screens: {
+        xs: "480px",
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1536px",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        status: {
-          open: "#22C55E",
-          progress: "#F59E0B",
-          hold: "#EF4444",
-          complete: "#6366F1",
-        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -67,30 +61,72 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        status: {
+          open: "hsl(var(--status-open))",
+          complete: "hsl(var(--status-complete))",
+          pending: "hsl(var(--status-pending))",
+          cancelled: "hsl(var(--status-cancelled))",
+        },
+        stat: {
+          total: "hsl(var(--stat-total))",
+          complete: "hsl(var(--stat-complete))",
+          team: "hsl(var(--stat-team))",
+          open: "hsl(var(--stat-open))",
+        },
+        chart: {
+          primary: "hsl(var(--chart-primary))",
+          secondary: "hsl(var(--chart-secondary))",
+          tertiary: "hsl(var(--chart-tertiary))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        slideDown: {
+        "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
-        slideUp: {
+        "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        slideDown: {
+          "0%": { opacity: "0", transform: "translateY(-10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          "0%": { opacity: "1", transform: "translateY(0)" },
+          "100%": { opacity: "0", transform: "translateY(-10px)" },
+        },
         fadeIn: {
-          from: { opacity: "0" },
-          to: { opacity: "1" },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
         slideIn: {
-          from: { transform: "translateX(-100%)" },
-          to: { transform: "translateX(0)" },
+          "0%": { opacity: "0", transform: "translateX(-10px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
       },
       animation: {
-        slideDown: "slideDown 300ms ease-out",
-        slideUp: "slideUp 300ms ease-out",
-        fadeIn: "fadeIn 200ms ease-out",
-        slideIn: "slideIn 200ms ease-out",
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        slideDown: "slideDown 0.3s ease-out",
+        slideUp: "slideUp 0.3s ease-out",
+        fadeIn: "fadeIn 0.3s ease-out",
+        slideIn: "slideIn 0.3s ease-out",
       },
     },
   },

@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Photographer } from "@/types/database";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 
 interface PhotographerInfoDialogProps {
   photographer: Photographer | null;
@@ -79,15 +79,6 @@ export const PhotographerInfoDialog = ({ photographer, isOpen, onClose }: Photog
             </div>
           )}
 
-          {photographer.phone && (
-            <div className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">Phone</p>
-                <p className="text-sm text-muted-foreground">{photographer.phone}</p>
-              </div>
-            </div>
-          )}
 
           {photographer.Location && (
             <div className="flex items-center gap-3">

@@ -154,26 +154,67 @@ export function WhatsAppAssignmentsImporter() {
     
     // Extract photographer and time from first line
     const firstLine = entryLines[0];
-    const entryPattern = /^(.+?)\s*-\s*(.+?)(?:\s*[:：](.*))?$/;
-    const match = firstLine.match(entryPattern);
     
-    if (!match) return;
+    let photographerName = '';
+    let timeStr = '';
+    let titleText = '';
     
-    const photographerName = match[1].trim();
-    const timeStr = match[2].trim();
-    let titleText = match[3] || '';
+    // Pattern 1: "Name : time - title" (e.g., "Aswadi : 9am - Datuk Seri...")
+    const colonTimePattern = /^(.+?)\s*[:：]\s*(\d{1,2}(?::\d{2})?(?:\.\d{2})?(?:am|pm|a\.m\.|p\.m\.)?)\s*[-–]\s*(.*)$/i;
+    const colonMatch = firstLine.match(colonTimePattern);
+    
+    // Pattern 2: "Name - time : title" (e.g., "Fadli - 9am : Penyanyi...")
+    const dashTimePattern = /^(.+?)\s*[-–]\s*(\d{1,2}(?::\d{2})?(?:\.\d{2})?(?:am|pm|a\.m\.|p\.m\.)?)\s*[:：]?\s*(.*)$/i;
+    const dashMatch = firstLine.match(dashTimePattern);
+    
+    if (colonMatch) {
+      photographerName = colonMatch[1].trim();
+      timeStr = colonMatch[2].trim();
+      titleText = colonMatch[3] || '';
+    } else if (dashMatch) {
+      photographerName = dashMatch[1].trim();
+      timeStr = dashMatch[2].trim();
+      titleText = dashMatch[3] || '';
+    } else {
+      // Fallback: try simpler pattern
+      const simplePattern = /^(.+?)\s*[-–:：]\s*(.+)$/;
+      const simpleMatch = firstLine.match(simplePattern);
+      if (!simpleMatch) return;
+      
+      photographerName = simpleMatch[1].trim();
+      const rest = simpleMatch[2].trim();
+      
+      // Try to extract time from the rest
+      const timeExtract = rest.match(/^(\d{1,2}(?::\d{2})?(?:\.\d{2})?(?:am|pm|a\.m\.|p\.m\.)?)\s*[-–:：]?\s*(.*)$/i);
+      if (timeExtract) {
+        timeStr = timeExtract[1];
+        titleText = timeExtract[2] || '';
+      } else {
+        timeStr = '12:00';
+        titleText = rest;
+      }
+    }
     
     // Add remaining lines to title
     if (entryLines.length > 1) {
       titleText += ' ' + entryLines.slice(1).join(' ');
     }
     
-    // Clean up title (remove trailing editor tags like "-Fatin", "Dawn")
-    titleText = titleText.replace(/\s*-\s*\w+\s*$/, '').trim();
+    // Clean up title (remove trailing editor tags like "-Fatin", "- Zahrin")
+    titleText = titleText.replace(/\s*[-–]\s*\w+\s*$/, '').trim();
     
-    // Find photographer ID
+    // Extract location from title using "Tempat :" pattern
+    let location = extractLocation(fullText);
+    const tempatMatch = fullText.match(/Tempat\s*[:：]\s*([^-–]+?)(?:\s*[-–]|$)/i);
+    if (tempatMatch) {
+      location = tempatMatch[1].trim();
+    }
+    
+    // Find photographer ID (case-insensitive and partial match)
     const photographer = photographers?.find(p => 
-      p.name.toLowerCase() === photographerName.toLowerCase()
+      p.name.toLowerCase() === photographerName.toLowerCase() ||
+      p.name.toLowerCase().includes(photographerName.toLowerCase()) ||
+      photographerName.toLowerCase().includes(p.name.toLowerCase())
     );
     
     const assignment: ParsedAssignment = {
@@ -182,7 +223,7 @@ export function WhatsAppAssignmentsImporter() {
       photographer_id: photographer?.id || null,
       time: parseTime(timeStr),
       title: titleText || 'Assignment',
-      location: extractLocation(fullText),
+      location: location,
       isValid: !!(photographer?.id && titleText.trim())
     };
     

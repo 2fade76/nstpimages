@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, ClipboardPaste, Trash2 } from "lucide-react";
+import { CalendarIcon, ClipboardPaste, Trash2, ChevronDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { usePhotographers } from "@/hooks/usePhotographers";
 import { supabase } from "@/integrations/supabase/client";
@@ -299,8 +300,76 @@ export function WhatsAppAssignmentsImporter() {
 
   const validCount = parsedAssignments.filter(a => a.isValid).length;
 
+  const [isFormatGuideOpen, setIsFormatGuideOpen] = useState(false);
+
   return (
     <div className="space-y-6">
+      {/* Format Guide Section */}
+      <Collapsible open={isFormatGuideOpen} onOpenChange={setIsFormatGuideOpen}>
+        <Card className="border-primary/20 bg-primary/5">
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-primary/10 transition-colors py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-sm font-medium">Supported Input Formats</CardTitle>
+                </div>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  isFormatGuideOpen && "rotate-180"
+                )} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-4">
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="font-medium text-foreground mb-2">The parser supports these formats:</p>
+                  <div className="space-y-3 bg-muted/50 rounded-md p-3">
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">Format 1: Name : Time - Title</p>
+                      <code className="text-xs bg-background px-2 py-1 rounded block">
+                        Aswadi : 9am - Datuk Seri akan merasmikan Sambutan, Tempat : KLCC - Zahrin
+                      </code>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">Format 2: Name - Time : Title</p>
+                      <code className="text-xs bg-background px-2 py-1 rounded block">
+                        Fadli - 9am : Penyanyi dijadual hadir di Mahkamah Sesyen Putrajaya
+                      </code>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">Format 3: Name - Time - Title</p>
+                      <code className="text-xs bg-background px-2 py-1 rounded block">
+                        Asyraf - 9:30am - Pendengaran permohonan injunksi di Mahkamah
+                      </code>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground mb-2">Supported time formats:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["9am", "9:30am", "9.30am", "14:30", "2pm", "0900"].map(t => (
+                      <code key={t} className="text-xs bg-muted px-2 py-1 rounded">{t}</code>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground mb-2">Tips:</p>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li>Photographer names must match names in the database</li>
+                    <li>Editor tags at the end (e.g., "- Zahrin") are automatically removed</li>
+                    <li>Location is auto-extracted from "Tempat :", "di", or court names</li>
+                    <li>You can manually edit any parsed values before saving</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
       {/* Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -334,7 +403,7 @@ export function WhatsAppAssignmentsImporter() {
       <div className="space-y-2">
         <Label>WhatsApp Assignment Text</Label>
         <Textarea
-          placeholder="Paste your WhatsApp assignment text here...&#10;&#10;Example:&#10;Fadli - 9am : Penyanyi Naim Daniel dijadual hadir bagi sebutan kes di Mahkamah Sesyen Putrajaya&#10;&#10;Asyraf - 9am - Pendengaran permohonan injunksi di Mahkamah NCvC 1"
+          placeholder="Paste your WhatsApp assignment text here..."
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
           className="min-h-[150px]"

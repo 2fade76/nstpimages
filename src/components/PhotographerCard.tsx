@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin } from "lucide-react";
+import { User, Mail, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Photographer } from "@/types/database";
@@ -59,12 +59,6 @@ export function PhotographerCard({ photographer, onEdit, onDelete }: Photographe
           </div>
         )}
         
-        {photographer.phone && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Phone className="h-4 w-4" />
-            <span>{photographer.phone}</span>
-          </div>
-        )}
 
         {photographer.Location && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">

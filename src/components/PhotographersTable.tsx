@@ -52,7 +52,7 @@ export function PhotographersTable({
             <TableHead>Name</TableHead>
             <TableHead>Location</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
+            
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -64,7 +64,7 @@ export function PhotographersTable({
             ))
           ) : photographers?.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                 {searchQuery ? "No photographers found matching your search." : "No photographers found."}
               </TableCell>
             </TableRow>
@@ -74,7 +74,7 @@ export function PhotographersTable({
                 <TableCell className="font-medium">{photographer.name}</TableCell>
                 <TableCell>{photographer.Location || '-'}</TableCell>
                 <TableCell>{photographer.email || '-'}</TableCell>
-                <TableCell>{photographer.phone || '-'}</TableCell>
+                
                 <TableCell>
                   <Badge variant={getStatusVariant(photographer.status)}>
                     {getStatusDisplay(photographer.status)}

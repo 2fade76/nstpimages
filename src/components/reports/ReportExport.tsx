@@ -127,7 +127,13 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
 
   const generatePrintableHTML = (data: ReportData, filters: ReportFilters) => {
     const currentDate = format(new Date(), 'PPP');
+    const currentYear = new Date().getFullYear();
     const filterSummary = generateFilterSummary(filters);
+
+    // Use photographer profile format if selected
+    if (filters.reportScope === 'photographer-profile') {
+      return generatePhotographerProfileHTML(data, currentDate, currentYear);
+    }
 
     return `
       <!DOCTYPE html>
@@ -381,6 +387,231 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
     `;
   };
 
+  const generatePhotographerProfileHTML = (data: ReportData, currentDate: string, currentYear: number) => {
+    // Generate individual profile pages for each photographer
+    const photographerPages = data.photographers.map(photographer => {
+      const cameraAssets = photographer.cameraSets.map(cs => ({
+        type: 'Camera Body',
+        model: cs.camera_body_model || 'Unknown',
+        status: cs.status
+      }));
+
+      // Get camera set details from the full cameraSets data
+      const fullCameraSets = data.cameraSets.filter(cs => cs.photographer_name === photographer.name);
+      
+      const lensAssets: Array<{type: string; model: string; status: string}> = [];
+      fullCameraSets.forEach(cs => {
+        if (cs.lens_24_105_serial && cs.lens_24_105_serial !== 'N/A') {
+          lensAssets.push({ type: 'Lens', model: 'Canon RF 24-105mm', status: cs.status });
+        }
+        if (cs.lens_70_200_serial && cs.lens_70_200_serial !== 'N/A') {
+          lensAssets.push({ type: 'Lens', model: 'Canon RF 70-200mm', status: cs.status });
+        }
+        if (cs.lens_16_35_serial && cs.lens_16_35_serial !== 'N/A') {
+          lensAssets.push({ type: 'Lens', model: 'Canon RF 16-35mm', status: cs.status });
+        }
+        if (cs.adapter_serial && cs.adapter_serial !== 'N/A') {
+          lensAssets.push({ type: 'Adapter', model: 'EF-RF Mount Adapter', status: cs.status });
+        }
+      });
+
+      const allAssets = [...cameraAssets, ...lensAssets];
+      
+      // Parse awards into list
+      const awardsList = photographer.awards 
+        ? photographer.awards.split(/[,\n]/).map(a => a.trim()).filter(Boolean)
+        : [];
+
+      return `
+        <div class="photographer-page">
+          <div class="profile-header">
+            <h1>Photographers Yearly Reports ${currentYear}</h1>
+            <div class="meta-info">
+              <p><strong>Agency:</strong> NSTP</p>
+              <p><strong>Date Generated:</strong> ${currentDate}</p>
+            </div>
+            <div class="photographer-info">
+              <p><strong>Photographer Name:</strong> ${photographer.name}</p>
+              <p><strong>Designation:</strong> Staff Photographer</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>1. Total Assets</h2>
+            <table class="assets-table">
+              <thead>
+                <tr>
+                  <th>Asset Type</th>
+                  <th>Model/Description</th>
+                  <th>Number of Assets</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${allAssets.length > 0 ? allAssets.map(asset => `
+                  <tr>
+                    <td>${asset.type}</td>
+                    <td>${asset.model}</td>
+                    <td>${asset.status === 'active' ? '' : asset.status}</td>
+                  </tr>
+                `).join('') : `
+                  <tr>
+                    <td colspan="3" style="text-align: center;">No assets assigned</td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>2. Performance Summary</h2>
+            <table class="performance-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Total (${currentYear})</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Completed Assignments</td>
+                  <td>${photographer.completedAssignments}</td>
+                </tr>
+                <tr>
+                  <td>Open Assignments</td>
+                  <td>${photographer.openAssignments}</td>
+                </tr>
+                <tr>
+                  <td>Total Assignments</td>
+                  <td>${photographer.assignmentCount}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>3. Awards and Recognition</h2>
+            ${awardsList.length > 0 ? `
+              <ul class="awards-list">
+                ${awardsList.map(award => `<li>${award}</li>`).join('')}
+              </ul>
+            ` : '<p>No awards recorded</p>'}
+          </div>
+
+          <div class="section">
+            <h2>4. Summary</h2>
+            <p>The photographer has ${photographer.completedAssignments > 0 
+              ? `completed ${photographer.completedAssignments} assignment${photographer.completedAssignments > 1 ? 's' : ''} in ${currentYear}`
+              : `no completed assignments recorded for ${currentYear}`}${photographer.cameraSets.length > 0 
+              ? `, and is assigned ${photographer.cameraSets.length} camera set${photographer.cameraSets.length > 1 ? 's' : ''}`
+              : ''}.</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Photographers Yearly Reports ${currentYear}</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-size: 14px;
+              line-height: 1.6;
+              color: #333;
+            }
+            .photographer-page {
+              page-break-after: always;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            .photographer-page:last-child {
+              page-break-after: auto;
+            }
+            .profile-header {
+              border-bottom: 2px solid #333;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .profile-header h1 {
+              font-size: 28px;
+              font-weight: bold;
+              color: #1a1a1a;
+              margin-bottom: 20px;
+            }
+            .meta-info {
+              margin-bottom: 15px;
+            }
+            .meta-info p, .photographer-info p {
+              margin: 5px 0;
+              font-size: 14px;
+            }
+            .section {
+              margin-bottom: 25px;
+            }
+            .section h2 {
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 15px;
+              color: #1a1a1a;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 15px;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 10px 12px;
+              text-align: left;
+            }
+            th {
+              background-color: #f5f5f5;
+              font-weight: bold;
+              font-size: 13px;
+            }
+            td {
+              font-size: 13px;
+            }
+            .awards-list {
+              list-style: disc;
+              padding-left: 25px;
+            }
+            .awards-list li {
+              margin: 8px 0;
+              font-size: 13px;
+            }
+            .section p {
+              font-size: 13px;
+              text-align: justify;
+            }
+            @media print {
+              body {
+                font-size: 12px;
+              }
+              .photographer-page {
+                padding: 20px;
+              }
+              .profile-header h1 {
+                font-size: 24px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${photographerPages}
+        </body>
+      </html>
+    `;
+  };
+
   const generateCameraModelStats = (cameraSets: ReportData['cameraSets']) => {
     // Calculate stats by camera model
     const modelStats = cameraSets.reduce((acc, cameraSet) => {
@@ -441,10 +672,11 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
     const parts = [];
     
     // Add report scope
-    const scopeMap = {
+    const scopeMap: Record<string, string> = {
       'both': 'Both Assignments & Cameras',
       'assignments': 'Assignments Only',
-      'cameras': 'Cameras Only'
+      'cameras': 'Cameras Only',
+      'photographer-profile': 'Photographer Profile Report'
     };
     parts.push(`Report Content: ${scopeMap[filters.reportScope]}`);
     

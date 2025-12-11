@@ -107,7 +107,7 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
         <Label className="text-sm font-medium mb-3 block">Report Content</Label>
         <Select
           value={filters.reportScope}
-          onValueChange={(value: 'both' | 'assignments' | 'cameras') =>
+          onValueChange={(value: 'both' | 'assignments' | 'cameras' | 'photographer-profile') =>
             onFiltersChange({ ...filters, reportScope: value })
           }
         >
@@ -118,6 +118,7 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
             <SelectItem value="both">Both Assignments & Cameras</SelectItem>
             <SelectItem value="assignments">Assignments Only</SelectItem>
             <SelectItem value="cameras">Cameras Only</SelectItem>
+            <SelectItem value="photographer-profile">Photographer Profile Report</SelectItem>
           </SelectContent>
         </Select>
       </div>

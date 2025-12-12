@@ -132,7 +132,16 @@ export function useReportData(filters: ReportFilters) {
 
       // Process the data
       const processedPhotographers = photographers?.map(photographer => {
-        const photographerAssignments = photographer.assignments || [];
+        let photographerAssignments = photographer.assignments || [];
+        
+        // Filter by year if photographer-profile report scope and profileYear is set
+        if (filters.reportScope === 'photographer-profile' && filters.profileYear) {
+          photographerAssignments = photographerAssignments.filter(a => {
+            const assignmentYear = new Date(a.date).getFullYear();
+            return assignmentYear === filters.profileYear;
+          });
+        }
+        
         return {
           id: photographer.id,
           name: photographer.name,

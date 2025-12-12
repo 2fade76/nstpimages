@@ -127,12 +127,12 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
 
   const generatePrintableHTML = (data: ReportData, filters: ReportFilters) => {
     const currentDate = format(new Date(), 'PPP');
-    const currentYear = new Date().getFullYear();
+    const reportYear = filters.profileYear || new Date().getFullYear();
     const filterSummary = generateFilterSummary(filters);
 
     // Use photographer profile format if selected
     if (filters.reportScope === 'photographer-profile') {
-      return generatePhotographerProfileHTML(data, currentDate, currentYear);
+      return generatePhotographerProfileHTML(data, currentDate, reportYear);
     }
 
     return `
@@ -387,7 +387,7 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
     `;
   };
 
-  const generatePhotographerProfileHTML = (data: ReportData, currentDate: string, currentYear: number) => {
+  const generatePhotographerProfileHTML = (data: ReportData, currentDate: string, reportYear: number) => {
     // Generate individual profile pages for each photographer
     const photographerPages = data.photographers.map(photographer => {
       const cameraAssets = photographer.cameraSets.map(cs => ({
@@ -425,7 +425,7 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
       return `
         <div class="photographer-page">
           <div class="profile-header">
-            <h1>Photographers Yearly Reports ${currentYear}</h1>
+            <h1>Photographers Yearly Reports ${reportYear}</h1>
             <div class="meta-info">
               <p><strong>Agency:</strong> NSTP</p>
               <p><strong>Date Generated:</strong> ${currentDate}</p>
@@ -468,7 +468,7 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
               <thead>
                 <tr>
                   <th>Metric</th>
-                  <th>Total (${currentYear})</th>
+                  <th>Total (${reportYear})</th>
                 </tr>
               </thead>
               <tbody>
@@ -500,8 +500,8 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
           <div class="section">
             <h2>4. Summary</h2>
             <p>The photographer has ${photographer.completedAssignments > 0 
-              ? `completed ${photographer.completedAssignments} assignment${photographer.completedAssignments > 1 ? 's' : ''} in ${currentYear}`
-              : `no completed assignments recorded for ${currentYear}`}${photographer.cameraSets.length > 0 
+              ? `completed ${photographer.completedAssignments} assignment${photographer.completedAssignments > 1 ? 's' : ''} in ${reportYear}`
+              : `no completed assignments recorded for ${reportYear}`}${photographer.cameraSets.length > 0 
               ? `, and is assigned ${photographer.cameraSets.length} camera set${photographer.cameraSets.length > 1 ? 's' : ''}`
               : ''}.</p>
           </div>
@@ -513,7 +513,7 @@ export function ReportExport({ reportData, filters, isLoading }: ReportExportPro
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Photographers Yearly Reports ${currentYear}</title>
+          <title>Photographers Yearly Reports ${reportYear}</title>
           <style>
             * {
               margin: 0;

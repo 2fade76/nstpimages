@@ -22,6 +22,7 @@ export interface ReportFilters {
     from?: Date;
     to?: Date;
   };
+  profileYear?: number;
 }
 
 const Reports = () => {
@@ -31,7 +32,8 @@ const Reports = () => {
     assignmentStatuses: [],
     cameraModels: [],
     includeAssignmentDetails: false,
-    dateRange: {}
+    dateRange: {},
+    profileYear: new Date().getFullYear()
   });
   const [sheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -45,7 +47,8 @@ const Reports = () => {
       assignmentStatuses: [],
       cameraModels: [],
       includeAssignmentDetails: false,
-      dateRange: {}
+      dateRange: {},
+      profileYear: new Date().getFullYear()
     });
   };
 

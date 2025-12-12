@@ -94,11 +94,16 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
       assignmentStatuses: [],
       cameraModels: [],
       includeAssignmentDetails: false,
-      dateRange: {}
+      dateRange: {},
+      profileYear: new Date().getFullYear()
     });
   };
 
   const assignmentStatuses = ['open', 'complete', 'cancelled'];
+  
+  // Generate year options (from 2020 to current year + 1)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 2019 + 1 }, (_, i) => currentYear + 1 - i);
 
   return (
     <div className="space-y-6">
@@ -122,6 +127,30 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
           </SelectContent>
         </Select>
       </div>
+
+      {/* Year Filter - Only show for photographer profile report */}
+      {filters.reportScope === 'photographer-profile' && (
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Report Year</Label>
+          <Select
+            value={String(filters.profileYear || currentYear)}
+            onValueChange={(value) =>
+              onFiltersChange({ ...filters, profileYear: parseInt(value) })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((year) => (
+                <SelectItem key={year} value={String(year)}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Photographers Filter */}
       <div>

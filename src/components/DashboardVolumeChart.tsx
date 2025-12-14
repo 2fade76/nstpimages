@@ -63,11 +63,16 @@ export const DashboardVolumeChart = () => {
         }));
       }
 
+      // Format dates as YYYY-MM-DD for proper date comparison
+      const formatDateForQuery = (date: Date) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      };
+
       const { data, error } = await supabase
         .from('assignments')
         .select('date')
-        .gte('date', startDate.toISOString())
-        .lte('date', endDate.toISOString());
+        .gte('date', formatDateForQuery(startDate))
+        .lte('date', formatDateForQuery(endDate));
 
       if (error) throw error;
 

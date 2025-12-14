@@ -77,28 +77,34 @@ export const DashboardVolumeChart = () => {
       if (error) throw error;
 
       if (data) {
+        // Create a map to count assignments by date key
+        const dateCountMap = new Map<string, number>();
+        
         data.forEach(assignment => {
+          if (!assignment.date) return;
+          
           const assignmentDate = new Date(assignment.date);
-          if (isValid(assignmentDate)) {
-            if (timePeriod === 'weekly') {
-              const dayIndex = dataPoints.findIndex(dp => 
-                format(dp.date, 'yyyy-MM-dd') === format(assignmentDate, 'yyyy-MM-dd')
-              );
-              if (dayIndex >= 0) dataPoints[dayIndex].count += 1;
-            } else if (timePeriod === 'monthly') {
-              const dayOfMonth = getDate(assignmentDate) - 1;
-              if (dayOfMonth >= 0 && dayOfMonth < dataPoints.length) {
-                dataPoints[dayOfMonth].count += 1;
-              }
-            } else {
-              const monthIndex = assignmentDate.getMonth();
-              if (monthIndex >= 0 && monthIndex < dataPoints.length) {
-                dataPoints[monthIndex].count += 1;
-              }
-            }
+          if (!isValid(assignmentDate)) return;
+          
+          let dateKey: string;
+          if (timePeriod === 'yearly') {
+            dateKey = String(assignmentDate.getMonth());
+          } else {
+            dateKey = format(assignmentDate, 'yyyy-MM-dd');
           }
+          
+          dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + 1);
+        });
+
+        // Update data points from the map
+        dataPoints.forEach(dp => {
+          const dateKey = timePeriod === 'yearly' 
+            ? String(dp.date.getMonth())
+            : format(dp.date, 'yyyy-MM-dd');
+          dp.count = dateCountMap.get(dateKey) || 0;
         });
       }
+      
       return dataPoints;
     },
     staleTime: 60000,

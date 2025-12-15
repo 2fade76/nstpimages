@@ -288,14 +288,14 @@ export const AnalyticsSection = () => {
     refetchOnWindowFocus: false
   });
   const COLORS = {
-    total: '#6366f1',
-    open: '#f97316',
+    total: '#f97316',
+    open: '#22c55e',
     progress: '#3b82f6',
-    complete: '#4ade80',
+    complete: '#9b87f5',
     cancel: '#ef4444'
   };
   const getColor = (index: number) => {
-    const colorPalette = ['#4ade80', '#3b82f6', '#f97316', '#ef4444', '#9b87f5', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#06b6d4'];
+    const colorPalette = ['#9b87f5', '#22c55e', '#f97316', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#06b6d4'];
     return colorPalette[index % colorPalette.length];
   };
 

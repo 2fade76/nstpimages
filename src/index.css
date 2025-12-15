@@ -52,14 +52,14 @@
     --chart-tertiary: 38 92% 50%;
 
     /* Stat card colors */
-    --stat-total: 350 89% 60%;
-    --stat-complete: 142 76% 36%;
+    --stat-total: 30 100% 50%;
+    --stat-complete: 262 83% 58%;
     --stat-team: 262 83% 58%;
-    --stat-open: 38 92% 50%;
+    --stat-open: 142 76% 36%;
 
     /* Status colors */
-    --status-open: 38 92% 50%;
-    --status-complete: 142 76% 36%;
+    --status-open: 142 76% 36%;
+    --status-complete: 262 83% 58%;
     --status-pending: 38 92% 50%;
     --status-cancelled: 0 72% 51%;
   }
@@ -109,14 +109,14 @@
     --chart-tertiary: 38 92% 55%;
 
     /* Stat card colors */
-    --stat-total: 350 80% 55%;
-    --stat-complete: 142 70% 45%;
+    --stat-total: 30 100% 55%;
+    --stat-complete: 262 83% 65%;
     --stat-team: 262 83% 65%;
-    --stat-open: 38 92% 55%;
+    --stat-open: 142 70% 45%;
 
     /* Status colors */
-    --status-open: 38 92% 55%;
-    --status-complete: 142 70% 45%;
+    --status-open: 142 70% 45%;
+    --status-complete: 262 83% 65%;
     --status-pending: 38 92% 55%;
     --status-cancelled: 0 62% 50%;
   }

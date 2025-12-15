@@ -38,7 +38,7 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
           <CardTitle className="text-sm">Completed</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">{summary.completedAssignments}</div>
+          <div className="text-2xl font-bold text-status-complete">{summary.completedAssignments}</div>
         </CardContent>
       </Card>
       <Card>

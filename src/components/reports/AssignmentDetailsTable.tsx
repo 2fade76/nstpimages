@@ -19,13 +19,13 @@ export function AssignmentDetailsTable({ assignments }: AssignmentDetailsTablePr
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'complete':
-        return 'bg-green-500';
+        return 'bg-status-complete';
       case 'open':
-        return 'bg-blue-500';
+        return 'bg-status-open';
       case 'cancelled':
-        return 'bg-red-500';
+        return 'bg-status-cancelled';
       case 'active':
-        return 'bg-green-500';
+        return 'bg-status-complete';
       default:
         return 'bg-gray-500';
     }

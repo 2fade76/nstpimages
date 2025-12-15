@@ -83,15 +83,15 @@ export const AnalyticsSummaryCard = ({
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
           {/* Total Assignments Card */}
           <button
-            className={`flex flex-col items-center justify-center p-2 md:p-3 rounded-lg bg-gradient-to-b from-red-50 to-red-100 border border-red-200 shadow-sm transition-all duration-200 min-h-[100px] md:min-h-[120px] ${
+            className={`flex flex-col items-center justify-center p-2 md:p-3 rounded-lg bg-gradient-to-b from-orange-50 to-orange-100 border border-orange-200 shadow-sm transition-all duration-200 min-h-[100px] md:min-h-[120px] ${
               activeFilter === 'all' 
-                ? 'ring-2 ring-red-400 bg-red-100' 
+                ? 'ring-2 ring-orange-400 bg-orange-100' 
                 : 'hover:shadow-md hover:scale-105 active:scale-95'
             }`}
             onClick={() => handleCardClick('all')}
             aria-label="View all assignments"
           >
-            <div className="flex items-center justify-center mb-1 md:mb-2 text-red-500">
+            <div className="flex items-center justify-center mb-1 md:mb-2 text-stat-total">
               <ClipboardList className="h-5 w-5 md:h-6 md:w-6" />
             </div>
             <p className="text-xs md:text-sm text-muted-foreground mb-1 text-center leading-tight">Total Assignments</p>
@@ -99,7 +99,7 @@ export const AnalyticsSummaryCard = ({
               <Skeleton className="h-8 w-12" />
             ) : (
               <>
-                <p className="text-xl md:text-3xl font-bold text-[#ea384c]">{trends?.current.total}</p>
+                <p className="text-xl md:text-3xl font-bold text-stat-total">{trends?.current.total}</p>
                 <div className="flex items-center gap-1 mt-1">
                   {totalTrend.isPositive ? (
                     <TrendingUp className="h-3 w-3 text-green-500" />
@@ -149,9 +149,9 @@ export const AnalyticsSummaryCard = ({
 
           {/* Completed Assignments Card */}
           <button
-            className={`flex flex-col items-center justify-center p-2 md:p-3 rounded-lg bg-gradient-to-b from-indigo-50 to-indigo-100 border border-indigo-200 shadow-sm transition-all duration-200 min-h-[100px] md:min-h-[120px] ${
+            className={`flex flex-col items-center justify-center p-2 md:p-3 rounded-lg bg-gradient-to-b from-purple-50 to-purple-100 border border-purple-200 shadow-sm transition-all duration-200 min-h-[100px] md:min-h-[120px] ${
               activeFilter === 'complete' 
-                ? 'ring-2 ring-indigo-400 bg-indigo-100' 
+                ? 'ring-2 ring-purple-400 bg-purple-100' 
                 : 'hover:shadow-md hover:scale-105 active:scale-95'
             }`}
             onClick={() => handleCardClick('complete')}

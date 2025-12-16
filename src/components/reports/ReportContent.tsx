@@ -4,6 +4,7 @@ import { PhotographerSummaryTable } from "./PhotographerSummaryTable";
 import { CameraEquipmentTable } from "./CameraEquipmentTable";
 import { CameraModelStats } from "./CameraModelStats";
 import { AssignmentDetailsTable } from "./AssignmentDetailsTable";
+import { PhotoAssetSummaryReport } from "./PhotoAssetSummaryReport";
 import { 
   SummaryCardsSkeleton, 
   PhotographerTableSkeleton, 
@@ -117,6 +118,15 @@ export function ReportContent({ reportData, isLoading, filters }: ReportContentP
         <p className="text-muted-foreground mb-4">
           Try adjusting your filters to see more results.
         </p>
+      </div>
+    );
+  }
+
+  // Render Photo Asset Summary Report
+  if (filters.reportScope === 'photo-asset') {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PhotoAssetSummaryReport cameraSets={reportData.cameraSets} />
       </div>
     );
   }

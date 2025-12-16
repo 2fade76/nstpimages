@@ -13,7 +13,7 @@ import { Filter } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface ReportFilters {
-  reportScope: 'both' | 'assignments' | 'cameras' | 'photographer-profile';
+  reportScope: 'both' | 'assignments' | 'cameras' | 'photographer-profile' | 'photo-asset';
   photographerId?: string;
   assignmentStatuses: string[];
   cameraModels: string[];

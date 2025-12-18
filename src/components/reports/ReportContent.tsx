@@ -18,11 +18,15 @@ interface ReportData {
   photographers: Array<{
     id: string;
     name: string;
+    designation: string;
     awards: string | null;
+    ranking: number;
     assignmentCount: number;
     completedAssignments: number;
+    humanInterestProjects: number;
     openAssignments: number;
     cancelledAssignments: number;
+    narrativeSummary: string;
     cameraSets: Array<{
       id: string;
       camera_body_model: string | null;

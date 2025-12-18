@@ -131,7 +131,7 @@ export function useReportData(filters: ReportFilters) {
       }
 
       // Process the data
-      const processedPhotographers = photographers?.map(photographer => {
+      const processedPhotographers = photographers?.map((photographer, index) => {
         let photographerAssignments = photographer.assignments || [];
         
         // Filter by year if photographer-profile report scope and profileYear is set
@@ -142,14 +142,22 @@ export function useReportData(filters: ReportFilters) {
           });
         }
         
+        const completedCount = photographerAssignments.filter(a => a.status === 'complete').length;
+        const openCount = photographerAssignments.filter(a => a.status === 'open').length;
+        const cancelledCount = photographerAssignments.filter(a => a.status === 'cancelled').length;
+        
         return {
           id: photographer.id,
           name: photographer.name,
+          designation: 'Photographer', // Default designation
           awards: photographer.awards,
+          ranking: index + 1, // Will be recalculated after sorting
           assignmentCount: photographerAssignments.length,
-          completedAssignments: photographerAssignments.filter(a => a.status === 'complete').length,
-          openAssignments: photographerAssignments.filter(a => a.status === 'open').length,
-          cancelledAssignments: photographerAssignments.filter(a => a.status === 'cancelled').length,
+          completedAssignments: completedCount,
+          humanInterestProjects: 0, // Default value - not tracked in current DB
+          openAssignments: openCount,
+          cancelledAssignments: cancelledCount,
+          narrativeSummary: `${photographer.name} completed ${completedCount} assignments${photographer.awards ? ` and received ${photographer.awards}` : ''}.`,
           cameraSets: (photographer.camera_sets || []).map(cs => ({
             id: cs.id,
             camera_body_model: cs.camera_body_model,
@@ -164,6 +172,11 @@ export function useReportData(filters: ReportFilters) {
           }))
         };
       }) || [];
+
+      // Sort by completed assignments and assign ranking
+      const sortedPhotographers = [...processedPhotographers]
+        .sort((a, b) => b.completedAssignments - a.completedAssignments)
+        .map((p, index) => ({ ...p, ranking: index + 1 }));
 
       const processedAssignments = (assignments?.map(assignment => ({
         id: assignment.id,
@@ -210,7 +223,7 @@ export function useReportData(filters: ReportFilters) {
       };
 
       return {
-        photographers: processedPhotographers,
+        photographers: sortedPhotographers,
         assignments: processedAssignments,
         cameraSets: processedCameraSets,
         summary

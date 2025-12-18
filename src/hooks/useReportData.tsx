@@ -150,7 +150,18 @@ export function useReportData(filters: ReportFilters) {
           completedAssignments: photographerAssignments.filter(a => a.status === 'complete').length,
           openAssignments: photographerAssignments.filter(a => a.status === 'open').length,
           cancelledAssignments: photographerAssignments.filter(a => a.status === 'cancelled').length,
-          cameraSets: photographer.camera_sets || []
+          cameraSets: (photographer.camera_sets || []).map(cs => ({
+            id: cs.id,
+            camera_body_model: cs.camera_body_model,
+            camera_body_serial: cs.camera_body_serial,
+            lens_16_35_serial: cs.lens_16_35_serial,
+            lens_24_105_serial: cs.lens_24_105_serial,
+            lens_70_200_serial: cs.lens_70_200_serial,
+            battery_grip_serial: cs.battery_grip_serial,
+            flash_serial: cs.flash_serial,
+            adapter_serial: cs.adapter_serial,
+            status: cs.status
+          }))
         };
       }) || [];
 

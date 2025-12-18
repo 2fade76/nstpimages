@@ -7,11 +7,15 @@ import { format } from "date-fns";
 interface PhotographerData {
   id: string;
   name: string;
+  designation: string;
   awards: string | null;
+  ranking: number;
   assignmentCount: number;
   completedAssignments: number;
+  humanInterestProjects: number;
   openAssignments: number;
   cancelledAssignments: number;
+  narrativeSummary: string;
   cameraSets: Array<{
     id: string;
     camera_body_model: string | null;
@@ -24,7 +28,6 @@ interface PhotographerData {
     adapter_serial: string | null;
     status: string;
   }>;
-  rank?: number;
 }
 
 interface PhotographerProfileReportProps {
@@ -34,17 +37,6 @@ interface PhotographerProfileReportProps {
 
 export function PhotographerProfileReport({ photographers, reportYear }: PhotographerProfileReportProps) {
   const currentDate = format(new Date(), "MMMM dd, yyyy");
-
-  // Sort photographers by completed assignments to calculate rank
-  const sortedPhotographers = [...photographers].sort(
-    (a, b) => b.completedAssignments - a.completedAssignments
-  );
-  
-  // Create rank map
-  const rankMap = new Map<string, number>();
-  sortedPhotographers.forEach((p, index) => {
-    rankMap.set(p.id, index + 1);
-  });
 
   const getAssetRows = (cameraSets: PhotographerData['cameraSets']) => {
     const rows: { assetType: string; model: string; serial: string }[] = [];
@@ -109,21 +101,6 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
     return awards.split(/[,;\n]/).map(a => a.trim()).filter(a => a.length > 0);
   };
 
-  const generateSummary = (photographer: PhotographerData, rank: number): string => {
-    const awardCount = parseAwards(photographer.awards).length;
-    const hasAwards = awardCount > 0;
-    
-    let summary = `The photographer has demonstrated consistent performance throughout ${reportYear}, completing ${photographer.completedAssignments} assignments`;
-    
-    if (hasAwards) {
-      summary += `. The recognition through ${awardCount > 1 ? 'multiple awards' : 'an award'} highlights both technical skill and storytelling excellence.`;
-    } else {
-      summary += `. Ranked #${rank} among active photographers based on completed assignments.`;
-    }
-    
-    return summary;
-  };
-
   if (photographers.length === 0) {
     return (
       <Card>
@@ -137,7 +114,6 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
   return (
     <div className="space-y-8">
       {photographers.map((photographer) => {
-        const rank = rankMap.get(photographer.id) || 0;
         const assetRows = getAssetRows(photographer.cameraSets);
         const awards = parseAwards(photographer.awards);
 
@@ -163,7 +139,7 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
                   Photographer Name: {photographer.name}
                 </h2>
                 <p className="text-muted-foreground">
-                  <strong>Designation:</strong> Staff Photographer
+                  <strong>Designation:</strong> {photographer.designation}
                 </p>
               </div>
 
@@ -221,9 +197,15 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
                         </TableCell>
                       </TableRow>
                       <TableRow>
+                        <TableCell>Human Interest Photo Projects</TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {photographer.humanInterestProjects}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
                         <TableCell>Photographers Ranking (Completed Assignments)</TableCell>
                         <TableCell className="text-right font-semibold">
-                          #{rank}
+                          #{photographer.ranking}
                         </TableCell>
                       </TableRow>
                       <TableRow>
@@ -275,7 +257,7 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
                   <h3 className="text-lg font-semibold">4. Summary</h3>
                 </div>
                 <p className="text-foreground leading-relaxed">
-                  {generateSummary(photographer, rank)}
+                  {photographer.narrativeSummary}
                 </p>
               </div>
             </CardContent>

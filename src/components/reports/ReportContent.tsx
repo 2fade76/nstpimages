@@ -5,6 +5,7 @@ import { CameraEquipmentTable } from "./CameraEquipmentTable";
 import { CameraModelStats } from "./CameraModelStats";
 import { AssignmentDetailsTable } from "./AssignmentDetailsTable";
 import { PhotoAssetSummaryReport } from "./PhotoAssetSummaryReport";
+import { PhotographerProfileReport } from "./PhotographerProfileReport";
 import { 
   SummaryCardsSkeleton, 
   PhotographerTableSkeleton, 
@@ -13,7 +14,6 @@ import {
 } from "./ReportSkeletons";
 import { Button } from "@/components/ui/button";
 import { FileX } from "lucide-react";
-
 interface ReportData {
   photographers: Array<{
     id: string;
@@ -134,6 +134,19 @@ export function ReportContent({ reportData, isLoading, filters }: ReportContentP
     return (
       <div className="space-y-6 animate-fade-in">
         <PhotoAssetSummaryReport cameraSets={reportData.cameraSets} />
+      </div>
+    );
+  }
+
+  // Render Photographer Profile Report
+  if (filters.reportScope === 'photographer-profile') {
+    const reportYear = filters.profileYear || new Date().getFullYear();
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PhotographerProfileReport 
+          photographers={reportData.photographers} 
+          reportYear={reportYear}
+        />
       </div>
     );
   }

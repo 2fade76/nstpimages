@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Award, TrendingUp, FileText } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Camera, Award, TrendingUp, FileText, User, Calendar, Building2, Trophy, Target, CheckCircle2, Clock, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
 
 interface PhotographerData {
@@ -39,56 +40,63 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
   const currentDate = format(new Date(), "MMMM dd, yyyy");
 
   const getAssetRows = (cameraSets: PhotographerData['cameraSets']) => {
-    const rows: { assetType: string; model: string; serial: string }[] = [];
+    const rows: { assetType: string; model: string; serial: string; icon: string }[] = [];
     
     cameraSets.forEach((set) => {
       if (set.camera_body_model || set.camera_body_serial) {
         rows.push({
           assetType: 'Camera Body',
           model: set.camera_body_model || '-',
-          serial: set.camera_body_serial || '-'
+          serial: set.camera_body_serial || '-',
+          icon: 'camera'
         });
       }
       if (set.lens_16_35_serial) {
         rows.push({
-          assetType: 'Lens',
+          assetType: 'Wide Angle Lens',
           model: 'Canon RF 16-35mm',
-          serial: set.lens_16_35_serial
+          serial: set.lens_16_35_serial,
+          icon: 'lens'
         });
       }
       if (set.lens_70_200_serial) {
         rows.push({
-          assetType: 'Lens',
+          assetType: 'Telephoto Lens',
           model: 'Canon RF 70-200mm',
-          serial: set.lens_70_200_serial
+          serial: set.lens_70_200_serial,
+          icon: 'lens'
         });
       }
       if (set.lens_24_105_serial) {
         rows.push({
-          assetType: 'Lens',
+          assetType: 'Standard Lens',
           model: 'Canon RF 24-105mm',
-          serial: set.lens_24_105_serial
+          serial: set.lens_24_105_serial,
+          icon: 'lens'
         });
       }
       if (set.adapter_serial) {
         rows.push({
-          assetType: 'Adapter',
+          assetType: 'Mount Adapter',
           model: 'EF-RF Mount Adapter',
-          serial: set.adapter_serial
+          serial: set.adapter_serial,
+          icon: 'adapter'
         });
       }
       if (set.battery_grip_serial) {
         rows.push({
           assetType: 'Battery Grip',
-          model: '-',
-          serial: set.battery_grip_serial
+          model: 'Canon BG-R10',
+          serial: set.battery_grip_serial,
+          icon: 'battery'
         });
       }
       if (set.flash_serial) {
         rows.push({
-          assetType: 'Flash',
-          model: '-',
-          serial: set.flash_serial
+          assetType: 'Speedlite Flash',
+          model: 'Canon Speedlite',
+          serial: set.flash_serial,
+          icon: 'flash'
         });
       }
     });
@@ -103,9 +111,10 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
 
   if (photographers.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          No photographers found matching the selected filters.
+      <Card className="border-dashed">
+        <CardContent className="py-12 text-center">
+          <User className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground">No photographers found matching the selected filters.</p>
         </CardContent>
       </Card>
     );
@@ -113,153 +122,304 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
 
   return (
     <div className="space-y-8">
-      {photographers.map((photographer) => {
+      {photographers.map((photographer, photographerIndex) => {
         const assetRows = getAssetRows(photographer.cameraSets);
         const awards = parseAwards(photographer.awards);
+        const completionRate = photographer.assignmentCount > 0 
+          ? Math.round((photographer.completedAssignments / photographer.assignmentCount) * 100) 
+          : 0;
 
         return (
-          <Card key={photographer.id} className="print:break-after-page">
-            {/* Report Header */}
-            <CardHeader className="border-b">
-              <div className="flex flex-col gap-2">
-                <CardTitle className="text-2xl font-bold text-primary">
-                  Photographers Yearly Reports {reportYear}
-                </CardTitle>
-                <div className="flex flex-col sm:flex-row sm:gap-8 text-sm text-muted-foreground">
-                  <span><strong>Agency:</strong> NSTP</span>
-                  <span><strong>Date Generated:</strong> {currentDate}</span>
+          <Card key={photographer.id} className="print:break-after-page overflow-hidden shadow-lg border-0 bg-card">
+            {/* Report Header with Gradient */}
+            <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b p-6">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs font-medium">
+                      Report #{photographerIndex + 1}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {reportYear}
+                    </Badge>
+                  </div>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    Photographer Yearly Report
+                  </h1>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4" />
+                    <span>NSTP</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" />
+                    <span>{currentDate}</span>
+                  </div>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="pt-6 space-y-6">
-              {/* Photographer Info */}
-              <div className="border-b pb-4">
-                <h2 className="text-xl font-semibold">
-                  Photographer Name: {photographer.name}
-                </h2>
-                <p className="text-muted-foreground">
-                  <strong>Designation:</strong> {photographer.designation}
-                </p>
+            <CardContent className="p-6 space-y-8">
+              {/* Photographer Profile Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-secondary/50 to-transparent">
+                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary shrink-0">
+                  <User className="h-8 w-8" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold text-foreground truncate">
+                    {photographer.name}
+                  </h2>
+                  <p className="text-muted-foreground flex items-center gap-2">
+                    <Badge variant="secondary" className="font-normal">
+                      {photographer.designation}
+                    </Badge>
+                    {photographer.ranking <= 3 && (
+                      <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20">
+                        <Trophy className="h-3 w-3 mr-1" />
+                        Top {photographer.ranking}
+                      </Badge>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 sm:self-start">
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">#{photographer.ranking}</p>
+                    <p className="text-xs text-muted-foreground">Rank</p>
+                  </div>
+                </div>
               </div>
 
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-lg bg-stat-complete/10 border border-stat-complete/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="h-4 w-4 text-stat-complete" />
+                    <span className="text-xs font-medium text-muted-foreground">Completed</span>
+                  </div>
+                  <p className="text-2xl font-bold text-stat-complete">{photographer.completedAssignments}</p>
+                </div>
+                <div className="p-4 rounded-lg bg-stat-open/10 border border-stat-open/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-stat-open" />
+                    <span className="text-xs font-medium text-muted-foreground">Open</span>
+                  </div>
+                  <p className="text-2xl font-bold text-stat-open">{photographer.openAssignments}</p>
+                </div>
+                <div className="p-4 rounded-lg bg-stat-total/10 border border-stat-total/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-4 w-4 text-stat-total" />
+                    <span className="text-xs font-medium text-muted-foreground">Total</span>
+                  </div>
+                  <p className="text-2xl font-bold text-stat-total">{photographer.assignmentCount}</p>
+                </div>
+                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">Success Rate</span>
+                  </div>
+                  <p className="text-2xl font-bold text-primary">{completionRate}%</p>
+                </div>
+              </div>
+
+              <Separator />
+
               {/* Section 1: Photo Asset */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Camera className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold">1. Photo Asset</h3>
+              <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+                    <Camera className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Photo Assets</h3>
+                    <p className="text-xs text-muted-foreground">Equipment assigned to photographer</p>
+                  </div>
                 </div>
                 {assetRows.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className="rounded-xl border overflow-hidden">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/50">
-                          <TableHead className="font-semibold">Asset Type</TableHead>
-                          <TableHead className="font-semibold">Model/Description</TableHead>
-                          <TableHead className="font-semibold">Serial No</TableHead>
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
+                          <TableHead className="font-semibold text-foreground">Asset Type</TableHead>
+                          <TableHead className="font-semibold text-foreground">Model / Description</TableHead>
+                          <TableHead className="font-semibold text-foreground">Serial Number</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {assetRows.map((row, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{row.assetType}</TableCell>
-                            <TableCell>{row.model}</TableCell>
-                            <TableCell className="font-mono text-sm">{row.serial}</TableCell>
+                          <TableRow key={index} className="hover:bg-muted/20">
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-primary" />
+                                <span className="font-medium">{row.assetType}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">{row.model}</TableCell>
+                            <TableCell>
+                              <code className="px-2 py-1 rounded bg-muted text-xs font-mono">
+                                {row.serial}
+                              </code>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground italic">No assets assigned</p>
+                  <div className="p-8 text-center rounded-xl border border-dashed bg-muted/20">
+                    <Camera className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                    <p className="text-muted-foreground text-sm">No assets currently assigned</p>
+                  </div>
                 )}
-              </div>
+              </section>
+
+              <Separator />
 
               {/* Section 2: Performance Summary */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold">2. Performance Summary</h3>
+              <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+                    <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Performance Summary</h3>
+                    <p className="text-xs text-muted-foreground">Yearly performance metrics for {reportYear}</p>
+                  </div>
                 </div>
-                <div className="border rounded-lg overflow-hidden">
+                <div className="rounded-xl border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-muted/50">
-                        <TableHead className="font-semibold">Metrics</TableHead>
-                        <TableHead className="font-semibold text-right">Total ({reportYear})</TableHead>
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="font-semibold text-foreground">Metric</TableHead>
+                        <TableHead className="font-semibold text-foreground text-right">Value</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell>Completed Assignments</TableCell>
-                        <TableCell className="text-right font-semibold text-stat-complete">
-                          {photographer.completedAssignments}
+                      <TableRow className="hover:bg-muted/20">
+                        <TableCell className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-stat-complete" />
+                          Completed Assignments
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="font-bold text-stat-complete bg-stat-complete/10">
+                            {photographer.completedAssignments}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell>Human Interest Photo Projects</TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {photographer.humanInterestProjects}
+                      <TableRow className="hover:bg-muted/20">
+                        <TableCell className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-primary" />
+                          Human Interest Photo Projects
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="font-bold">
+                            {photographer.humanInterestProjects}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell>Photographers Ranking (Completed Assignments)</TableCell>
-                        <TableCell className="text-right font-semibold">
-                          #{photographer.ranking}
+                      <TableRow className="hover:bg-muted/20">
+                        <TableCell className="flex items-center gap-2">
+                          <Trophy className="h-4 w-4 text-amber-500" />
+                          Photographer Ranking
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge className="font-bold bg-amber-500/10 text-amber-600 hover:bg-amber-500/20">
+                            #{photographer.ranking}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell>Open Assignments</TableCell>
-                        <TableCell className="text-right font-semibold text-stat-open">
-                          {photographer.openAssignments}
+                      <TableRow className="hover:bg-muted/20">
+                        <TableCell className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-stat-open" />
+                          Open Assignments
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="font-bold text-stat-open bg-stat-open/10">
+                            {photographer.openAssignments}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell>Total Assignments</TableCell>
-                        <TableCell className="text-right font-semibold text-stat-total">
-                          {photographer.assignmentCount}
+                      <TableRow className="hover:bg-muted/20">
+                        <TableCell className="flex items-center gap-2">
+                          <Target className="h-4 w-4 text-stat-total" />
+                          Total Assignments
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="font-bold text-stat-total bg-stat-total/10">
+                            {photographer.assignmentCount}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell>Awards Received</TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {awards.length}
+                      <TableRow className="hover:bg-muted/20">
+                        <TableCell className="flex items-center gap-2">
+                          <Award className="h-4 w-4 text-primary" />
+                          Awards Received
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="font-bold">
+                            {awards.length}
+                          </Badge>
                         </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
                 </div>
-              </div>
+              </section>
+
+              <Separator />
 
               {/* Section 3: Awards and Recognition */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Award className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold">3. Awards and Recognition</h3>
+              <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-amber-500/10 text-amber-600">
+                    <Award className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Awards & Recognition</h3>
+                    <p className="text-xs text-muted-foreground">Achievements and honors received</p>
+                  </div>
                 </div>
                 {awards.length > 0 ? (
-                  <ul className="list-disc list-inside space-y-2 pl-2">
+                  <div className="grid gap-2">
                     {awards.map((award, index) => (
-                      <li key={index} className="text-foreground">
-                        {award}
-                      </li>
+                      <div 
+                        key={index} 
+                        className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/10 transition-colors"
+                      >
+                        <div className="flex items-center justify-center h-6 w-6 rounded-full bg-amber-500/20 text-amber-600 shrink-0 mt-0.5">
+                          <Trophy className="h-3 w-3" />
+                        </div>
+                        <span className="text-foreground">{award}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 ) : (
-                  <p className="text-muted-foreground italic">No awards recorded</p>
+                  <div className="p-8 text-center rounded-xl border border-dashed bg-muted/20">
+                    <Award className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                    <p className="text-muted-foreground text-sm">No awards recorded for this period</p>
+                  </div>
                 )}
-              </div>
+              </section>
+
+              <Separator />
 
               {/* Section 4: Summary */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold">4. Summary</h3>
+              <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Summary</h3>
+                    <p className="text-xs text-muted-foreground">Performance narrative and overview</p>
+                  </div>
                 </div>
-                <p className="text-foreground leading-relaxed">
-                  {photographer.narrativeSummary}
-                </p>
-              </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-secondary/30 to-transparent border">
+                  <p className="text-foreground leading-relaxed">
+                    {photographer.narrativeSummary}
+                  </p>
+                </div>
+              </section>
             </CardContent>
           </Card>
         );

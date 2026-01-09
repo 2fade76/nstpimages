@@ -48,6 +48,24 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
     },
   });
 
+  // Fetch distinct years from completed assignments
+  const { data: completedYears } = useQuery({
+    queryKey: ['completed-assignment-years'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('date')
+        .eq('status', 'complete');
+      if (error) throw error;
+      
+      const years = data
+        .map(item => new Date(item.date).getFullYear())
+        .filter((year, index, self) => self.indexOf(year) === index)
+        .sort((a, b) => b - a);
+      return years;
+    },
+  });
+
   const handlePhotographerChange = (photographerId: string | undefined) => {
     onFiltersChange({
       ...filters,
@@ -77,6 +95,17 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
     });
   };
 
+  const handleCompletedYearChange = (year: number, checked: boolean) => {
+    const updatedYears = checked 
+      ? [...filters.completedYears, year]
+      : filters.completedYears.filter(y => y !== year);
+    
+    onFiltersChange({
+      ...filters,
+      completedYears: updatedYears
+    });
+  };
+
   const handleDateRangeChange = (field: 'from' | 'to', date: Date | undefined) => {
     onFiltersChange({
       ...filters,
@@ -95,7 +124,8 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
       cameraModels: [],
       includeAssignmentDetails: false,
       dateRange: {},
-      profileYear: new Date().getFullYear()
+      profileYear: new Date().getFullYear(),
+      completedYears: []
     });
   };
 
@@ -189,6 +219,59 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
                 </Label>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Completed Assignments Year Filter */}
+      {(filters.reportScope === 'assignments' || filters.reportScope === 'both') && completedYears && completedYears.length > 0 && (
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Completed Assignments by Year</Label>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="select-all-years"
+                checked={completedYears?.length === filters.completedYears.length && completedYears.length > 0}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onFiltersChange({
+                      ...filters,
+                      completedYears: completedYears || []
+                    });
+                  } else {
+                    onFiltersChange({
+                      ...filters,
+                      completedYears: []
+                    });
+                  }
+                }}
+              />
+              <Label 
+                htmlFor="select-all-years"
+                className="text-sm cursor-pointer font-medium"
+              >
+                Select All Years
+              </Label>
+            </div>
+            <div className="max-h-40 overflow-y-auto space-y-2">
+              {completedYears?.map((year) => (
+                <div key={year} className="flex items-center space-x-2 ml-4">
+                  <Checkbox
+                    id={`year-${year}`}
+                    checked={filters.completedYears.includes(year)}
+                    onCheckedChange={(checked) => 
+                      handleCompletedYearChange(year, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`year-${year}`}
+                    className="text-sm cursor-pointer"
+                  >
+                    {year}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -87,7 +87,18 @@ export function useReportData(filters: ReportFilters) {
 
         const { data: assignmentsData, error: assignmentsError } = await assignmentsQuery;
         if (assignmentsError) throw assignmentsError;
-        assignments = assignmentsData || [];
+        
+        // Filter by completed years if any are selected
+        let filteredAssignments = assignmentsData || [];
+        if (filters.completedYears && filters.completedYears.length > 0) {
+          filteredAssignments = filteredAssignments.filter(a => {
+            if (a.status !== 'complete') return true; // Keep non-completed assignments
+            const assignmentYear = new Date(a.date).getFullYear();
+            return filters.completedYears.includes(assignmentYear);
+          });
+        }
+        
+        assignments = filteredAssignments;
       }
 
       // Fetch camera sets with photographer info (only if scope includes cameras)

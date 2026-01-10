@@ -330,38 +330,38 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
               <Separator />
 
               {/* Section 1: Photo Asset */}
-              <section className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+              <section className="space-y-4 photo-asset-section">
+                <div className="flex items-center gap-3 print:mb-2">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary print:bg-gray-100">
                     <Camera className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold">Photo Assets</h3>
-                    <p className="text-xs text-muted-foreground">Equipment assigned to photographer</p>
+                    <h3 className="text-lg font-semibold print:text-black">Photo Assets</h3>
+                    <p className="text-xs text-muted-foreground print:hidden">Equipment assigned to photographer</p>
                   </div>
                 </div>
                 {assetRows.length > 0 ? (
-                  <div className="rounded-xl border overflow-hidden">
+                  <div className="rounded-xl border overflow-hidden photo-asset-table print:rounded-none print:border-2 print:border-black">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableHead className="font-semibold text-foreground">Asset Type</TableHead>
-                          <TableHead className="font-semibold text-foreground">Model / Description</TableHead>
-                          <TableHead className="font-semibold text-foreground">Serial Number</TableHead>
+                        <TableRow className="bg-muted/30 hover:bg-muted/30 print:bg-gray-200">
+                          <TableHead className="font-semibold text-foreground print:text-black print:border print:border-gray-400 print:py-3">Asset Type</TableHead>
+                          <TableHead className="font-semibold text-foreground print:text-black print:border print:border-gray-400 print:py-3">Model / Description</TableHead>
+                          <TableHead className="font-semibold text-foreground print:text-black print:border print:border-gray-400 print:py-3">Serial No</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {assetRows.map((row, index) => (
-                          <TableRow key={index} className="hover:bg-muted/20">
-                            <TableCell>
+                          <TableRow key={index} className="hover:bg-muted/20 print:border-b print:border-gray-300">
+                            <TableCell className="print:border print:border-gray-300 print:py-3 print:font-medium">
                               <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium">{row.assetType}</span>
+                                <div className="h-2 w-2 rounded-full bg-primary print:hidden" />
+                                <span className="font-medium print:text-black">{row.assetType}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-muted-foreground">{row.model}</TableCell>
-                            <TableCell>
-                              <code className="px-2 py-1 rounded bg-muted text-xs font-mono">
+                            <TableCell className="text-muted-foreground print:text-black print:border print:border-gray-300 print:py-3">{row.model}</TableCell>
+                            <TableCell className="print:border print:border-gray-300 print:py-3">
+                              <code className="px-2 py-1 rounded bg-muted text-xs font-mono print:bg-transparent print:px-0 print:text-black print:text-sm">
                                 {row.serial}
                               </code>
                             </TableCell>
@@ -371,9 +371,9 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
                     </Table>
                   </div>
                 ) : (
-                  <div className="p-8 text-center rounded-xl border border-dashed bg-muted/20">
-                    <Camera className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-                    <p className="text-muted-foreground text-sm">No assets currently assigned</p>
+                  <div className="p-8 text-center rounded-xl border border-dashed bg-muted/20 print:border-2 print:border-gray-400">
+                    <Camera className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2 print:hidden" />
+                    <p className="text-muted-foreground text-sm print:text-black">No assets currently assigned</p>
                   </div>
                 )}
               </section>

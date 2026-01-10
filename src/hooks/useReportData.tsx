@@ -20,7 +20,8 @@ export function useReportData(filters: ReportFilters) {
             title,
             location,
             date,
-            status
+            status,
+            category
           ),
           camera_sets (
             id,
@@ -157,6 +158,14 @@ export function useReportData(filters: ReportFilters) {
         const openCount = photographerAssignments.filter(a => a.status === 'open').length;
         const cancelledCount = photographerAssignments.filter(a => a.status === 'cancelled').length;
         
+        // Calculate category breakdown for completed assignments
+        const completedAssignments = photographerAssignments.filter(a => a.status === 'complete');
+        const categoryBreakdown = {
+          News: completedAssignments.filter(a => a.category === 'News').length,
+          Sports: completedAssignments.filter(a => a.category === 'Sports').length,
+          Entertainment: completedAssignments.filter(a => a.category === 'Entertainment').length,
+        };
+        
         return {
           id: photographer.id,
           name: photographer.name,
@@ -168,6 +177,7 @@ export function useReportData(filters: ReportFilters) {
           humanInterestProjects: 0, // Default value - not tracked in current DB
           openAssignments: openCount,
           cancelledAssignments: cancelledCount,
+          categoryBreakdown,
           narrativeSummary: `${photographer.name} completed ${completedCount} assignments${photographer.awards ? ` and received ${photographer.awards}` : ''}.`,
           cameraSets: (photographer.camera_sets || []).map(cs => ({
             id: cs.id,

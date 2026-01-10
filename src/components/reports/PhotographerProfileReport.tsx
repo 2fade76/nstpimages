@@ -2,8 +2,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Camera, Award, TrendingUp, FileText, User, Calendar, Building2, Trophy, Target, CheckCircle2, Clock, BarChart3 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Camera, Award, TrendingUp, FileText, User, Calendar, Building2, Trophy, Target, CheckCircle2, Clock, BarChart3, PieChart, Newspaper, Gamepad2, Clapperboard } from "lucide-react";
 import { format } from "date-fns";
+
+interface CategoryBreakdown {
+  News: number;
+  Sports: number;
+  Entertainment: number;
+}
 
 interface PhotographerData {
   id: string;
@@ -17,6 +24,7 @@ interface PhotographerData {
   openAssignments: number;
   cancelledAssignments: number;
   narrativeSummary: string;
+  categoryBreakdown?: CategoryBreakdown;
   cameraSets: Array<{
     id: string;
     camera_body_model: string | null;
@@ -221,6 +229,103 @@ export function PhotographerProfileReport({ photographers, reportYear }: Photogr
                   <p className="text-2xl font-bold text-primary">{completionRate}%</p>
                 </div>
               </div>
+
+              {/* Category Breakdown Section */}
+              {photographer.categoryBreakdown && photographer.completedAssignments > 0 && (
+                <>
+                  <Separator />
+                  <section className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+                        <PieChart className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Assignment Categories</h3>
+                        <p className="text-xs text-muted-foreground">Category distribution for completed assignments in {reportYear}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* News Category */}
+                      <div className="p-4 rounded-lg border bg-blue-500/5 border-blue-500/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Newspaper className="h-5 w-5 text-blue-500" />
+                          <span className="font-medium">News</span>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold text-blue-500">
+                              {photographer.completedAssignments > 0 
+                                ? Math.round((photographer.categoryBreakdown.News / photographer.completedAssignments) * 100)
+                                : 0}%
+                            </span>
+                            <Badge variant="secondary" className="bg-blue-500/10 text-blue-600">
+                              {photographer.categoryBreakdown.News} assignments
+                            </Badge>
+                          </div>
+                          <Progress 
+                            value={photographer.completedAssignments > 0 
+                              ? (photographer.categoryBreakdown.News / photographer.completedAssignments) * 100
+                              : 0} 
+                            className="h-2 bg-blue-500/20" 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sports Category */}
+                      <div className="p-4 rounded-lg border bg-green-500/5 border-green-500/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Gamepad2 className="h-5 w-5 text-green-500" />
+                          <span className="font-medium">Sports</span>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold text-green-500">
+                              {photographer.completedAssignments > 0 
+                                ? Math.round((photographer.categoryBreakdown.Sports / photographer.completedAssignments) * 100)
+                                : 0}%
+                            </span>
+                            <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                              {photographer.categoryBreakdown.Sports} assignments
+                            </Badge>
+                          </div>
+                          <Progress 
+                            value={photographer.completedAssignments > 0 
+                              ? (photographer.categoryBreakdown.Sports / photographer.completedAssignments) * 100
+                              : 0} 
+                            className="h-2 bg-green-500/20" 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Entertainment Category */}
+                      <div className="p-4 rounded-lg border bg-purple-500/5 border-purple-500/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Clapperboard className="h-5 w-5 text-purple-500" />
+                          <span className="font-medium">Entertainment</span>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold text-purple-500">
+                              {photographer.completedAssignments > 0 
+                                ? Math.round((photographer.categoryBreakdown.Entertainment / photographer.completedAssignments) * 100)
+                                : 0}%
+                            </span>
+                            <Badge variant="secondary" className="bg-purple-500/10 text-purple-600">
+                              {photographer.categoryBreakdown.Entertainment} assignments
+                            </Badge>
+                          </div>
+                          <Progress 
+                            value={photographer.completedAssignments > 0 
+                              ? (photographer.categoryBreakdown.Entertainment / photographer.completedAssignments) * 100
+                              : 0} 
+                            className="h-2 bg-purple-500/20" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </>
+              )}
 
               <Separator />
 

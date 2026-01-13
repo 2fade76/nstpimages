@@ -2,8 +2,29 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Photographer } from "@/types/database";
+import { Photographer, CameraSet } from "@/types/database";
 import { toast } from "sonner";
+
+export interface PhotographerWithCameraSets extends Photographer {
+  camera_sets: CameraSet[];
+}
+
+// Helper function to check if any camera set field matches the search query
+const matchesCameraSet = (cameraSets: CameraSet[] | undefined, query: string): boolean => {
+  if (!cameraSets || cameraSets.length === 0) return false;
+  
+  return cameraSets.some(set => 
+    set.camera_body_model?.toLowerCase().includes(query) ||
+    set.camera_body_serial?.toLowerCase().includes(query) ||
+    set.lens_16_35_serial?.toLowerCase().includes(query) ||
+    set.lens_24_105_serial?.toLowerCase().includes(query) ||
+    set.lens_70_200_serial?.toLowerCase().includes(query) ||
+    set.battery_grip_serial?.toLowerCase().includes(query) ||
+    set.flash_serial?.toLowerCase().includes(query) ||
+    set.adapter_serial?.toLowerCase().includes(query) ||
+    set.camera_year_make?.toLowerCase().includes(query)
+  );
+};
 
 export function usePhotographers() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,28 +39,36 @@ export function usePhotographers() {
       const {
         data,
         error
-      } = await supabase.from('photographers').select('*').order('name');
+      } = await supabase.from('photographers').select('*, camera_sets(*)').order('name');
       if (error) throw error;
 
       // Ensure the status property is of the correct type
       return data.map(photographer => ({
         ...photographer,
         status: photographer.status === 'staff' || photographer.status === 'stringers' || photographer.status === 'staff_oc' ? photographer.status as 'staff' | 'stringers' | 'staff_oc' : 'staff',
-      })) as Photographer[];
+        camera_sets: photographer.camera_sets || [],
+      })) as PhotographerWithCameraSets[];
     }
   });
 
-  // Filter photographers based on search query
+  // Filter photographers based on search query (including camera sets/equipment)
   const filteredPhotographers = photographers?.filter(photographer => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase();
-    return (
+    
+    // Check basic photographer fields
+    const matchesBasicFields = (
       photographer.name.toLowerCase().includes(query) ||
       photographer.email?.toLowerCase().includes(query) ||
       photographer.phone?.toLowerCase().includes(query) ||
       photographer.Location?.toLowerCase().includes(query)
     );
+    
+    // Check camera sets/equipment fields
+    const matchesEquipment = matchesCameraSet(photographer.camera_sets, query);
+    
+    return matchesBasicFields || matchesEquipment;
   });
 
   const handleDelete = async (id: string) => {

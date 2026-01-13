@@ -47,7 +47,7 @@ export function PhotographerSearch({ onSearch, searchQuery }: PhotographerSearch
         )}
         <Input
           type="text"
-          placeholder="Search photographers..."
+          placeholder="Search by name, email, phone, location, or equipment serial..."
           value={localQuery}
           onChange={handleInputChange}
           className="pl-10 pr-10"

@@ -84,15 +84,18 @@ const IndexContent = () => {
           </Alert>
         )}
       
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Assignment Tracker</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Assignment Tracker</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Track, manage, and monitor photo assignments</p>
+          </div>
           <form onSubmit={handleSearch} className="w-full sm:w-auto">
             <div className="relative">
               <Input 
                 placeholder="Search assignments..." 
                 value={searchQuery} 
                 onChange={e => setSearchQuery(e.target.value)} 
-                className="w-full sm:w-[280px] pr-8 bg-card border-border/50" 
+                className="w-full sm:w-[280px] pr-8 bg-card border-border/40 rounded-xl" 
               />
               {searchQuery && (
                 <Button 
@@ -111,9 +114,9 @@ const IndexContent = () => {
         </div>
         
         <Tabs defaultValue={currentTab} onValueChange={handleTabChange} value={currentTab} className="w-full">
-          <TabsList className="bg-muted/50">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="new">New Assignment</TabsTrigger>
+          <TabsList className="bg-muted/50 rounded-xl p-1">
+            <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
+            <TabsTrigger value="new" className="rounded-lg">New Assignment</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6 mt-6">

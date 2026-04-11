@@ -29,40 +29,39 @@ export const DashboardRankingCard = () => {
   const remaining = topPhotographers?.slice(3, 6) || [];
 
   return (
-    <Card className="border-border/40 bg-card shadow-sm h-full">
-      <CardHeader className="pb-3">
+    <Card className="rounded-2xl border-border/30 bg-card shadow-sm h-full">
+      <CardHeader className="pb-3 px-5 pt-5">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold text-foreground">
             Photographer Ranking
           </CardTitle>
-          <button className="p-1.5 hover:bg-muted rounded-md">
+          <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
             <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 px-5 pb-5">
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-3">
-                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-3 w-24" />
-                  <Skeleton className="h-2 w-16" />
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-2.5 w-16" />
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-3">
-            {/* Top 3 with rank badges */}
+          <div className="space-y-2">
             {topThree.map((photographer) => (
               <div 
                 key={photographer.id} 
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 transition-colors"
               >
                 <div className="relative">
-                  <span className={`absolute -top-1 -left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${getRankBadgeColor(photographer.rank)}`}>
+                  <span className={`absolute -top-1 -left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-sm ${getRankBadgeColor(photographer.rank)}`}>
                     {photographer.rank}
                   </span>
                   <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
@@ -82,16 +81,15 @@ export const DashboardRankingCard = () => {
               </div>
             ))}
 
-            {/* Remaining photographers in compact view */}
             {remaining.length > 0 && (
-              <div className="pt-2 border-t border-border/50 space-y-2">
+              <div className="pt-2 border-t border-border/40 space-y-1">
                 {remaining.map((photographer) => (
                   <div 
                     key={photographer.id} 
-                    className="flex items-center justify-between py-1.5"
+                    className="flex items-center justify-between py-2 px-2.5 rounded-lg hover:bg-muted/30 transition-colors"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground w-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-medium text-muted-foreground w-4 text-center">
                         {photographer.rank}
                       </span>
                       <Avatar className="h-7 w-7">
@@ -103,7 +101,7 @@ export const DashboardRankingCard = () => {
                         {photographer.name}
                       </span>
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground">
+                    <span className="text-xs font-medium text-muted-foreground tabular-nums">
                       {photographer.completedCount}
                     </span>
                   </div>

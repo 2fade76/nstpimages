@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
 
 interface DashboardStatsCardsProps {
   onFilterChange?: (filter: 'all' | 'open' | 'complete' | 'today-complete') => void;
@@ -40,7 +40,6 @@ export const DashboardStatsCards = ({
     refetchOnWindowFocus: false
   });
 
-  // Get total photographers count
   const { data: photographersCount } = useQuery({
     queryKey: ['photographers-count'],
     queryFn: async () => {
@@ -78,35 +77,50 @@ export const DashboardStatsCards = ({
     }
   };
 
+  const StatSkeleton = () => (
+    <Card className="rounded-2xl border-border/30">
+      <CardContent className="p-5">
+        <Skeleton className="h-4 w-24 mb-3" />
+        <Skeleton className="h-10 w-16 mb-2" />
+        <Skeleton className="h-3 w-32" />
+      </CardContent>
+    </Card>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatSkeleton />
+        <StatSkeleton />
+        <StatSkeleton />
+        <StatSkeleton />
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {/* Total Assignments */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Total Assignments - Highlighted card */}
       <button
         onClick={() => handleCardClick('all')}
-        className={`text-left transition-all duration-200 ${
-          activeFilter === 'all' ? 'ring-2 ring-primary/50' : ''
+        className={`text-left transition-all duration-200 rounded-2xl ${
+          activeFilter === 'all' ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background' : ''
         }`}
       >
-        <Card className="border-border/40 bg-gradient-to-br from-stat-total/10 to-stat-total/5 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <p className="text-sm font-medium text-muted-foreground mb-1">Total Assignments</p>
-            {isLoading ? (
-              <Skeleton className="h-9 w-20" />
-            ) : (
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-stat-total">{trends?.current.total || 0}</span>
-                <span className="text-xs text-muted-foreground">This Year</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1 mt-2">
+        <Card className="rounded-2xl border-0 bg-primary text-primary-foreground shadow-lg shadow-primary/20 h-full">
+          <CardContent className="p-5 relative">
+            <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <ArrowUpRight className="h-4 w-4" />
+            </div>
+            <p className="text-sm font-medium opacity-90 mb-1">Total Assignments</p>
+            <span className="text-4xl font-bold block mb-2">{trends?.current.total || 0}</span>
+            <div className="flex items-center gap-1.5 text-xs opacity-80">
               {totalTrend.isPositive ? (
-                <TrendingUp className="h-3 w-3 text-emerald-500" />
+                <TrendingUp className="h-3.5 w-3.5" />
               ) : (
-                <TrendingDown className="h-3 w-3 text-rose-500" />
+                <TrendingDown className="h-3.5 w-3.5" />
               )}
-              <span className={`text-xs font-medium ${totalTrend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {totalTrend.percentage.toFixed(1)}%
-              </span>
+              <span>{totalTrend.percentage.toFixed(1)}% from yesterday</span>
             </div>
           </CardContent>
         </Card>
@@ -115,50 +129,62 @@ export const DashboardStatsCards = ({
       {/* Completed This Month */}
       <button
         onClick={() => handleCardClick('complete')}
-        className={`text-left transition-all duration-200 ${
-          activeFilter === 'complete' ? 'ring-2 ring-primary/50' : ''
+        className={`text-left transition-all duration-200 rounded-2xl ${
+          activeFilter === 'complete' ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background' : ''
         }`}
       >
-        <Card className="border-border/40 bg-gradient-to-br from-stat-complete/10 to-stat-complete/5 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <p className="text-sm font-medium text-muted-foreground mb-1">Assignment Completed</p>
-            {isLoading ? (
-              <Skeleton className="h-9 w-20" />
-            ) : (
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-stat-complete">{trends?.current.completed || 0}</span>
-                <span className="text-xs text-muted-foreground">This Month</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1 mt-2">
+        <Card className="rounded-2xl border-border/30 bg-card hover:shadow-md transition-shadow h-full">
+          <CardContent className="p-5 relative">
+            <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Completed</p>
+            <span className="text-4xl font-bold text-foreground block mb-2">{trends?.current.completed || 0}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {completedTrend.isPositive ? (
-                <TrendingUp className="h-3 w-3 text-emerald-500" />
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               ) : (
-                <TrendingDown className="h-3 w-3 text-rose-500" />
+                <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
               )}
-              <span className={`text-xs font-medium ${completedTrend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {completedTrend.percentage.toFixed(1)}%
-              </span>
+              <span>{completedTrend.percentage.toFixed(1)}% from yesterday</span>
+            </div>
+          </CardContent>
+        </Card>
+      </button>
+
+      {/* Open Assignments */}
+      <button
+        onClick={() => handleCardClick('open')}
+        className={`text-left transition-all duration-200 rounded-2xl ${
+          activeFilter === 'open' ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background' : ''
+        }`}
+      >
+        <Card className="rounded-2xl border-border/30 bg-card hover:shadow-md transition-shadow h-full">
+          <CardContent className="p-5 relative">
+            <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Open</p>
+            <span className="text-4xl font-bold text-foreground block mb-2">{trends?.current.open || 0}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Active assignments</span>
             </div>
           </CardContent>
         </Card>
       </button>
 
       {/* Team */}
-      <Card className="border-border/40 bg-gradient-to-br from-stat-team/10 to-stat-team/5">
-        <CardContent className="p-4">
+      <Card className="rounded-2xl border-border/30 bg-card h-full">
+        <CardContent className="p-5 relative">
+          <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+          </div>
           <p className="text-sm font-medium text-muted-foreground mb-1">Team</p>
-          {isLoading ? (
-            <Skeleton className="h-9 w-20" />
-          ) : (
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-stat-team">{photographersCount || 0}</span>
-              <div className="text-xs text-muted-foreground">
-                <p>Staff</p>
-                <p>Photographers</p>
-              </div>
-            </div>
-          )}
+          <span className="text-4xl font-bold text-foreground block mb-2">{photographersCount || 0}</span>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span>Staff Photographers</span>
+          </div>
         </CardContent>
       </Card>
     </div>

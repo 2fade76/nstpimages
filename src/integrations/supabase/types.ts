@@ -212,6 +212,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_assignments_volume: {
+        Args: { end_date: string; group_by?: string; start_date: string }
+        Returns: {
+          assignment_count: number
+          period_date: string
+        }[]
+      }
       get_dashboard_trends: { Args: never; Returns: Json }
       get_monthly_completed_assignments: {
         Args: { end_date?: string; start_date?: string }

@@ -3,129 +3,143 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfMonth, endOfMonth, getDaysInMonth, getDate, isValid, startOfWeek, endOfWeek, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, getDaysInMonth, startOfWeek, endOfWeek, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval, addWeeks, addMonths, addYears, isAfter } from "date-fns";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type TimePeriod = 'weekly' | 'monthly' | 'yearly';
 
 export const DashboardVolumeChart = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('monthly');
+  const [offset, setOffset] = useState(0); // 0 = current period, -1 = previous, etc.
 
-  const getTimePeriodLabel = () => {
+  const today = new Date();
+
+  const getReferenceDate = () => {
     switch (timePeriod) {
-      case 'weekly': return 'This Week';
-      case 'monthly': return 'This Month';
-      case 'yearly': return 'This Year';
+      case 'weekly': return addWeeks(today, offset);
+      case 'monthly': return addMonths(today, offset);
+      case 'yearly': return addYears(today, offset);
     }
   };
 
-  const {
-    data: volumeData,
-    isLoading
-  } = useQuery({
-    queryKey: ['assignments-volume', timePeriod],
-    queryFn: async () => {
-      const today = new Date();
-      let startDate: Date;
-      let endDate: Date;
-      let dataPoints: { date: Date; formattedDate: string; count: number }[] = [];
+  const refDate = getReferenceDate();
 
-      if (timePeriod === 'weekly') {
-        startDate = startOfWeek(today, { weekStartsOn: 1 });
-        endDate = endOfWeek(today, { weekStartsOn: 1 });
-        const days = eachDayOfInterval({ start: startDate, end: endDate });
-        dataPoints = days.map(date => ({
-          date,
-          formattedDate: format(date, 'EEE'),
-          count: 0
-        }));
-      } else if (timePeriod === 'monthly') {
-        startDate = startOfMonth(today);
-        endDate = endOfMonth(today);
-        const daysInMonth = getDaysInMonth(today);
-        dataPoints = Array.from({ length: daysInMonth }, (_, i) => {
-          const date = new Date(today.getFullYear(), today.getMonth(), i + 1);
-          return {
-            date,
-            formattedDate: format(date, 'MMM dd'),
-            count: 0
-          };
-        });
-      } else {
-        startDate = startOfYear(today);
-        endDate = endOfYear(today);
-        const months = eachMonthOfInterval({ start: startDate, end: endDate });
-        dataPoints = months.map(date => ({
-          date,
-          formattedDate: format(date, 'MMM'),
-          count: 0
-        }));
+  const getDateRange = () => {
+    switch (timePeriod) {
+      case 'weekly': return { start: startOfWeek(refDate, { weekStartsOn: 1 }), end: endOfWeek(refDate, { weekStartsOn: 1 }) };
+      case 'monthly': return { start: startOfMonth(refDate), end: endOfMonth(refDate) };
+      case 'yearly': return { start: startOfYear(refDate), end: endOfYear(refDate) };
+    }
+  };
+
+  const getPeriodLabel = () => {
+    switch (timePeriod) {
+      case 'weekly': {
+        const { start, end } = getDateRange();
+        return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`;
       }
+      case 'monthly': return format(refDate, 'MMMM yyyy');
+      case 'yearly': return format(refDate, 'yyyy');
+    }
+  };
 
-      // Format dates as YYYY-MM-DD for proper date comparison
-      const formatDateForQuery = (date: Date) => {
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      };
+  const canGoForward = () => {
+    const { end } = getDateRange();
+    return !isAfter(end, today);
+  };
 
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('date')
-        .gte('date', formatDateForQuery(startDate))
-        .lte('date', formatDateForQuery(endDate));
+  const handlePeriodChange = (value: string) => {
+    if (value) {
+      setTimePeriod(value as TimePeriod);
+      setOffset(0);
+    }
+  };
+
+  const { start: startDate, end: endDate } = getDateRange();
+  const formatDateForQuery = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+  const { data: volumeData, isLoading } = useQuery({
+    queryKey: ['assignments-volume', timePeriod, offset],
+    queryFn: async () => {
+      const groupBy = timePeriod === 'yearly' ? 'monthly' : 'daily';
+
+      const { data, error } = await supabase.rpc('get_assignments_volume', {
+        start_date: formatDateForQuery(startDate),
+        end_date: formatDateForQuery(endDate),
+        group_by: groupBy,
+      });
 
       if (error) throw error;
 
-      if (data) {
-        // Create a map to count assignments by date key
-        const dateCountMap = new Map<string, number>();
-        
-        data.forEach(assignment => {
-          if (!assignment.date) return;
-          
-          const assignmentDate = new Date(assignment.date);
-          if (!isValid(assignmentDate)) return;
-          
-          let dateKey: string;
-          if (timePeriod === 'yearly') {
-            dateKey = String(assignmentDate.getMonth());
-          } else {
-            dateKey = format(assignmentDate, 'yyyy-MM-dd');
-          }
-          
-          dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + 1);
-        });
+      // Build data points
+      let dataPoints: { formattedDate: string; count: number }[];
 
-        // Update data points from the map
-        dataPoints.forEach(dp => {
-          const dateKey = timePeriod === 'yearly' 
-            ? String(dp.date.getMonth())
-            : format(dp.date, 'yyyy-MM-dd');
-          dp.count = dateCountMap.get(dateKey) || 0;
+      if (timePeriod === 'weekly') {
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        const countMap = new Map((data || []).map((r: any) => [r.period_date, Number(r.assignment_count)]));
+        dataPoints = days.map(d => ({
+          formattedDate: format(d, 'EEE'),
+          count: countMap.get(formatDateForQuery(d)) || 0,
+        }));
+      } else if (timePeriod === 'monthly') {
+        const daysInMonth = getDaysInMonth(refDate);
+        const countMap = new Map((data || []).map((r: any) => [r.period_date, Number(r.assignment_count)]));
+        dataPoints = Array.from({ length: daysInMonth }, (_, i) => {
+          const d = new Date(refDate.getFullYear(), refDate.getMonth(), i + 1);
+          return {
+            formattedDate: format(d, 'dd'),
+            count: countMap.get(formatDateForQuery(d)) || 0,
+          };
         });
+      } else {
+        const months = eachMonthOfInterval({ start: startDate, end: endDate });
+        const countMap = new Map((data || []).map((r: any) => [r.period_date, Number(r.assignment_count)]));
+        dataPoints = months.map(d => ({
+          formattedDate: format(d, 'MMM'),
+          count: countMap.get(formatDateForQuery(d)) || 0,
+        }));
       }
-      
+
       return dataPoints;
     },
     staleTime: 60000,
     refetchOnMount: true,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
+
+  const totalAssignments = volumeData?.reduce((sum, d) => sum + d.count, 0) || 0;
 
   return (
     <Card className="border-border/40 bg-card shadow-sm">
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold text-foreground">
-            Assignments Volume
-          </CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <ToggleGroup 
-              type="single" 
-              value={timePeriod} 
-              onValueChange={(value) => value && setTimePeriod(value as TimePeriod)}
-              className="bg-muted/50 rounded-lg p-0.5"
-            >
+            <CardTitle className="text-base font-semibold text-foreground">
+              Assignments Volume
+            </CardTitle>
+            {!isLoading && (
+              <Badge variant="secondary" className="text-xs font-medium">
+                {totalAssignments.toLocaleString()}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5 bg-muted/50 rounded-lg px-1 py-0.5">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setOffset(o => o - 1)}>
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+              <span className="text-xs font-medium text-foreground min-w-[100px] text-center">
+                {getPeriodLabel()}
+              </span>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setOffset(o => o + 1)} disabled={!canGoForward()}>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <ToggleGroup type="single" value={timePeriod} onValueChange={handlePeriodChange} className="bg-muted/50 rounded-lg p-0.5">
               <ToggleGroupItem value="weekly" aria-label="Weekly" className="text-xs px-2.5 py-1 h-7 data-[state=on]:bg-background data-[state=on]:shadow-sm">
                 Week
               </ToggleGroupItem>
@@ -136,9 +150,6 @@ export const DashboardVolumeChart = () => {
                 Year
               </ToggleGroupItem>
             </ToggleGroup>
-            <button className="p-1.5 hover:bg-muted rounded-md">
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-            </button>
           </div>
         </div>
       </CardHeader>
@@ -156,44 +167,35 @@ export const DashboardVolumeChart = () => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={volumeData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
-              <XAxis 
-                dataKey="formattedDate" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
-                interval={timePeriod === 'monthly' ? 'preserveStartEnd' : 0} 
+              <XAxis
+                dataKey="formattedDate"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                interval={timePeriod === 'monthly' ? 'preserveStartEnd' : 0}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
-                width={30} 
-              />
-              <Tooltip 
-                formatter={value => [`${value}`, 'Assignments']} 
-                labelFormatter={label => `${label}`} 
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} width={30} />
+              <Tooltip
+                formatter={value => [`${value}`, 'Assignments']}
+                labelFormatter={label => `${label}`}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--popover))',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
                   color: 'hsl(var(--popover-foreground))',
                   fontSize: '12px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                }} 
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                }}
               />
-              <Legend 
-                wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} 
-                iconType="circle" 
-                iconSize={8}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="count" 
-                name="Assignments" 
-                stroke="hsl(var(--chart-primary))" 
-                strokeWidth={2} 
-                activeDot={{ r: 4, fill: 'hsl(var(--chart-primary))', stroke: 'hsl(var(--background))', strokeWidth: 2 }} 
-                dot={{ r: 2, fill: 'hsl(var(--chart-primary))' }} 
+              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} iconType="circle" iconSize={8} />
+              <Line
+                type="monotone"
+                dataKey="count"
+                name="Assignments"
+                stroke="hsl(var(--chart-primary))"
+                strokeWidth={2}
+                activeDot={{ r: 4, fill: 'hsl(var(--chart-primary))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                dot={{ r: 2, fill: 'hsl(var(--chart-primary))' }}
               />
             </LineChart>
           </ResponsiveContainer>

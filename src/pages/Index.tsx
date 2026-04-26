@@ -1,7 +1,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
-import { DashboardStatsCards } from "@/components/DashboardStatsCards";
 import { DashboardCompletionStats } from "@/components/DashboardCompletionStats";
 import { DashboardCompletionTrend } from "@/components/DashboardCompletionTrend";
 import { DashboardCategoryDistribution } from "@/components/DashboardCategoryDistribution";
@@ -138,9 +137,6 @@ const IndexContent = () => {
               </div>
             </div>
 
-            {/* Operational filters (open / complete / today) */}
-            <DashboardStatsCards onFilterChange={handleFilterChange} activeFilter={statusFilter} />
-            
             {/* Current Assignments */}
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-foreground">Current Assignments</h2>

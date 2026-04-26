@@ -2,7 +2,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { AssignmentsList } from "@/components/AssignmentsList";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { DashboardStatsCards } from "@/components/DashboardStatsCards";
-import { DashboardVolumeChart } from "@/components/DashboardVolumeChart";
+import { DashboardCompletionStats } from "@/components/DashboardCompletionStats";
+import { DashboardCompletionTrend } from "@/components/DashboardCompletionTrend";
+import { DashboardCategoryDistribution } from "@/components/DashboardCategoryDistribution";
 import { DashboardRankingCard } from "@/components/DashboardRankingCard";
 import { AssignmentsProvider, useAssignments } from "@/providers/AssignmentsProvider";
 import { useState } from "react";
@@ -120,18 +122,24 @@ const IndexContent = () => {
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6 mt-6">
-            {/* Stats Cards Row */}
-            <DashboardStatsCards onFilterChange={handleFilterChange} activeFilter={statusFilter} />
-            
-            {/* Chart and Ranking Row */}
+            {/* Completion stats: Daily / Weekly / Monthly / YTD */}
+            <DashboardCompletionStats />
+
+            {/* Trend + Ranking + Category */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                <DashboardVolumeChart />
+              <div className="lg:col-span-1 order-1">
+                <DashboardCompletionTrend />
               </div>
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 order-3 lg:order-2">
                 <DashboardRankingCard />
               </div>
+              <div className="lg:col-span-1 order-2 lg:order-3">
+                <DashboardCategoryDistribution />
+              </div>
             </div>
+
+            {/* Operational filters (open / complete / today) */}
+            <DashboardStatsCards onFilterChange={handleFilterChange} activeFilter={statusFilter} />
             
             {/* Current Assignments */}
             <div className="space-y-4">

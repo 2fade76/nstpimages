@@ -93,7 +93,7 @@ const IndexContent = () => {
           <form onSubmit={handleSearch} className="w-full sm:w-auto">
             <div className="relative">
               <Input 
-                placeholder="Search assignments..." 
+                placeholder="Search title, location, photographer, category, status, date..." 
                 value={searchQuery} 
                 onChange={e => setSearchQuery(e.target.value)} 
                 className="w-full sm:w-[280px] pr-8 bg-card border-border/40 rounded-xl" 

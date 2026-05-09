@@ -58,17 +58,46 @@ export const useAssignmentsData = ({
           .ilike('name', searchTerm);
         const photographerIds = (matchingPhotographers || []).map((p) => p.id);
 
-        // Always-on text searches across every searchable text column.
-        // PostgREST cast syntax `column::text` lets us ilike non-text columns
-        // (date, time, enums, uuid).
+        // Always-on ilike across text columns
         const orFilters: string[] = [
           `title.ilike.${searchTerm}`,
           `location.ilike.${searchTerm}`,
           `status.ilike.${searchTerm}`,
-          `category::text.ilike.${searchTerm}`,
-          `date::text.ilike.${searchTerm}`,
-          `time::text.ilike.${searchTerm}`,
         ];
+
+        // Category is an enum — case-insensitive substring match against known values
+        const categories = ['News', 'Sports', 'Entertainment'];
+        const matchedCategories = categories.filter((c) =>
+          c.toLowerCase().includes(raw.toLowerCase())
+        );
+        for (const c of matchedCategories) {
+          orFilters.push(`category.eq.${c}`);
+        }
+
+        // Date — full YYYY-MM-DD exact, or partial YYYY / YYYY-MM range
+        const fullDate = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+        const partialDate = /^\d{4}(-\d{2})?$/.test(raw);
+        if (fullDate) {
+          orFilters.push(`date.eq.${raw}`);
+        } else if (partialDate) {
+          // Use gte/lte range — but `or` supports gte/lte too
+          const start = raw.length === 4 ? `${raw}-01-01` : `${raw}-01`;
+          const endYear = raw.length === 4 ? `${raw}-12-31` : null;
+          if (endYear) {
+            // year range
+            orFilters.push(`and(date.gte.${start},date.lte.${endYear})`);
+          } else {
+            // YYYY-MM — compute month end
+            const [y, m] = raw.split('-').map(Number);
+            const last = new Date(y, m, 0).getDate();
+            orFilters.push(`and(date.gte.${start},date.lte.${raw}-${String(last).padStart(2, '0')})`);
+          }
+        }
+
+        // Time — full HH:MM(:SS) exact match
+        if (/^\d{2}:\d{2}(:\d{2})?$/.test(raw)) {
+          orFilters.push(`time.eq.${raw.length === 5 ? raw + ':00' : raw}`);
+        }
 
         if (photographerIds.length > 0) {
           orFilters.push(`photographer_id.in.(${photographerIds.join(',')})`);

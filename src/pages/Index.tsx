@@ -20,6 +20,9 @@ import { useDebounce } from "@/hooks/useDebounce";
 const IndexContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [instantQuery, setInstantQuery] = useState("");
+  // The query actually used for fetching: instant (button/Enter) wins over debounced
+  const effectiveQuery = instantQuery || debouncedSearchQuery;
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'complete' | 'today-complete'>('all');
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -62,10 +65,24 @@ const IndexContent = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setInstantQuery(searchQuery);
+  };
+
+  const triggerSearchNow = () => {
+    setInstantQuery(searchQuery);
   };
 
   const handleClearSearch = () => {
     setSearchQuery("");
+    setInstantQuery("");
+  };
+
+  // Keep instantQuery in sync as the user types so it always reflects the latest input
+  // (matches the debounced/dynamic behavior of the input).
+  // When typing, clear the instant override so debounced takes back over.
+  const handleQueryChange = (value: string) => {
+    setSearchQuery(value);
+    if (instantQuery) setInstantQuery("");
   };
 
   return (
@@ -92,11 +109,20 @@ const IndexContent = () => {
           </div>
           <form onSubmit={handleSearch} className="w-full sm:w-auto">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                onClick={triggerSearchNow}
+                aria-label="Search"
+                className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 hover:bg-muted"
+              >
+                <Search className="h-4 w-4 text-muted-foreground" />
+              </Button>
               <Input
                 placeholder="Search title, location, photographer, category, status, date, time..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={e => handleQueryChange(e.target.value)}
                 className="w-full sm:w-[320px] pl-9 pr-8 bg-card border-border/40 rounded-xl"
               />
               {searchQuery && (
@@ -143,7 +169,7 @@ const IndexContent = () => {
               <h2 className="text-lg font-semibold text-foreground">Current Assignments</h2>
               <AssignmentsList 
                 onStatusUpdate={handleAssignmentStatusUpdate} 
-                searchQuery={debouncedSearchQuery} 
+                searchQuery={effectiveQuery} 
                 isSearchActive={false} 
                 onSearchComplete={() => {}} 
                 statusFilter={statusFilter} 

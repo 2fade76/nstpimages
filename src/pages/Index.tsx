@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, RefreshCw, X } from "lucide-react";
+import { AlertCircle, RefreshCw, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -92,11 +92,12 @@ const IndexContent = () => {
           </div>
           <form onSubmit={handleSearch} className="w-full sm:w-auto">
             <div className="relative">
-              <Input 
-                placeholder="Search title, location, photographer, category, status, date..." 
-                value={searchQuery} 
-                onChange={e => setSearchQuery(e.target.value)} 
-                className="w-full sm:w-[280px] pr-8 bg-card border-border/40 rounded-xl" 
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search title, location, photographer, category, status, date, time..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full sm:w-[320px] pl-9 pr-8 bg-card border-border/40 rounded-xl"
               />
               {searchQuery && (
                 <Button 

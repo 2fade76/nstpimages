@@ -50,37 +50,53 @@ export const useAssignmentsData = ({
         const raw = searchQuery.trim();
         const searchTerm = `%${raw}%`;
 
-        // Look up matching photographers by name so we can include their assignments
+        // Look up matching photographers by name so we can include their assignments.
+        // Match on substring so partial names work (e.g. "shah" → "Shahril Badri").
         const { data: matchingPhotographers } = await supabase
           .from('photographers')
           .select('id')
           .ilike('name', searchTerm);
         const photographerIds = (matchingPhotographers || []).map((p) => p.id);
 
-        // Build OR filter across text columns
+        // Always-on ilike across text columns
         const orFilters: string[] = [
           `title.ilike.${searchTerm}`,
           `location.ilike.${searchTerm}`,
           `status.ilike.${searchTerm}`,
         ];
 
-        // Category is an enum — only filter by it on an exact (case-insensitive) category match
+        // Category is an enum — case-insensitive substring match against known values
         const categories = ['News', 'Sports', 'Entertainment'];
-        const matchedCategory = categories.find(
-          (c) => c.toLowerCase() === raw.toLowerCase()
+        const matchedCategories = categories.filter((c) =>
+          c.toLowerCase().includes(raw.toLowerCase())
         );
-        if (matchedCategory) {
-          orFilters.push(`category.eq.${matchedCategory}`);
+        for (const c of matchedCategories) {
+          orFilters.push(`category.eq.${c}`);
         }
 
-        // Date — accept YYYY-MM-DD or partial date strings (e.g. 2026-04)
-        if (/^\d{4}(-\d{1,2}){0,2}$/.test(raw)) {
-          orFilters.push(`date.ilike.${searchTerm}`);
+        // Date — full YYYY-MM-DD exact, or partial YYYY / YYYY-MM range
+        const fullDate = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+        const partialDate = /^\d{4}(-\d{2})?$/.test(raw);
+        if (fullDate) {
+          orFilters.push(`date.eq.${raw}`);
+        } else if (partialDate) {
+          // Use gte/lte range — but `or` supports gte/lte too
+          const start = raw.length === 4 ? `${raw}-01-01` : `${raw}-01`;
+          const endYear = raw.length === 4 ? `${raw}-12-31` : null;
+          if (endYear) {
+            // year range
+            orFilters.push(`and(date.gte.${start},date.lte.${endYear})`);
+          } else {
+            // YYYY-MM — compute month end
+            const [y, m] = raw.split('-').map(Number);
+            const last = new Date(y, m, 0).getDate();
+            orFilters.push(`and(date.gte.${start},date.lte.${raw}-${String(last).padStart(2, '0')})`);
+          }
         }
 
-        // Time — accept HH or HH:MM
-        if (/^\d{1,2}(:\d{2})?$/.test(raw)) {
-          orFilters.push(`time.ilike.${searchTerm}`);
+        // Time — full HH:MM(:SS) exact match
+        if (/^\d{2}:\d{2}(:\d{2})?$/.test(raw)) {
+          orFilters.push(`time.eq.${raw.length === 5 ? raw + ':00' : raw}`);
         }
 
         if (photographerIds.length > 0) {

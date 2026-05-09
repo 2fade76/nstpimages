@@ -50,38 +50,25 @@ export const useAssignmentsData = ({
         const raw = searchQuery.trim();
         const searchTerm = `%${raw}%`;
 
-        // Look up matching photographers by name so we can include their assignments
+        // Look up matching photographers by name so we can include their assignments.
+        // Match on substring so partial names work (e.g. "shah" → "Shahril Badri").
         const { data: matchingPhotographers } = await supabase
           .from('photographers')
           .select('id')
           .ilike('name', searchTerm);
         const photographerIds = (matchingPhotographers || []).map((p) => p.id);
 
-        // Build OR filter across text columns
+        // Always-on text searches across every searchable text column.
+        // PostgREST cast syntax `column::text` lets us ilike non-text columns
+        // (date, time, enums, uuid).
         const orFilters: string[] = [
           `title.ilike.${searchTerm}`,
           `location.ilike.${searchTerm}`,
           `status.ilike.${searchTerm}`,
+          `category::text.ilike.${searchTerm}`,
+          `date::text.ilike.${searchTerm}`,
+          `time::text.ilike.${searchTerm}`,
         ];
-
-        // Category is an enum — only filter by it on an exact (case-insensitive) category match
-        const categories = ['News', 'Sports', 'Entertainment'];
-        const matchedCategory = categories.find(
-          (c) => c.toLowerCase() === raw.toLowerCase()
-        );
-        if (matchedCategory) {
-          orFilters.push(`category.eq.${matchedCategory}`);
-        }
-
-        // Date — accept YYYY-MM-DD or partial date strings (e.g. 2026-04)
-        if (/^\d{4}(-\d{1,2}){0,2}$/.test(raw)) {
-          orFilters.push(`date.ilike.${searchTerm}`);
-        }
-
-        // Time — accept HH or HH:MM
-        if (/^\d{1,2}(:\d{2})?$/.test(raw)) {
-          orFilters.push(`time.ilike.${searchTerm}`);
-        }
 
         if (photographerIds.length > 0) {
           orFilters.push(`photographer_id.in.(${photographerIds.join(',')})`);

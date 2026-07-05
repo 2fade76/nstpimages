@@ -12,7 +12,7 @@ const CATEGORIES = [
 
 export const DashboardCategoryDistribution = () => {
   const { data, isLoading } = useQuery({
-    queryKey: ["category-distribution"],
+    queryKey: ["dashboard-category-distribution"],
     queryFn: async () => {
       const results = await Promise.all(
         CATEGORIES.map(async (c) => {
